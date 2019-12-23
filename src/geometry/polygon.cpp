@@ -15,7 +15,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "geometry/polygon.hpp"
+#include "polygon.hpp"
 
 using std::cerr;
 using std::max;
@@ -141,25 +141,25 @@ bool Polygon::load(nlohmann::json doc){
     return false;
 }
 
-yggdrasil::geometry::Layout Polygon::make_layout(const double precision) const {
-    double min_x = DBL_MAX;
-    double max_x = DBL_MIN;
-    double min_y = DBL_MAX;
-    double max_y = DBL_MIN;
+// yggdrasil::geometry::Layout Polygon::make_layout(const double precision) const {
+//     double min_x = DBL_MAX;
+//     double max_x = DBL_MIN;
+//     double min_y = DBL_MAX;
+//     double max_y = DBL_MIN;
 
-    for( auto p : points ){
-        min_x = min(min_x, p.x());
-        max_x = max(max_x, p.x());
-        min_y = min(min_y, p.y());
-        max_y = max(max_y, p.y());
-    }
+//     for( auto p : points ){
+//         min_x = min(min_x, p.x());
+//         max_x = max(max_x, p.x());
+//         min_y = min(min_y, p.y());
+//         max_y = max(max_y, p.y());
+//     }
 
-    const double ctr_x = round( 0.5*( min_x + max_x ) );
-    const double ctr_y = round( 0.5*( min_y + max_y ) );
-    const double width = max(max_x - min_x, max_y - min_y);
+//     const double ctr_x = round( 0.5*( min_x + max_x ) );
+//     const double ctr_y = round( 0.5*( min_y + max_y ) );
+//     const double width = max(max_x - min_x, max_y - min_y);
 
-    return Layout(precision, ctr_x, ctr_y, width);
-}
+//     return Layout(precision, ctr_x, ctr_y, width);
+// }
 
 Vector2d& Polygon::operator[](const size_t index){
     return points[index];
@@ -171,6 +171,10 @@ const Vector2d& Polygon::operator[](const size_t index) const {
 
 void Polygon::push_back(const Vector2d p){
     points.push_back(p);
+}
+
+void Polygon::resize( size_t capacity){
+    points.resize(capacity);
 }
 
 size_t Polygon::size() const {

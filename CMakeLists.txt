@@ -50,30 +50,29 @@ SET(YGGDRASIL_LIB_NAME yggdrasil)
 
 # debug include dirs:
 #=============================================================================
-MESSAGE(STATUS "==== Conan Include Dirs ====")
-MESSAGE(STATUS ${CONAN_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CONAN_INCLUDE_DIRS})
 
-INCLUDE_DIRECTORIES(vendor)
+INCLUDE_DIRECTORIES(extern)
 INCLUDE_DIRECTORIES(include)
-SET(LIB_HEADERS #include/terrain.hpp include/terrain.inl
-                include/geometry/interpolate.hpp
-                include/geometry/layout.hpp
-                include/geometry/polygon.hpp
-                # include/io/json.hpp
-                # include/io/readers.hpp include/io/readers.inl
-                # include/io/writers.hpp include/io/writers.inl
-                # include/node/quad_node.hpp
-                include/node/tile_node.hpp
-                # include/quadtree/tree.hpp
+INCLUDE_DIRECTORIES(src)
+SET(LIB_HEADERS 
+                src/geometry/index.hpp src/geometry/index.inl
+                src/geometry/interpolate.hpp src/geometry/interpolate.inl
+                src/geometry/polygon.hpp
+                # src/io/json.hpp
+                src/io/readers.hpp src/io/readers.inl
+                src/io/writers.hpp
+                # src/node/quad_node.hpp
+                src/node/tile/tile_node.hpp
+                # src/quadtree/tree.hpp
+                # include/world_tree.hpp
                 )
 
 SET(LIB_SOURCES
-                src/geometry/interpolate.cpp
-                src/geometry/layout.cpp
                 src/geometry/polygon.cpp
-                # src/node/quad_node.cpp
-                src/node/tile_node.cpp
+                src/io/writers.cpp
+                # src/node/quad/quad_node.cpp
+                src/node/tile/tile_node.cpp
                 # src/quadtree/tree.cpp
                 )
 
@@ -95,13 +94,13 @@ enable_testing()
 # ============= Build Project Tests  =================
 # https://cmake.org/cmake/help/v3.0/module/FindGTest.html 
 SET(TEST_EXE testall) 
-SET(TEST_SOURCES
-                    test/geometry/interpolate.cpp
-                    test/geometry/layout.cpp
-                    test/geometry/polygon.cpp
-                    # test/node/quad_node.cpp
-                    test/node/tile_node.cpp
-                    # test/quadtree/tree.cpp
+SET(TEST_SOURCES    
+                    src/geometry/index.test.cpp
+                    src/geometry/interpolate.test.cpp
+                    src/geometry/polygon.test.cpp
+                    # src/node/quad_node.cpp
+                    src/node/tile/tile_node.test.cpp
+                    # src/quadtree/tree.cpp
                     )
 
 SET(TEST_LINKAGE ${YGGDRASIL_LIB_NAME} ${LIBRARY_LINKAGE} ${CONAN_LIBS} gtest gtest_main )
@@ -120,7 +119,7 @@ TARGET_LINK_LIBRARIES(${TEST_EXE} ${TEST_LINKAGE})
 
 # ============= Build Profiling Program  =================
 SET(PROFILE_EXE profile)
-SET(PROFILE_SOURCES src/profile/main.cpp)
+SET(PROFILE_SOURCES tools/profile/main.cpp)
 
 MESSAGE( STATUS "Generating profiling program: ${PROFILE_EXE}")
 MESSAGE( STATUS "    with sources: ${PROFILE_SOURCES}")

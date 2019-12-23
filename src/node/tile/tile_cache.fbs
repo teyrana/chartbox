@@ -1,0 +1,13 @@
+// Small Schema for a tile cache
+// Defined in the Flatbuffer IDL.
+
+namespace yggdrasil.node;
+
+table TileCache {
+  x:float32;
+  y:float32;
+  // represents a 2d dimension-by-dimension grid
+  grid:[uint8];
+}
+
+root_type TileCache;
