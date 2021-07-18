@@ -3,6 +3,7 @@
 SET(LIB_NAME chartloaders)
 SET(LIB_HEADERS chart-base-loader.hpp chart-debug-loader.hpp
                 chart-json-loader.hpp chart-json-loader.inl
+                # chart-shapefile-loader.hpp chart-shapefile-loader.inl
                 )
 SET(LIB_SOURCES 
                 )

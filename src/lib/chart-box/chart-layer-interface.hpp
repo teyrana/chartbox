@@ -30,7 +30,7 @@ protected:
 public:
 
     /// \brief how wide each cell is, in real-world navigation units
-    constexpr static cell_t blocked_value = 0;
+    constexpr static cell_t block_value = 0;
     constexpr static cell_t clear_value = 0;
     
 public:

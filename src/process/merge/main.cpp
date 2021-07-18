@@ -7,14 +7,17 @@
 // may not be standard
 #include <sys/stat.h>
 
+#include <fmt/core.h>
+
 #include "chart-box.hpp"
-#include "io/chart-debug-loader.hpp"
+// #include "io/chart-debug-loader.hpp"
 #include "io/chart-geojson-loader.hpp"
+#include "io/chart-shapefile-loader.hpp"
 
 // #include "io/chart-debug-writer.hpp"
 #include "io/chart-png-writer.hpp"
 
-using chartbox::io::DebugLoader;
+// using chartbox::io::DebugLoader;
 using chartbox::io::GeoJSONLoader;
 // using chartbox::io::ShapefileLoader;
 using chartbox::layer::FixedGridLayer;
@@ -32,6 +35,7 @@ int main( void ){
 
     //std::string boundary_input_path("data/block-island/boundary.simple.geojson");
     std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
+    // std::string boundary_input_path("data/massachusetts/navigation_area_100k.shp");
 
     std::string boundary_output_path("");
     // std::string boundary_output_path("stdout");
@@ -72,7 +76,7 @@ int main( void ){
                 fmt::print("        >>> With ShapefileLoader:\n");
 
                 // .shp ==>> found a shapefile
-                auto boundary_loader = DebugLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
+                auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
                 // auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
                 if( ! boundary_loader.load(boundary_input_path) ){
                     fmt::print( stderr, "!!!! error while loading shapefile:!!!!\n" );
@@ -125,7 +129,7 @@ int main( void ){
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
             if( boundary_output_path == "stderr" ){
-                fmt::print( stderr, "<<< File output disabled");
+                fmt::print( stderr, "<<< File output disabled\n");
 
             }else if( boundary_output_path == "stdout" ){
                 const auto boundary_layer = box.get_boundary_layer();
