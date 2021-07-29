@@ -55,14 +55,14 @@ FrameMapping::FrameMapping()
 
 bool FrameMapping::move_local_bounds( const Eigen::Vector2d& min_lon_lat, const Eigen::Vector2d& max_lon_lat ){
     if( (nullptr== global_to_utm_transform_) || (nullptr==utm_to_global_transform_) ){
-        printf("XXX null transformations.  aborting.\n");
+        fmt::print( stderr, "XXX null transformations.  aborting.\n");
         return false;
     }
 
     double xs[] = { min_lon_lat.y(), max_lon_lat.y() };
     double ys[] = { min_lon_lat.x(), max_lon_lat.x() };
     if( ! global_to_utm_transform_->Transform( 2, xs, ys ) ){
-        printf( "<< !! Transformations failed.\n" );
+        fmt::print( stderr, "<< !! Transformations failed.\n" );
         return false;
 
     }else{
@@ -83,7 +83,7 @@ bool FrameMapping::move_local_bounds( const Eigen::Vector2d& min_lon_lat, const 
         double xs[] = { accept_max_xy.x() };
         double ys[] = { accept_max_xy.y() };
         if( ! utm_to_global_transform_->Transform( 1, xs, ys ) ){
-            fmt::print( "<< !! Global <= Local transform failed !!\n" );
+            fmt::print( stderr, "<< !! Global <= Local transform failed !!\n" );
             return false;
         }else{
             global_bounds_.min() = min_lon_lat;
@@ -122,6 +122,18 @@ OGRPoint* FrameMapping::to_utm( const double longitude, const double latitude ){
     return nullptr;
 }
 
+Eigen::Vector2d FrameMapping::to_local( const Eigen::Vector2d& from_lat_lon ){
+    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
+    // -- and this order gets the correct answers.
+    double xs[] = { from_lat_lon.y() };
+    double ys[] = { from_lat_lon.x() };
+    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
+        return Eigen::Vector2d( xs[0] - utm_bounds_.min().x(), ys[0] - utm_bounds_.min().y() );
+    }
+
+    return {NAN,NAN};
+}
+
 OGRPoint* FrameMapping::to_global( const double easting, const double northing ){
     double xs[] = { easting + utm_bounds_.min().x() };
     double ys[] = { northing + utm_bounds_.min().y() };
@@ -131,6 +143,27 @@ OGRPoint* FrameMapping::to_global( const double easting, const double northing )
     }
 
     return nullptr;
+}
+
+Eigen::Vector2d FrameMapping::to_global( const Eigen::Vector2d& from_local ){
+    double xs[] = { from_local.x() + utm_bounds_.min().x() };
+    double ys[] = { from_local.y() + utm_bounds_.min().y() };
+    if( utm_to_global_transform_->Transform( 1, xs, ys ) ){
+        return Eigen::Vector2d( xs[0], ys[0] );
+    }
+    return {NAN,NAN};
+}
+
+Eigen::Vector2d FrameMapping::to_utm( const Eigen::Vector2d& from_lat_lon ){
+    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
+    // -- and this order gets the correct answers.
+    double xs[] = { from_lat_lon.y() };
+    double ys[] = { from_lat_lon.x() };
+    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
+        return Eigen::Vector2d( xs[0], ys[0] );
+    }
+
+    return {NAN,NAN};
 }
 
 void FrameMapping::print() const {
@@ -147,11 +180,3 @@ void FrameMapping::print() const {
     fmt::print( "      max:      {:12.6f} Easting,    {:12.6f} Northing\n", current_local_width_, current_local_width_ );
     fmt::print( "============ ============ ============ ============ ============ ============ \n" );
 }
-
-// Eigen::Vector2d FrameMapping::to_local( const Eigen::Vector2d& /*from*/ ){
-//     return {NAN,NAN};
-// }
-
-// Eigen::Vector2d FrameMapping::to_global( const Eigen::Vector2d& /*from*/ ){
-//     return {NAN,NAN};
-// }

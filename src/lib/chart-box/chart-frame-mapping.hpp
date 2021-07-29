@@ -30,11 +30,12 @@ public:
 
     constexpr static size_t snap_power_2(const size_t target);
 
-    OGRPoint* to_utm( const double longitude, const double latitude );
     OGRPoint* to_global( const double easting, const double northing );
+    OGRPoint* to_utm( const double longitude, const double latitude );
  
-    // Eigen::Vector2d to_local( const Eigen::Vector2d& from );
-    // Eigen::Vector2d to_global( const Eigen::Vector2d& from );
+    Eigen::Vector2d to_local( const Eigen::Vector2d& from_lat_lon );
+    Eigen::Vector2d to_global( const Eigen::Vector2d& from_local );
+    Eigen::Vector2d to_utm( const Eigen::Vector2d& from_lat_lon );
 
     ~FrameMapping() = default;
 

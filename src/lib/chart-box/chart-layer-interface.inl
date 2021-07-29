@@ -24,16 +24,16 @@ ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const Eigen::AlignedB
 
 template<typename cell_t, typename layer_t>
 bool ChartLayerInterface<cell_t, layer_t>::fill(const Eigen::AlignedBox2d& area, const cell_t value) {
-    const double x_max = area.max().x();
-    const double x_min = area.min().x();
-    const double y_max = area.max().y();
-    const double y_min = area.min().y();
     const double incr = layer().precision();
+    const double x_max = area.max().x();
+    const double x_min = area.min().x() + incr/2;
+    const double y_max = area.max().y();
+    const double y_min = area.min().y() + incr/2;
 
     // Loop through the rows of the image.
-    for( double y = y_min + incr/2; y < y_max; y += incr ){
-        for( double x = x_min + incr/2; x < x_max; x += incr ){
-            this->store({x,y}, value);
+    for( double y = y_min; y < y_max; y += incr ){
+        for( double x = x_min; x < x_max; x += incr ){
+            layer().store({x,y}, value);
         }
     }
     return true;

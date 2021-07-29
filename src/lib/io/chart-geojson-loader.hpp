@@ -34,7 +34,7 @@ private:
 
     ///  The values of a "bbox" array are "[west, south, east, north]", not
     ///     "[minx, miny, maxx, maxy]" (see Section 5).  --rfc 7946
-    bool load_json_boundary_box(const CPLJSONObject& doc);
+    bool load_json_boundary_box(const CPLJSONObject& doc, bool fill=false);
     bool load_json_boundary_polygon(const CPLJSONObject& doc);
 
 private:

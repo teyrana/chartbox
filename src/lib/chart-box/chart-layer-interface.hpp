@@ -46,13 +46,13 @@ public:
 
     /// \brief Fill the given area with the given value.
     /// 
-    /// \param source - bounds defining the fill araea
+    /// \param source - bounds defining the fill area, in local (UTM) coordinates
     /// \param fill_value - value to write inside the box
     bool fill( const Eigen::AlignedBox2d& area, const cell_t value );
 
     /// \brief Fills the interior of the given polygon with the given value.
     /// 
-    /// \param source - polygon defining the fill araea. Assumed to be closed, CCW, and non-intersecting
+    /// \param source - polygon defining the fill araea. Assumed to be in local coordinates, closed, CCW, and non-intersecting
     /// \param fill_value - fill value for polygon interior
     bool fill( std::unique_ptr<OGRPolygon> source, cell_t value );
 

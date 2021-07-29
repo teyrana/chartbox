@@ -30,9 +30,11 @@ int main( void ){
     // bool enable_input_lidar = false;
     // std::string input_path_terrain;
 
-    std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
-    // std::string boundary_input_path("data/block-island/boundary.simple.geojson");
+    std::string boundary_input_path("data/block-island/boundary.simple.geojson");
+    // std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
 
+
+    // std::string boundary_output_path("stdout");
     std::string boundary_output_path("debug-height-map.png");
 
     // bool enable_output_height_map = false;
@@ -105,20 +107,22 @@ int main( void ){
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
-            fmt::print( stderr, "    >>> Write Boundary Layer to: {}\n", boundary_output_path );
-            chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> boundary_writer( box.get_boundary_layer() );
-            if( ! boundary_writer.write_to_path(boundary_output_path) ){
-                fmt::print( stderr, "!!!! error while writing data:!!!!\n" );
-                return EXIT_FAILURE;
+            if( boundary_output_path == "stdout" ){
+
+                const auto boundary_layer = box.get_boundary_layer();
+                box.get_boundary_layer().print_contents();
+
             }else{
-                fmt::print(  "    <<< Successfuly wrote BoundaryLayer.\n" );
+                fmt::print( stderr, "    >>> Write Boundary Layer to: {}\n", boundary_output_path );
+                chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> boundary_writer( box.get_boundary_layer() );
+                if( ! boundary_writer.write_to_path(boundary_output_path) ){
+                    fmt::print( stderr, "!!!! error while writing data:!!!!\n" );
+                    return EXIT_FAILURE;
+                }else{
+                    fmt::print(  "    <<< Successfuly wrote BoundaryLayer.\n" );
+                }
             }
         }
-
-        // if( enable_output_height_map ){
-        //     cerr << "##>> writing output...\n";
-        //     to_png(chart.get?layer(), output_path);
-        // }
         
         const auto finish_write = std::chrono::high_resolution_clock::now(); 
         const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;

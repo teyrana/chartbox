@@ -56,17 +56,30 @@ bool GeoJSONLoader<layer_t>::load_text( const std::string& source_text ){
 
 template<typename layer_t>
 bool GeoJSONLoader<layer_t>::load_json( const CPLJSONObject& root ){
-    if( load_json_boundary_box(root) ){
-        return load_json_boundary_polygon(root);
-    }else{
+    const bool has_bound_box = ( root["bbox"].IsValid() );
+    const bool has_polygon = ( root["features"].IsValid() 
+                            && root.GetArray("features")[0].IsValid() 
+                            && root.GetArray("features")[0]["geometry"].IsValid()
+                            && root.GetArray("features")[0]["geometry"]["type"].IsValid()
+                            && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
+
+    if( has_bound_box && ( ! load_json_boundary_box(root, !has_polygon ))){
         std::cerr << "!! Could not load GeoJSON bounding box: !!!" << std::endl;
         std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
         return false;
     }
+
+    if( has_polygon && ( ! load_json_boundary_polygon(root))){
+        std::cerr << "!! Could not load GeoJSON bounding polygon ?!?!" << std::endl;
+        std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
+        return false;
+    }
+
+    return true;
 }
 
 template<typename layer_t>
-bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root ){
+bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, bool fill ){
     auto bound_box_elem = root.GetArray("bbox");
     if( ! bound_box_elem.IsValid()){
         std::cerr << "'bbox' element is not valid!?" << std::endl;
@@ -89,7 +102,15 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root )
 
     const Eigen::Vector2d bounds_min_lat_lon( lon_min, lat_min );
     const Eigen::Vector2d bounds_max_lat_lon( lon_max, lat_max );
-    return mapping_.move_local_bounds( bounds_min_lat_lon, bounds_max_lat_lon );
+    const bool move_success = mapping_.move_local_bounds( bounds_min_lat_lon, bounds_max_lat_lon );
+
+    if( move_success && fill ){
+        const Eigen::Vector2d bounds_min_local = mapping_.to_local( bounds_min_lat_lon );
+        const Eigen::Vector2d bounds_max_local = mapping_.to_local( bounds_max_lat_lon );
+        const Eigen::AlignedBox2d bounds_local( bounds_min_local, bounds_max_local );
+        return layer_.fill( bounds_local, layer_.clear_value );
+    }
+    return false;
 }
 
 template<typename layer_t>
@@ -127,16 +148,12 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_polygon( const CPLJSONObject& ro
 
             to_ring->closeRings();
             local_frame_polygon->addRing( to_ring );
-        
-            // not really sure where this should live, yet.
-            // for the boundary layer, this value should simply be 0 == clear == 0% probability of collision
-            constexpr auto fill_value = layer_.clear_value;
 
-            return layer_.fill( std::move(std::unique_ptr<OGRPolygon>(local_frame_polygon)), fill_value );
+            return layer_.fill( std::move(std::unique_ptr<OGRPolygon>(local_frame_polygon)), layer_.clear_value );
         }
     }
     std::cerr << "    << no boundary polygon found -- defaulting to boundary box.\n" << std::endl;
-    return true;
+    return false;
 }
 
 // inline Polygon
