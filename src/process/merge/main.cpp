@@ -8,16 +8,16 @@
 #include <sys/stat.h>
 
 #include "chart-box.hpp"
+#include "io/chart-debug-loader.hpp"
 #include "io/chart-geojson-loader.hpp"
 
-#include "io/chart-debug-writer.hpp"
+// #include "io/chart-debug-writer.hpp"
 #include "io/chart-png-writer.hpp"
 
-// using namespace chartbox::io;
-
-// using chartbox::grid::Grid;
-// using chartbox::quadtree::Tree;
-// using chartbox::WorldTree;
+using chartbox::io::DebugLoader;
+using chartbox::io::GeoJSONLoader;
+// using chartbox::io::ShapefileLoader;
+using chartbox::layer::FixedGridLayer;
 
 constexpr double boundary_width = 4096.;
 constexpr double desired_precision = 1.0;
@@ -34,8 +34,8 @@ int main( void ){
     // std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
 
 
-    // std::string boundary_output_path("stdout");
-    std::string boundary_output_path("debug-height-map.png");
+    std::string boundary_output_path("stderr");
+    // std::string boundary_output_path("debug-height-map.png");
 
     // bool enable_output_height_map = false;
     // std::string output_path_height_map;
@@ -50,6 +50,11 @@ int main( void ){
     //     cerr << "  ## Save output to: " << output_path << '\n';
     // }
 
+    if( ! std::filesystem::is_regular_file(boundary_input_path)){
+        fmt::print(stderr, "!! Could not find boundary input path!! : {}\n", boundary_input_path);
+        return EXIT_FAILURE;
+    }
+
     // ^^^^ Configuration
     // vvvv Execution
     GDALAllRegister();
@@ -63,15 +68,24 @@ int main( void ){
         if ( ! boundary_input_path.empty() ) {
             fmt::print(  "    >>> Loading boundary layer from path: {}\n", boundary_input_path );
 
-            using chartbox::io::GeoJSONLoader;
-            using chartbox::layer::FixedGridLayer;
-            auto boundary_loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-            if( ! boundary_loader.load_file(boundary_input_path) ){
-                fmt::print( stderr, "!!!! error while loading data:!!!!\n" );
-                return EXIT_FAILURE;
-            }else{
-                fmt::print(  "    <<< Successfuly loaded BoundaryLayer.\n" );
+            if( boundary_input_path.substr( boundary_input_path.find_last_of(".") + 1) == "shp") {
+                // .shp ==>> found a shapefile
+                auto boundary_loader = DebugLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
+                // auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
+                if( ! boundary_loader.load_file(boundary_input_path) ){
+                    fmt::print( stderr, "!!!! error while loading shapefile:!!!!\n" );
+                    return EXIT_FAILURE;
+                }
+            }else if( boundary_input_path.substr( boundary_input_path.find_last_of(".") + 1) == "shp") {
+                // any .json file is assumed to be GeoJSON.
+                auto boundary_loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
+                if( ! boundary_loader.load_file(boundary_input_path) ){
+                    fmt::print( stderr, "!!!! error while loading data:!!!!\n" );
+                    return EXIT_FAILURE;
+                }
             }
+
+            fmt::print(  "    <<< Successfuly loaded BoundaryLayer.\n" );
         }
 
         // const bool load_success = chart.get_countour_layer()->load_from_json_stream( *boundary_document_stream);
@@ -107,8 +121,10 @@ int main( void ){
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
-            if( boundary_output_path == "stdout" ){
+            if( boundary_output_path == "stderr" ){
+                fmt::print( stderr, "<<< File output disabled");
 
+            }else if( boundary_output_path == "stdout" ){
                 const auto boundary_layer = box.get_boundary_layer();
                 box.get_boundary_layer().print_contents();
 

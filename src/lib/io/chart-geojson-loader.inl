@@ -20,8 +20,8 @@ using chartbox::io::GeoJSONLoader;
 
 template<typename layer_t>
 GeoJSONLoader<layer_t>::GeoJSONLoader( FrameMapping& _mapping, layer_t& _destination_layer )
-    : mapping_(_mapping)
-    , layer_(_destination_layer)
+    : layer_(_destination_layer)
+    , mapping_(_mapping)
 {}
 
 template<typename layer_t>

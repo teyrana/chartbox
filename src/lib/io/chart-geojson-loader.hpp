@@ -38,8 +38,8 @@ private:
     bool load_json_boundary_polygon(const CPLJSONObject& doc);
 
 private:
-    FrameMapping& mapping_;
     layer_t& layer_;
+    FrameMapping& mapping_;
 
 };
 
