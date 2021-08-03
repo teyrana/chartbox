@@ -54,7 +54,7 @@ public:
     /// 
     /// \param source - polygon defining the fill araea. Assumed to be in local coordinates, closed, CCW, and non-intersecting
     /// \param fill_value - fill value for polygon interior
-    bool fill( std::unique_ptr<OGRPolygon> source, cell_t value );
+    bool fill( const OGRLinearRing& source, cell_t value );
 
     ///! \brief load a .shp file into this chart.
     // bool load_from_shape_file(target_t& chart, const std::string& filepath);

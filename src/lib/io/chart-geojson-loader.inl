@@ -89,19 +89,19 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, 
         return false;
     }
 
-    const double lon_min = bound_box_elem[0].ToDouble(NAN);
-    const double lat_min = bound_box_elem[1].ToDouble(NAN);
-    const double lon_max = bound_box_elem[2].ToDouble(NAN);
-    const double lat_max = bound_box_elem[3].ToDouble(NAN);
+    const double west_longitude = bound_box_elem[0].ToDouble(NAN);
+    const double south_latitude = bound_box_elem[1].ToDouble(NAN);
+    const double east_longitude = bound_box_elem[2].ToDouble(NAN);
+    const double north_latitude = bound_box_elem[3].ToDouble(NAN);
 
     using std::isnan;
-    if( isnan(lon_min) || isnan(lat_min) || isnan(lon_max) || isnan(lat_max) ){
+    if( isnan(west_longitude) || isnan(south_latitude) || isnan(east_longitude) || isnan(north_latitude) ){
         std::cerr << "found NAN for a bounding-box limit!?" << std::endl;
         return false;
     }
 
-    const Eigen::Vector2d bounds_min_lat_lon( lon_min, lat_min );
-    const Eigen::Vector2d bounds_max_lat_lon( lon_max, lat_max );
+    const Eigen::Vector2d bounds_min_lat_lon( west_longitude, south_latitude );
+    const Eigen::Vector2d bounds_max_lat_lon( east_longitude, north_latitude );
     const bool move_success = mapping_.move_local_bounds( bounds_min_lat_lon, bounds_max_lat_lon );
 
     if( move_success && fill ){
@@ -110,7 +110,7 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, 
         const Eigen::AlignedBox2d bounds_local( bounds_min_local, bounds_max_local );
         return layer_.fill( bounds_local, layer_.clear_value );
     }
-    return false;
+    return move_success;
 }
 
 template<typename layer_t>
@@ -133,23 +133,21 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_polygon( const CPLJSONObject& ro
             }
 
             // translate from WGS84 (lat,lon) -> Local Frame (probably UTM)
-            OGRPolygon* local_frame_polygon = new OGRPolygon();
-            const OGRLinearRing * from_ring = world_frame_polygon->getExteriorRing();
-            OGRLinearRing * to_ring = new OGRLinearRing();
+            const OGRLinearRing * world_frame_ring = world_frame_polygon->getExteriorRing();
+            OGRLinearRing utm_frame_ring;
 
-            for ( auto iter = from_ring->begin(); iter != from_ring->end(); ++iter ) {
+            for ( auto iter = world_frame_ring->begin(); iter != world_frame_ring->end(); ++iter ) {
                 const double latitude = (*iter).getY();
                 const double longitude = (*iter).getX();
 
                 const OGRPoint * to_coord = mapping_.to_utm( longitude, latitude );
 
-                to_ring->addPoint( to_coord );
+                utm_frame_ring.addPoint( to_coord );
             }
+            utm_frame_ring.closeRings();
+           
 
-            to_ring->closeRings();
-            local_frame_polygon->addRing( to_ring );
-
-            return layer_.fill( std::move(std::unique_ptr<OGRPolygon>(local_frame_polygon)), layer_.clear_value );
+            return layer_.fill( utm_frame_ring, layer_.clear_value );
         }
     }
     std::cerr << "    << no boundary polygon found -- defaulting to boundary box.\n" << std::endl;

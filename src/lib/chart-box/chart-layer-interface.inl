@@ -40,12 +40,12 @@ bool ChartLayerInterface<cell_t, layer_t>::fill(const Eigen::AlignedBox2d& area,
 }
 
 template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill( std::unique_ptr<OGRPolygon> poly, cell_t value ){
+bool ChartLayerInterface<cell_t, layer_t>::fill( const OGRLinearRing& ring, cell_t value ){
     // adapted from:
     //  Public-domain code by Darel Rex Finley, 2007:  "Efficient Polygon Fill Algorithm With C Code Sample"
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07
 
-    const size_t vertex_count = poly->getExteriorRing()->getNumPoints();
+    const size_t vertex_count = ring.getNumPoints();
     const double x_max = layer().bounds_.sizes().x();
     const double x_min = 0;
     const double x_incr = layer().precision();  // == y_incr.  This is a square grid.
@@ -54,12 +54,11 @@ bool ChartLayerInterface<cell_t, layer_t>::fill( std::unique_ptr<OGRPolygon> pol
     const double y_incr = layer().precision();  // == x_incr.  This is a square grid.
 
     // Loop through the rows of the image.
-    const OGRLinearRing * exterior = poly->getExteriorRing();
     for( double y = y_min + y_incr/2; y < y_max; y += y_incr ){
 
         // generate a list of line-segment crossings from the polygon
         std::vector<double> crossings;
-        auto iter = exterior->begin();
+        auto iter = ring.begin();
         for (size_t i=0; i < (vertex_count-1); ++i) {
             const OGRPoint segment_start = *iter;
             ++iter;

@@ -37,8 +37,8 @@ public:
     bool fill( const Eigen::AlignedBox2d& area, const cell_t value ){
         return super().fill( area, value ); }
 
-    bool fill( std::unique_ptr<OGRPolygon> source, cell_t value ){ 
-        return super().fill( std::move(source), value ); }
+    bool fill( const OGRLinearRing& source, cell_t value ){ 
+        return super().fill( source, value ); }
     
     /// \brief Fill the entire grid with values from the buffer
     /// 
