@@ -8,12 +8,13 @@
 
 #include <Eigen/Geometry>
 
-#include "chart-frame-mapping.hpp"
 #include "chart-layer-interface.hpp"
-
+#include "frame/frame-mapping.hpp"
 #include "layer/fixed-grid/fixed-grid.hpp"
 
 namespace chartbox {
+
+using frame::FrameMapping;
 
 /// \brief A container of containers for various types of map data structures
 class ChartBox {

@@ -46,8 +46,8 @@ main: debug
 
 .PHONY: test testgrid
 test: test-all
-test-fix-grid: debug
-	$(TEST_EXE) --gtest_filter=FixedGrid*
+test-frame: debug
+	$(TEST_EXE) FrameTests
 
 test-roll-grid: debug
 	$(TEST_EXE) --gtest_filter=RollingGrid*

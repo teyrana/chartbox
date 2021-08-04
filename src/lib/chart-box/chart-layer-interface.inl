@@ -17,18 +17,17 @@ using chartbox::ChartLayerInterface;
 
 
 template<typename cell_t, typename layer_t>
-ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const Eigen::AlignedBox2d& _bounds)
+ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<Location2EN>& _bounds )
     : bounds_(_bounds)
 {}
 
-
 template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill(const Eigen::AlignedBox2d& area, const cell_t value) {
+bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<Location2xy>& box, const cell_t value) {
     const double incr = layer().precision();
-    const double x_max = area.max().x();
-    const double x_min = area.min().x() + incr/2;
-    const double y_max = area.max().y();
-    const double y_min = area.min().y() + incr/2;
+    const double x_max = box.max.x;
+    const double x_min = box.min.x + incr/2;
+    const double y_max = box.max.y;
+    const double y_min = box.min.y + incr/2;
 
     // Loop through the rows of the image.
     for( double y = y_min; y < y_max; y += incr ){
@@ -46,10 +45,10 @@ bool ChartLayerInterface<cell_t, layer_t>::fill( const OGRLinearRing& ring, cell
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07
 
     const size_t vertex_count = ring.getNumPoints();
-    const double x_max = layer().bounds_.sizes().x();
+    const double x_max = layer().bounds_.width();
     const double x_min = 0;
     const double x_incr = layer().precision();  // == y_incr.  This is a square grid.
-    const double y_max = layer().bounds_.sizes().y();
+    const double y_max = layer().bounds_.height();
     const double y_min = 0;
     const double y_incr = layer().precision();  // == x_incr.  This is a square grid.
 

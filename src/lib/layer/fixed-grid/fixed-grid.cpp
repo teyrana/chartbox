@@ -19,19 +19,19 @@ using Eigen::Vector2d;
 
 using chartbox::layer::FixedGridLayer;
 
-FixedGridLayer::FixedGridLayer( const Eigen::AlignedBox2d& _bounds)
+FixedGridLayer::FixedGridLayer( const BoundBox<Location2EN>& _bounds)
     : chartbox::ChartLayerInterface< uint8_t, FixedGridLayer>(_bounds)
 {
 
-    if( (dimension != static_cast<size_t>(width()/precision())) || ( dimension != static_cast<size_t>(width()/precision())) ){
+    if( (dimension != static_cast<size_t>(_bounds.width()/precision())) || ( dimension != static_cast<size_t>(_bounds.width()/precision())) ){
         // yes, this is limiting.  This class is limiting -- it is only intended to be a fast / cheap / easy medium for testing other parts of the code
         // if you run up against this limitation, don't change it here: use a class which better fits your use case.
 
         fmt::print( "======== ======== FixedGridLayer CTOR:  ======== ======== \n" );
         fmt::print( "Bounds:\n");
-        fmt::print( "      min:      {:12.6f}, {:12.6f} \n", _bounds.min().x(), _bounds.min().y() );
-        fmt::print( "      max:      {:12.6f}, {:12.6f} \n", _bounds.max().x(), _bounds.max().y() );
-        fmt::print( "      Width:    {:12.6f}, {:12.6f} \n", width(), width() );
+        fmt::print( "      min:      {:12.6f}, {:12.6f} \n", _bounds.min.easting, _bounds.min.northing );
+        fmt::print( "      max:      {:12.6f}, {:12.6f} \n", _bounds.max.easting, _bounds.max.northing );
+        fmt::print( "      Width:    {:12.6f}, {:12.6f} \n", _bounds.width(), _bounds.width() );
         fmt::print( "Grid:\n");
         fmt::print( "      dimension:    {:12lu} x {:%12lu} \n", dimension, dimension );
     }
@@ -77,7 +77,7 @@ size_t FixedGridLayer::lookup( const Vector2u i ) const {
 }
 
 double FixedGridLayer::precision() const {
-    return  width() / dimension;
+    return bounds_.width() / dimension;
 }
 
 void FixedGridLayer::print_contents() const {

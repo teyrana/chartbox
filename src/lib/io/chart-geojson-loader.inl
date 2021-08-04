@@ -70,6 +70,10 @@ bool GeoJSONLoader<layer_t>::load_json( const CPLJSONObject& root ){
 
 template<typename layer_t>
 bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, bool fill ){
+    using chartbox::frame::BoundBox;
+    using chartbox::frame::Location2LL;
+    using chartbox::frame::Location2xy;
+
     auto bound_box_elem = root.GetArray("bbox");
     if( ! bound_box_elem.IsValid()){
         std::cerr << "'bbox' element is not valid!?" << std::endl;
@@ -90,14 +94,21 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, 
         return false;
     }
 
-    const Eigen::Vector2d bounds_min_lat_lon( west_longitude, south_latitude );
-    const Eigen::Vector2d bounds_max_lat_lon( east_longitude, north_latitude );
-    const bool move_success = mapping_.move_local_bounds( bounds_min_lat_lon, bounds_max_lat_lon );
+    const BoundBox<Location2LL> bounds_lat_lon( Location2LL( south_latitude, west_longitude ),
+                                                Location2LL( north_latitude, east_longitude ) );
+
+    std::cerr << ">> Dumping JSON LL bounds:\n";
+    bounds_lat_lon.dump();
+
+    const bool move_success = mapping_.move_to_corners( bounds_lat_lon );
+
+    std::cerr << "<< Dumping Loaded LL bounds:\n";
+    mapping_.global_bounds().dump();
 
     if( move_success && fill ){
-        const Eigen::Vector2d bounds_min_local = mapping_.to_local( bounds_min_lat_lon );
-        const Eigen::Vector2d bounds_max_local = mapping_.to_local( bounds_max_lat_lon );
-        const Eigen::AlignedBox2d bounds_local( bounds_min_local, bounds_max_local );
+        const Location2xy bounds_min_local = mapping_.to_local( bounds_lat_lon.min );
+        const Location2xy bounds_max_local = mapping_.to_local( bounds_lat_lon.max );
+        const BoundBox<Location2xy> bounds_local( bounds_min_local, bounds_max_local );
         return layer_.fill( bounds_local, layer_.clear_value );
     }
     return move_success;
@@ -105,6 +116,9 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, 
 
 template<typename layer_t>
 bool GeoJSONLoader<layer_t>::load_json_boundary_polygon( const CPLJSONObject& root ){
+    using chartbox::frame::Location2LL;
+    using chartbox::frame::Location2xy;
+
     if( root["features"].IsValid() ){
         CPLJSONObject feature0 = root.GetArray("features")[0];
         if( feature0["geometry"].IsValid() ){
@@ -127,12 +141,13 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_polygon( const CPLJSONObject& ro
             OGRLinearRing utm_frame_ring;
 
             for ( auto iter = world_frame_ring->begin(); iter != world_frame_ring->end(); ++iter ) {
+                // not the slightly anti-intuitive axis order, here
                 const double latitude = (*iter).getY();
                 const double longitude = (*iter).getX();
 
-                const OGRPoint * to_coord = mapping_.to_utm( longitude, latitude );
+                const Location2xy to = mapping_.to_local( Location2LL( latitude, longitude ) );
 
-                utm_frame_ring.addPoint( to_coord );
+                utm_frame_ring.addPoint( new OGRPoint( to.x, to.y ) );
             }
             utm_frame_ring.closeRings();
            

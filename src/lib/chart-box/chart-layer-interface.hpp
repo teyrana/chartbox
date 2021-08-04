@@ -7,7 +7,15 @@
 #include <gdal.h>
 #include <ogr_geometry.h>
 
+#include "frame/bound-box.hpp"
+#include "frame/location2en.hpp"
+#include "frame/location2xy.hpp"
+
 namespace chartbox {
+
+using chartbox::frame::BoundBox;
+using chartbox::frame::Location2EN;
+using chartbox::frame::Location2xy;
 
 // base class of a CRTP pattern, as described here:
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
@@ -17,7 +25,7 @@ class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
 
-    ChartLayerInterface( const Eigen::AlignedBox2d& _bounds);
+    ChartLayerInterface( const BoundBox<Location2EN>& bounds );
 
 public:
 
@@ -48,7 +56,7 @@ public:
     /// 
     /// \param source - bounds defining the fill area, in local (UTM) coordinates
     /// \param fill_value - value to write inside the box
-    bool fill( const Eigen::AlignedBox2d& area, const cell_t value );
+    bool fill( const BoundBox<Location2xy>& box, const cell_t value );
 
     /// \brief Fills the interior of the given polygon with the given value.
     /// 
@@ -63,7 +71,7 @@ public:
     ///
     /// \param Eigen::Vector2d - the x,y coordinates to search at
     /// \return the cell value
-    cell_t get(const Eigen::Vector2d& p) const { return layer().get(p); }
+    cell_t get(const Location2EN& p) const { return layer().get(p); }
 
     /// \brief Access the value at an (x, y) Eigen::Vector2d
     ///!
@@ -109,7 +117,7 @@ protected:
 protected:
 
     /// \brief the data layout this grid represents
-    const Eigen::AlignedBox2d& bounds_;
+    const BoundBox<Location2EN>& bounds_;
 
     /// \brief descriptive for this layer's purpose
     std::string name_;

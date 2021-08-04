@@ -27,15 +27,15 @@ public:
 
     FixedGridLayer() = delete;
     
-    FixedGridLayer( const Eigen::AlignedBox2d& _bounds);
+    FixedGridLayer( const BoundBox<Location2EN>& _bounds);
 
     cell_t* data();
 
     // override from ChartLayerInterface
     bool fill( const cell_t value );
 
-    bool fill( const Eigen::AlignedBox2d& area, const cell_t value ){
-        return super().fill( area, value ); }
+    bool fill( const BoundBox<Location2xy>& box, const cell_t value ){
+        return super().fill( box, value ); }
 
     bool fill( const OGRLinearRing& source, cell_t value ){ 
         return super().fill( source, value ); }
@@ -46,7 +46,9 @@ public:
     /// \param fill_value - value to write inside the area
     bool fill( const std::vector<cell_t>& source );
 
+    // frame: local frame
     cell_t& get(const Eigen::Vector2d& p);
+    // frame: local frame
     cell_t get(const Eigen::Vector2d& p) const;
 
     size_t lookup( const uint32_t x, const uint32_t y ) const;
@@ -69,8 +71,6 @@ public:
     bool store(const Eigen::Vector2d& p, const cell_t new_value);
 
     std::string type() const;
-
-    inline double width() const { return bounds_.sizes().maxCoeff(); }
 
     ~FixedGridLayer();
 
