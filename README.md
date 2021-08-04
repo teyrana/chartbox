@@ -48,25 +48,20 @@ External Dependencies
 This project makes use of several libraries
 <!-- - [Flatbuffers](https://google.github.io/flatbuffers/)
     - Used for tile serialization -->
-- [GDAL](https://gdal.org/)
-    - load shapefiles, PNG - height-maps 
-- [PDAL](https://pdal.io/) - load LAS files
-    - helps with point clouds
-- [Google Test Framework](https://github.com/google/googletest) 
-    - used to run all of the development tests
 - [Conan](https://docs.conan.io/en/latest/introduction.html)
     - Use this to manage certain dependencies 
-- [libproj-dev]( https://proj.org/ ) 
-    - [ Development with ]( https://proj.org/development/quickstart.html )
-    - Undecidedd?   (vs proj4??)
-    - ?????
 
 ### Handled by Conan
+- [Catch2](https://github.com/catchorg/Catch2) 
+    - used to run all of the development tests
 - [Eigen library](http://eigen.tuxfamily.org/index.php) @ 3.3.7
     - math / linear algebra library
 - [fmt](https://github.com/fmtlib/fmt) @ 6.1.2 
     - output formatting library
-
+- [GDAL](https://gdal.org/)
+    - load shapefiles, PNG - height-maps 
+- [PDAL](https://pdal.io/) - load LAS files
+    - helps with point clouds
 
 
 References
