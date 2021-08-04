@@ -22,3 +22,11 @@ add_library(${LIB_NAME} STATIC ${LIB_HEADERS} ${LIB_SOURCES})
 target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
 target_link_libraries(${LIB_NAME} CONAN_PKG::gdal )
 target_link_libraries(${LIB_NAME} CONAN_PKG::fmt)
+
+
+# ============= Chart Base Tests =================
+
+# These tests can use the Catch2-provided main
+add_executable(chartbox-tests example.test.cpp
+                )
+target_link_libraries(chartbox-tests PRIVATE Catch2::Catch2WithMain)

@@ -5,7 +5,7 @@ SRC_ROOT:=$(ROOT_DIR)/src
 BUILD_TYPE:="Release"
 BUILD_DIR=$(ROOT_DIR)/build
 CONAN_MARKER=$(BUILD_DIR)/conanbuildinfo.cmake
-TEST_EXE=build/bin/testall
+TEST_EXE=build/bin/chartbox-tests
 
 #-------------------------------------------------------------------
 #  Part 2: Invoke the call to make in the build directory
