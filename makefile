@@ -7,6 +7,8 @@ BUILD_DIR=$(ROOT_DIR)/build
 CONAN_MARKER=$(BUILD_DIR)/conanbuildinfo.cmake
 TEST_EXE=build/bin/chartbox-tests
 
+MAIN_EXE=build/bin/mapmerge
+
 #-------------------------------------------------------------------
 #  Part 2: Invoke the call to make in the build directory
 #-------------------------------------------------------------------
@@ -37,6 +39,10 @@ clean:
 
 format:
 	@echo clang-tidy src
+
+.PHONY: main
+main: debug
+	${MAIN_EXE}
 
 .PHONY: test testgrid
 test: test-all

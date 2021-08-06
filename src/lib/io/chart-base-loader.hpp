@@ -2,7 +2,7 @@
 #pragma once
 
 // standard library includes
-#include <iostream>
+#include <string>
 
 
 namespace chartbox::io {
@@ -10,9 +10,7 @@ namespace chartbox::io {
 template< typename layer_t, typename loader_t >
 class ChartBaseLoader {
 public:
-    bool load_file(const std::string& filename){ return loader().load_file(filename); }
-    bool load_text(const std::string& source){ return loader().load_text(source); }
-    // bool load_binary(const std::string& source){ return loader().load_binary(source); }
+    bool load(const std::string& path){ return loader().load(path); }
 
 protected:
 

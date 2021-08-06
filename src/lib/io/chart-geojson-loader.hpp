@@ -25,9 +25,7 @@ public:
 
     GeoJSONLoader( FrameMapping& _mapping, layer_t& _layer );
 
-    bool load_file(const std::string& filename);
-    bool load_text(const std::string& source);
-    // bool load_binary( const void& source);
+    bool load(const std::string& filename);
 
 private:
     bool load_json(const CPLJSONObject& doc);

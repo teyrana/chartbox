@@ -21,9 +21,7 @@ public:
         {}
 
 
-    bool load_file(const std::string& /*filename*/ ){ return true; }
-    bool load_text(const std::string& /*source*/ ){ return true; }
-    // bool load_binary( const std::stream& source);
+    bool load( const std::string& /*path*/) { return true; }
 
 private:
     layer_t& layer_;

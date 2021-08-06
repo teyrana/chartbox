@@ -33,9 +33,9 @@ int main( void ){
     //std::string boundary_input_path("data/block-island/boundary.simple.geojson");
     std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
 
-
-    // std::string boundary_output_path("stderr");
-    std::string boundary_output_path("debug-height-map.png");
+    std::string boundary_output_path("");
+    // std::string boundary_output_path("stdout");
+    // std::string boundary_output_path("debug-height-map.png");
 
     // bool enable_output_height_map = false;
     // std::string output_path_height_map;
@@ -74,7 +74,7 @@ int main( void ){
                 // .shp ==>> found a shapefile
                 auto boundary_loader = DebugLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
                 // auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-                if( ! boundary_loader.load_file(boundary_input_path) ){
+                if( ! boundary_loader.load(boundary_input_path) ){
                     fmt::print( stderr, "!!!! error while loading shapefile:!!!!\n" );
                     return EXIT_FAILURE;
                 }
@@ -82,7 +82,7 @@ int main( void ){
                 fmt::print("        >>> With GeoJSONLoader:\n");
 
                 auto boundary_loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-                if( ! boundary_loader.load_file(boundary_input_path) ){
+                if( ! boundary_loader.load(boundary_input_path) ){
                     fmt::print( stderr, "!!!! error while loading data:!!!!\n" );
                     return EXIT_FAILURE;
                 }

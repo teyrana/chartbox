@@ -25,7 +25,7 @@ GeoJSONLoader<layer_t>::GeoJSONLoader( FrameMapping& _mapping, layer_t& _destina
 {}
 
 template<typename layer_t>
-bool GeoJSONLoader<layer_t>::load_file( const std::string& filename ){
+bool GeoJSONLoader<layer_t>::load( const std::string& filename ){
     if( access( filename.c_str(), R_OK ) == 0 ) {
         // file exists
         std::ifstream source_stream(filename);
@@ -42,16 +42,6 @@ bool GeoJSONLoader<layer_t>::load_file( const std::string& filename ){
         std::cerr << "!! Could not find input file !!: " << filename << std::endl;
         return false;
     }
-}
-
-template<typename layer_t>
-bool GeoJSONLoader<layer_t>::load_text( const std::string& source_text ){
-    CPLJSONDocument doc;
-    if( doc.LoadMemory( source_text )){
-        return load_json( doc.GetRoot() );
-    }
-    std::cerr << "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"; 
-    return false;    
 }
 
 template<typename layer_t>
