@@ -97,13 +97,7 @@ bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, 
     const BoundBox<Location2LL> bounds_lat_lon( Location2LL( south_latitude, west_longitude ),
                                                 Location2LL( north_latitude, east_longitude ) );
 
-    std::cerr << ">> Dumping JSON LL bounds:\n";
-    bounds_lat_lon.dump();
-
     const bool move_success = mapping_.move_to_corners( bounds_lat_lon );
-
-    std::cerr << "<< Dumping Loaded LL bounds:\n";
-    mapping_.global_bounds().dump();
 
     if( move_success && fill ){
         const Location2xy bounds_min_local = mapping_.to_local( bounds_lat_lon.min );

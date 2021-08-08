@@ -65,14 +65,9 @@ bool FrameMapping::move_to_corners( const BoundBox<Location2LL>& bounds ){
         return false;
 
     }else{
-        fmt::print( stderr, "    ::from:    lat: {}    lon: {} \n", bounds.min.latitude, bounds.min.longitude );
-        fmt::print( stderr, "    ::to:raw:    x: {}      y: {} \n", xs[0], ys[0] );
-
         xs[0] = std::floor(xs[0]);
         ys[0] = std::floor(ys[0]);
-        
-        fmt::print( stderr, "    :: floor-limited:  x: {}  y: {} \n", xs[0], ys[0] );
-        
+
         const double raw_width = std::max( std::abs(xs[1]-xs[0]), std::abs(ys[1]-ys[0]) );
         
         if( max_local_width_ < raw_width ){
