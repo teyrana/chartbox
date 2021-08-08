@@ -47,14 +47,14 @@ void ChartBox::print_layers() const {
     
     fmt::print( "============ ============ Printing Layers: ============ ============ \n");
 
-    int layer_index = 0;
+    uint32_t layer_index = 0;
 
     // Boundary Layer
-    fmt::print( "    [{:02u}] <%s> :%s (%u x %u)\n", layer_index, boundary_layer_.type(), boundary_layer_.name(), boundary_layer_.dimension, boundary_layer_.dimension );
+    fmt::print( "    [{:2d}] <{}> :{} ({} x {})\n", layer_index, boundary_layer_.type(), boundary_layer_.name(), boundary_layer_.dimension, boundary_layer_.dimension );
     ++layer_index;
 
     // Contour Layer
-    fmt::print( "    [{:02u}] <%s> :%s (%u x %u)\n", layer_index, contour_layer_.type(), contour_layer_.name(), contour_layer_.dimension, contour_layer_.dimension ); 
+    fmt::print( "    [{:2d}] <{}> :{} ({} x {})\n", layer_index, contour_layer_.type(), contour_layer_.name(), contour_layer_.dimension, contour_layer_.dimension ); 
     ++layer_index;
 
     // next layer 
