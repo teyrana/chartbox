@@ -14,11 +14,11 @@ public:
         : layer_(_source_layer)
         {}
 
-    bool write_to_path( const std::string& /*filename*/ ){
-        return true; }
-
-    // bool write_to_stream( std::ostream& /*stream*/ ){ 
-    //     return true; }
+    bool write_to_path( const std::filesystem::path& /*filename*/ ){
+        fmt::print("        >>> With DebugWriter:\n");
+        fmt::print("        <<< This writer is pass-through.  It performs no actions.\n");
+        return true;
+    }
 
 private:
     layer_t& layer_;

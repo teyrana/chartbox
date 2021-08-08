@@ -28,36 +28,46 @@ constexpr double desired_precision = 1.0;
 constexpr size_t test_seed = 55;
 static std::mt19937 generator;
 
+
 // int main(int argc, char* argv[]){
 int main( void ){
     // bool enable_input_lidar = false;
     // std::string input_path_terrain;
 
-    //std::string boundary_input_path("data/block-island/boundary.simple.geojson");
-    std::string boundary_input_path("data/block-island/boundary.polygon.geojson");
-    // std::string boundary_input_path("data/massachusetts/navigation_area_100k.shp");
+    // const std::string boundary_input_path("data/block-island/boundary.simple.geojson");
+    const std::string boundary_input_arg("data/block-island/boundary.polygon.geojson");
+    // const std::string boundary_input_path("data/massachusetts/navigation_area_100k.shp");
 
-    std::string boundary_output_path("");
-    // std::string boundary_output_path("stdout");
-    // std::string boundary_output_path("debug-height-map.png");
+    const std::string contour_input_arg("data/block-island/coastline.geojson");
 
-    // bool enable_output_height_map = false;
-    // std::string output_path_height_map;
+    std::string boundary_output_arg("");
+    // boundary_output_arg = "boundary.png";
 
-    // configure input:
-    
-    // std::string output_path("?????");
-    // if( enable_output_height_map ){
-    //     if( output_path_height_map.empty() ){
-    //         output_path_height_map = "worldtree.output.png";
-    //     }
-    //     cerr << "  ## Save output to: " << output_path << '\n';
-    // }
+    std::string contour_output_arg("");
+    // boundary_output_arg = "countour.png";
 
-    if( ! std::filesystem::is_regular_file(boundary_input_path)){
-        fmt::print(stderr, "!! Could not find boundary input path!! : {}\n", boundary_input_path);
+
+    // Boundary Layer
+    // ==============
+    if( ! std::filesystem::is_regular_file(boundary_input_arg)){
+        fmt::print(stderr, "!! Could not find boundary input path!! : {}\n", boundary_input_arg);
         return EXIT_FAILURE;
     }
+    std::filesystem::path boundary_input_path( boundary_input_arg );
+
+    std::filesystem::path boundary_output_path( boundary_output_arg );
+
+
+    // Contour Layer
+    // ==============
+    if( ! std::filesystem::is_regular_file(contour_input_arg)){
+        fmt::print(stderr, "!! Could not find contour input path!! : {}\n", contour_input_arg);
+        return EXIT_FAILURE;
+    }
+    std::filesystem::path contour_input_path( contour_input_arg );
+
+    std::filesystem::path contour_output_path( contour_output_arg );
+
 
     // ^^^^ Configuration
     // vvvv Execution
@@ -70,36 +80,32 @@ int main( void ){
         fmt::print( stderr, ">>> Starting Load: \n");
 
         if ( ! boundary_input_path.empty() ) {
-            fmt::print("    >>> Loading boundary layer from path: {}\n", boundary_input_path );
+            fmt::print("    >>> Loading boundary layer from path: {}\n", boundary_input_path.string() );
 
-            if( boundary_input_path.substr( boundary_input_path.find_last_of(".") + 1) == "shp") {
-                fmt::print("        >>> With ShapefileLoader:\n");
-
-                // .shp ==>> found a shapefile
+            if( boundary_input_path.extension() == ShapefileLoader<FixedGridLayer>::extension ){
                 auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-                // auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-                if( ! boundary_loader.load(boundary_input_path) ){
-                    fmt::print( stderr, "!!!! error while loading shapefile:!!!!\n" );
-                    return EXIT_FAILURE;
-                }
-            }else if( boundary_input_path.substr( boundary_input_path.find_last_of(".") + 1) == "geojson") {
-                fmt::print("        >>> With GeoJSONLoader:\n");
+                boundary_loader.load(boundary_input_path);
 
+            }else if( boundary_input_path.extension() == GeoJSONLoader<FixedGridLayer>::extension ){
                 auto boundary_loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-                if( ! boundary_loader.load(boundary_input_path) ){
-                    fmt::print( stderr, "!!!! error while loading data:!!!!\n" );
-                    return EXIT_FAILURE;
-                }
-            }
+                boundary_loader.load(boundary_input_path);
 
-            fmt::print("    <<< Successfuly loaded BoundaryLayer.\n");
+            }
         }
 
-        // const bool load_success = chart.get_countour_layer()->load_from_json_stream( *boundary_document_stream);
-        // if(!load_success){
-        //     cerr << "!!!! error while loading data:!!!!\n";
-        //     return -1;
-        // }        
+        if ( ! contour_input_path.empty() ) {
+            fmt::print("    >>> Loading contour layer from path: {}\n", contour_input_path.string() );
+            if( boundary_input_path.extension() == ShapefileLoader<FixedGridLayer>::extension ){
+                auto boundary_loader = ShapefileLoader<FixedGridLayer>( box.mapping(), box.get_contour_layer());
+                boundary_loader.load(boundary_input_path);
+
+            }else if( boundary_input_path.extension() == GeoJSONLoader<FixedGridLayer>::extension ){
+                auto boundary_loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_contour_layer());
+                boundary_loader.load(boundary_input_path);
+
+            }
+        }
+
         const auto finish_load = std::chrono::high_resolution_clock::now(); 
         const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load - start_load).count())/1000;
         fmt::print(  "<< Loaded in:   {:5.2f} s \n\n", load_duration );
@@ -109,6 +115,8 @@ int main( void ){
     {   // DEBUG
         //print the resultant bounds:
         box.mapping().print();
+
+        // box.get_boundary_layer().print_contents();
 
         // // print a summary of layers in the chartbox...
         // box.print_layers() ;
@@ -124,32 +132,29 @@ int main( void ){
 
     {
         const auto start_write = std::chrono::high_resolution_clock::now();
-        fmt::print( stderr, ">>> Starting Write: \n");
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
-            if( boundary_output_path == "stderr" ){
-                fmt::print( stderr, "<<< File output disabled\n");
+            fmt::print( stderr, ">>> Write Boundary Layer ...\n" );
+            if( boundary_output_path.extension() == PNGWriter<FixedGridLayer>::extension ){
+                chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> writer( box.get_boundary_layer() );
+                writer.write_to_path(boundary_output_path);
+            }
+        }
 
-            }else if( boundary_output_path == "stdout" ){
-                const auto boundary_layer = box.get_boundary_layer();
-                box.get_boundary_layer().print_contents();
-
-            }else{
-                fmt::print( stderr, "    >>> Write Boundary Layer to: {}\n", boundary_output_path );
-                chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> boundary_writer( box.get_boundary_layer() );
-                if( ! boundary_writer.write_to_path(boundary_output_path) ){
-                    fmt::print( stderr, "!!!! error while writing data:!!!!\n" );
-                    return EXIT_FAILURE;
-                }else{
-                    fmt::print(  "    <<< Successfuly wrote BoundaryLayer.\n" );
-                }
+        if( ! contour_output_path.empty() ){
+            fmt::print( stderr, ">>> Write Contour Layer ...\n" );
+            if( contour_output_path.extension() == PNGWriter<FixedGridLayer>::extension ){
+                chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> writer( box.get_contour_layer() );
+                writer.write_to_path( contour_output_path );
             }
         }
         
         const auto finish_write = std::chrono::high_resolution_clock::now(); 
         const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;
-        fmt::print( stderr, "<<< Written in:   {:5.2f} s \n\n", write_duration );
+        if( 0.1 < write_duration ){
+            fmt::print( stderr, "<<< Written in:   {:5.2f} s \n\n", write_duration );
+        }
     }
 
     // make sure this only happens once

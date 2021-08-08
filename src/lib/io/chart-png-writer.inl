@@ -12,7 +12,11 @@
 using chartbox::io::PNGWriter;
 
 template< typename layer_t >
-bool PNGWriter<layer_t>::write_to_path( const std::string& filepath ){
+const std::string PNGWriter<layer_t>::extension = ".png";
+
+template< typename layer_t >
+bool PNGWriter<layer_t>::write_to_path( const std::filesystem::path& filepath ){
+    fmt::print( stderr, "    >>> Write Layer to: {}\n", filepath.string() );
 
     // not a guaranteed property of the layer; not all of them have this...
     const size_t dimension = layer_.dimension;
@@ -54,12 +58,14 @@ bool PNGWriter<layer_t>::write_to_path( const std::string& filepath ){
 
     // Use the png driver to copy the source dataset
     GDALDriver* p_png_driver = GetGDALDriverManager()->GetDriverByName("PNG");
-    GDALDataset* p_png_dataset = p_png_driver->CreateCopy(filepath.c_str(), p_grid_dataset, false, nullptr, nullptr, nullptr);
+    GDALDataset* p_png_dataset = p_png_driver->CreateCopy( filepath.string().c_str(), p_grid_dataset, false, nullptr, nullptr, nullptr);
 
     if (p_png_dataset) {
         GDALClose(p_grid_dataset);
         GDALClose(p_png_dataset);
     }
+
+    fmt::print(  "    <<< Successfuly wrote Layer to: {} \n", filepath.string() );
 
     return true;
 }

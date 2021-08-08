@@ -12,7 +12,7 @@ namespace chartbox::io {
 template< typename layer_t, typename writer_t >
 class ChartBaseWriter {
 public:
-    bool write_to_path( const std::string& filename ){ 
+    bool write_to_path( const std::filesystem::path& filename ){ 
         return writer().write(filename); }
 
     // bool write_to_stream( std::ostream& stream ){ 

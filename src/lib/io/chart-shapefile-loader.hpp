@@ -14,13 +14,14 @@ namespace chartbox::io {
 template< typename layer_t >
 class ShapefileLoader : ChartBaseLoader<layer_t, ShapefileLoader<layer_t> > {
 public:
+    const static std::string extension;
 
     ShapefileLoader( FrameMapping& _mapping, layer_t& _layer )
         : layer_(_layer)
         , mapping_(_mapping)
         {}
 
-    bool load(const std::string& filename);
+    bool load(const std::filesystem::path& filename);
 
 private:
     /// could not get this variant to work, even though it would be much more efficient...

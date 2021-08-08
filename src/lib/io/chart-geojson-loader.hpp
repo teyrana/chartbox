@@ -22,10 +22,11 @@ namespace chartbox::io {
 template< typename layer_t >
 class GeoJSONLoader : ChartBaseLoader<layer_t, GeoJSONLoader<layer_t> > {
 public:
+    const static std::string extension;
 
     GeoJSONLoader( FrameMapping& _mapping, layer_t& _layer );
 
-    bool load(const std::string& filename);
+    bool load(const std::filesystem::path& filename);
 
 private:
     bool load_json(const CPLJSONObject& doc);

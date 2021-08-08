@@ -11,12 +11,13 @@ namespace chartbox::io {
 template< typename layer_t >
 class PNGWriter : ChartBaseWriter<layer_t, PNGWriter<layer_t> > {
 public:
-
+    const static std::string extension;
+    
     PNGWriter( layer_t& _source_layer )
         : layer_(_source_layer)
         {}
 
-    bool write_to_path( const std::string& filename );
+    bool write_to_path( const std::filesystem::path& filename );
 
 private:
     layer_t& layer_;

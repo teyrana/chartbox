@@ -21,7 +21,11 @@ public:
         {}
 
 
-    bool load( const std::string& /*path*/) { return true; }
+    bool load( const std::filesystem::path& /*path*/) {
+        fmt::print("        >>> With DebugLoader:\n");
+        fmt::print("        <<< This loading is pass-through.  It performs no actions.\n");
+        return true; 
+    }
 
 private:
     layer_t& layer_;

@@ -36,6 +36,8 @@ using chartbox::io::ShapefileLoader;
 //
 // }
 
+template<typename layer_t>
+const std::string ShapefileLoader<layer_t>::extension = ".shp";
 
 template<typename layer_t>
 bool ShapefileLoader<layer_t>::load_boundary_box( const OGRLinearRing& ring ){
@@ -77,27 +79,24 @@ bool ShapefileLoader<layer_t>::load_boundary_box( const OGRLinearRing& ring ){
 
 
 template <typename layer_t>
-bool ShapefileLoader<layer_t>::load( const std::string& filename ) {
+bool ShapefileLoader<layer_t>::load( const std::filesystem::path& filepath ) {
+    fmt::print("        >>> With ShapefileLoader:\n");
 
-
-    const GDALDatasetH file_dataset = GDALOpenEx( filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+    const GDALDatasetH file_dataset = GDALOpenEx( filepath.string().c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
     if (file_dataset == NULL) {
         fmt::print( stderr, "    <<XX Open failed.  No source dataset available!?\n");
 
-        struct stat buf;
-        if (stat(filename.c_str(), &buf) != -1) {
-            fmt::print( stderr, "    >> Found file: '{}' >>\n", filename);
+        if( std::filesystem::exists(filepath) ) {
+            fmt::print( stderr, "    >> Found file: '{}' >>\n", filepath.string() );
         } else {
-            fmt::print( stderr, "    !! Missing data file: '{}' !!\n", filename);
+            fmt::print("        <<< Shapefile does not exist!! Aborting: '{}' !!\n", filepath.string() );
         }
         return false;
-
     }
     GDALDataset* source_dataset = reinterpret_cast<GDALDataset*>(file_dataset);
  
     // DEBUG
-    fmt::print( stderr, "    >>> Loaded file:      {}    into memory.\n", filename );
-
+    fmt::print( stderr, "    >>> Loaded file:      {}    into memory.\n", filepath.string() );
 
     fmt::print( stderr, "        ::Using reference: {} ...\n", reinterpret_cast<void*>(const_cast<OGRSpatialReference*>(source_dataset->GetSpatialRef())) );
 

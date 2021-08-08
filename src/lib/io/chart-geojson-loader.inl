@@ -19,27 +19,28 @@
 using chartbox::io::GeoJSONLoader;
 
 template<typename layer_t>
+const std::string GeoJSONLoader<layer_t>::extension = ".geojson";
+
+template<typename layer_t>
 GeoJSONLoader<layer_t>::GeoJSONLoader( FrameMapping& _mapping, layer_t& _destination_layer )
     : layer_(_destination_layer)
     , mapping_(_mapping)
 {}
 
 template<typename layer_t>
-bool GeoJSONLoader<layer_t>::load( const std::string& filename ){
-    if( access( filename.c_str(), R_OK ) == 0 ) {
-        // file exists
-        std::ifstream source_stream(filename);
+bool GeoJSONLoader<layer_t>::load( const std::filesystem::path& filepath ){
+    fmt::print("        >>> With GeoJSONLoader:\n");
 
-        CPLJSONDocument doc;
-        if( doc.Load( filename )){
-            return load_json( doc.GetRoot() );
-        }
-
-        std::cerr << "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"; 
+    if( not std::filesystem::exists(filepath) ) {
+        std::cerr << "!! Could not find input path !!: " << filepath.string() << std::endl;
         return false;
-    } else {
-        // file missing
-        std::cerr << "!! Could not find input file !!: " << filename << std::endl;
+    }
+
+    CPLJSONDocument doc;
+    if( doc.Load( filepath.string()) ){
+        return load_json( doc.GetRoot() );
+    }else{
+        std::cerr << "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"; 
         return false;
     }
 }
