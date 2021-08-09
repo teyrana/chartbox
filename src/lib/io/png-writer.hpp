@@ -4,12 +4,12 @@
 // standard library includes
 #include <string>
 
-#include "chart-base-writer.hpp"
+#include "base-writer.hpp"
 
 namespace chartbox::io {
 
 template< typename layer_t >
-class PNGWriter : ChartBaseWriter<layer_t, PNGWriter<layer_t> > {
+class PNGWriter : BaseWriter<layer_t, PNGWriter<layer_t> > {
 public:
     const static std::string extension;
     
@@ -17,7 +17,7 @@ public:
         : layer_(_source_layer)
         {}
 
-    bool write_to_path( const std::filesystem::path& filename );
+    bool write( const std::filesystem::path& filename );
 
 private:
     layer_t& layer_;
@@ -26,4 +26,4 @@ private:
 
 } // namespace chartbox::io
 
-#include "chart-png-writer.inl"
+#include "png-writer.inl"

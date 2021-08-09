@@ -15,7 +15,7 @@ template< typename layer_t >
 const std::string PNGWriter<layer_t>::extension = ".png";
 
 template< typename layer_t >
-bool PNGWriter<layer_t>::write_to_path( const std::filesystem::path& filepath ){
+bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){
     fmt::print( stderr, "    >>> Write Layer to: {}\n", filepath.string() );
 
     // not a guaranteed property of the layer; not all of them have this...

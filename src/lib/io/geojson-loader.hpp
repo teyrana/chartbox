@@ -9,7 +9,7 @@
 #include <cpl_json.h>
 
 #include "chart-box.hpp"
-#include "chart-base-loader.hpp"
+#include "base-loader.hpp"
 
 namespace chartbox::io {
 
@@ -20,7 +20,7 @@ namespace chartbox::io {
 ///   - https://datatracker.ietf.org/doc/html/rfc7946
 ///   - https://gdal.org/drivers/vector/geojson.html
 template< typename layer_t >
-class GeoJSONLoader : ChartBaseLoader<layer_t, GeoJSONLoader<layer_t> > {
+class GeoJSONLoader : BaseLoader<layer_t, GeoJSONLoader<layer_t> > {
 public:
     const static std::string extension;
 
@@ -44,4 +44,4 @@ private:
 
 } // namespace chart::io
 
-#include "chart-geojson-loader.inl"
+#include "geojson-loader.inl"

@@ -10,16 +10,16 @@
 namespace chartbox::io {
 
 template< typename layer_t, typename writer_t >
-class ChartBaseWriter {
+class BaseWriter {
 public:
-    bool write_to_path( const std::filesystem::path& filename ){ 
+    bool write( const std::filesystem::path& filename ){ 
         return writer().write(filename); }
 
     // bool write_to_stream( std::ostream& stream ){ 
     //     return writer().write_to_stream(stream); }
 
 protected:
-    ChartBaseWriter() = default;
+    BaseWriter() = default;
 
     writer_t& writer() { 
         return *static_cast<writer_t*>(this); }
@@ -27,7 +27,7 @@ protected:
     const writer_t& writer() const {
         return *static_cast<const writer_t*>(this);}
 
-    ~ChartBaseWriter() = default;
+    ~BaseWriter() = default;
 
 };
 

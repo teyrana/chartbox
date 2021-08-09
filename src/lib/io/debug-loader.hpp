@@ -7,12 +7,12 @@
 #pragma once
 
 #include "chart-box.hpp"
-#include "chart-base-loader.hpp"
+#include "base-loader.hpp"
 
 namespace chartbox::io {
 
 template< typename layer_t >
-class DebugLoader : ChartBaseLoader<layer_t, DebugLoader<layer_t> > {
+class DebugLoader : BaseLoader<layer_t, DebugLoader<layer_t> > {
 public:
 
     DebugLoader( FrameMapping& _mapping, layer_t& _layer )
