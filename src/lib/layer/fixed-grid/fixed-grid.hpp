@@ -27,7 +27,7 @@ public:
 
     FixedGridLayer() = delete;
     
-    FixedGridLayer( const BoundBox<Location2EN>& _bounds);
+    FixedGridLayer( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose );
 
     cell_t* data();
 

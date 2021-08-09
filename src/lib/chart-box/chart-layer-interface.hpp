@@ -17,6 +17,13 @@ using chartbox::frame::BoundBox;
 using chartbox::frame::Location2EN;
 using chartbox::frame::Location2xy;
 
+typedef enum { LAYER_PURPOSE_BOUNDARY, 
+       LAYER_PURPOSE_CONTOUR,
+       LAYER_PURPOSE_TARGET,
+       LAYER_PURPOSE_LIDAR,
+       LAYER_PURPOSE_RADAR
+} layer_purpose_t;
+
 // base class of a CRTP pattern, as described here:
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
 // https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
@@ -25,7 +32,7 @@ class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
 
-    ChartLayerInterface( const BoundBox<Location2EN>& bounds );
+    ChartLayerInterface( const BoundBox<Location2EN>& bounds, layer_purpose_t _purpose );
 
 public:
 
@@ -121,6 +128,8 @@ protected:
 
     /// \brief descriptive for this layer's purpose
     std::string name_;
+
+    layer_purpose_t purpose_;
 
 }; // class ChartLayerInterface< cell_t, layer_t >
 

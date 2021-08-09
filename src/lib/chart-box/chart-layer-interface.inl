@@ -17,8 +17,9 @@ using chartbox::ChartLayerInterface;
 
 
 template<typename cell_t, typename layer_t>
-ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<Location2EN>& _bounds )
+ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose )
     : bounds_(_bounds)
+    , purpose_(_purpose)
 {}
 
 template<typename cell_t, typename layer_t>

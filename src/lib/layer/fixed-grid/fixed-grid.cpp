@@ -18,9 +18,10 @@
 using Eigen::Vector2d;
 
 using chartbox::layer::FixedGridLayer;
+using chartbox::layer_purpose_t;
 
-FixedGridLayer::FixedGridLayer( const BoundBox<Location2EN>& _bounds)
-    : chartbox::ChartLayerInterface< uint8_t, FixedGridLayer>(_bounds)
+FixedGridLayer::FixedGridLayer( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose )
+    : chartbox::ChartLayerInterface< uint8_t, FixedGridLayer>(_bounds, _purpose)
 {
 
     if( (dimension != static_cast<size_t>(_bounds.width()/precision())) || ( dimension != static_cast<size_t>(_bounds.width()/precision())) ){
