@@ -29,7 +29,6 @@ public:
     bool load(const std::filesystem::path& filename);
 
 private:
-    bool load_json(const CPLJSONObject& doc);
 
     ///  The values of a "bbox" array are "[west, south, east, north]", not
     ///     "[minx, miny, maxx, maxy]" (see Section 5).  --rfc 7946

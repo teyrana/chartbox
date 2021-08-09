@@ -38,36 +38,33 @@ bool GeoJSONLoader<layer_t>::load( const std::filesystem::path& filepath ){
 
     CPLJSONDocument doc;
     if( doc.Load( filepath.string()) ){
-        return load_json( doc.GetRoot() );
+        const CPLJSONObject& root = doc.GetRoot();
+        const bool has_bound_box = ( root["bbox"].IsValid() );
+        const bool has_polygon = ( root["features"].IsValid() 
+                                && root.GetArray("features")[0].IsValid() 
+                                && root.GetArray("features")[0]["geometry"].IsValid()
+                                && root.GetArray("features")[0]["geometry"]["type"].IsValid()
+                                && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
+
+        if( has_bound_box && ( ! load_json_boundary_box(root, !has_polygon ))){
+            std::cerr << "!! Could not load GeoJSON bounding box: !!!" << std::endl;
+            std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
+            return false;
+        }
+
+        if( has_polygon && ( ! load_json_boundary_polygon(root))){
+            std::cerr << "!! Could not load GeoJSON bounding polygon ?!?!" << std::endl;
+            std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
+            return false;
+        }
+
+        return true;
     }else{
         std::cerr << "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"; 
         return false;
     }
 }
 
-template<typename layer_t>
-bool GeoJSONLoader<layer_t>::load_json( const CPLJSONObject& root ){
-    const bool has_bound_box = ( root["bbox"].IsValid() );
-    const bool has_polygon = ( root["features"].IsValid() 
-                            && root.GetArray("features")[0].IsValid() 
-                            && root.GetArray("features")[0]["geometry"].IsValid()
-                            && root.GetArray("features")[0]["geometry"]["type"].IsValid()
-                            && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
-
-    if( has_bound_box && ( ! load_json_boundary_box(root, !has_polygon ))){
-        std::cerr << "!! Could not load GeoJSON bounding box: !!!" << std::endl;
-        std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
-        return false;
-    }
-
-    if( has_polygon && ( ! load_json_boundary_polygon(root))){
-        std::cerr << "!! Could not load GeoJSON bounding polygon ?!?!" << std::endl;
-        std::cerr << root.Format(CPLJSONObject::PrettyFormat::Pretty) << std::endl;   
-        return false;
-    }
-
-    return true;
-}
 
 template<typename layer_t>
 bool GeoJSONLoader<layer_t>::load_json_boundary_box( const CPLJSONObject& root, bool fill ){
