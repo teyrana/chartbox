@@ -1,5 +1,6 @@
 {
   "type": "FeatureCollection",
+  "name": "Polygon Boundary",
   "bbox": [
     -71.661, 41.105,
     -71.475, 41.255
