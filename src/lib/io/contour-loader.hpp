@@ -8,10 +8,13 @@
 // GDAL
 #include <cpl_json.h>
 
+// fmt
+#include <fmt/core.h>
+
 #include "chart-box.hpp"
 #include "base-loader.hpp"
 
-namespace chartbox::io {
+namespace chartbox::io::geojson {
 
 /// \brief Load a GeoJSON file into a layer
 ///
@@ -20,20 +23,17 @@ namespace chartbox::io {
 ///   - https://datatracker.ietf.org/doc/html/rfc7946
 ///   - https://gdal.org/drivers/vector/geojson.html
 template< typename layer_t >
-class GeoJSONLoader : BaseLoader<layer_t, GeoJSONLoader<layer_t> > {
+class ContourLoader : BaseLoader<layer_t, ContourLoader<layer_t> > {
 public:
     const static std::string extension;
 
-    GeoJSONLoader( FrameMapping& _mapping, layer_t& _layer );
+    ContourLoader( FrameMapping& _mapping, layer_t& _layer );
 
     bool load(const std::filesystem::path& filename);
 
 private:
 
-    ///  The values of a "bbox" array are "[west, south, east, north]", not
-    ///     "[minx, miny, maxx, maxy]" (see Section 5).  --rfc 7946
-    bool load_json_boundary_box(const CPLJSONObject& doc, bool fill=false);
-    bool load_json_boundary_polygon(const CPLJSONObject& doc);
+    bool load_polygon(const CPLJSONArray& points, uint8_t fill_value );
 
 private:
     layer_t& layer_;
@@ -43,4 +43,4 @@ private:
 
 } // namespace chart::io
 
-#include "geojson-loader.inl"
+#include "contour-loader.inl"

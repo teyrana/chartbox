@@ -37,8 +37,9 @@ protected:
 public:
 
     /// \brief how wide each cell is, in real-world navigation units
-    constexpr static cell_t block_value = 0;
+    constexpr static cell_t block_value = 0xFF;
     constexpr static cell_t clear_value = 0;
+    constexpr static cell_t unknown_value = 128u;
     
 public:
     // /// \brief Retrieve the value at an (x, y) Eigen::Vector2d

@@ -11,14 +11,15 @@
 
 #include "chart-box.hpp"
 // #include "io/debug-loader.hpp"
-#include "io/geojson-loader.hpp"
+#include "io/boundary-loader.hpp"
+#include "io/contour-loader.hpp"
 
 // #include "io/debug-writer.hpp"
 #include "io/png-writer.hpp"
 
 // using chartbox::io::DebugLoader;
-using chartbox::io::GeoJSONLoader;
-// using chartbox::io::ShapefileLoader;
+// using chartbox::io::GeoJSONLoader;
+
 using chartbox::layer::FixedGridLayer;
 
 constexpr double boundary_width = 4096.;
@@ -80,20 +81,17 @@ int main( void ){
 
         if ( ! boundary_input_path.empty() ) {
             fmt::print("    >>> Loading boundary layer from path: {}\n", boundary_input_path.string() );
-
-            auto loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
-            if( boundary_input_path.extension() == loader.extension ){
+            auto loader = BoundaryLoader<FixedGridLayer>( box.mapping(), box.get_boundary_layer());
+            if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 loader.load(boundary_input_path);
             }
         }
 
         if ( ! contour_input_path.empty() ) {
             fmt::print("    >>> Loading contour layer from path: {}\n", contour_input_path.string() );
-
-            auto loader = GeoJSONLoader<FixedGridLayer>( box.mapping(), box.get_contour_layer());
-            if( boundary_input_path.extension() == loader.extension ){
-                loader.load(boundary_input_path);
-
+            auto loader = ContourLoader<FixedGridLayer>( box.mapping(), box.get_contour_layer());
+            if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
+                loader.load(contour_input_path);
             }
         }
 
