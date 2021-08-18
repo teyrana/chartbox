@@ -17,23 +17,23 @@ using chartbox::ChartLayerInterface;
 
 
 template<typename cell_t, typename layer_t>
-ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose )
+ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<UTMLocation>& _bounds, layer_purpose_t _purpose )
     : bounds_(_bounds)
     , purpose_(_purpose)
 {}
 
 template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<Location2xy>& box, const cell_t value) {
+bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<LocalLocation>& box, const cell_t value) {
     const double incr = layer().precision();
-    const double x_max = box.max.x;
-    const double x_min = box.min.x + incr/2;
-    const double y_max = box.max.y;
-    const double y_min = box.min.y + incr/2;
+    const double easting_max = box.max.easting;
+    const double easting_min = box.min.easting + incr/2;
+    const double northing_max = box.max.northing;
+    const double northing_min = box.min.northing + incr/2;
 
     // Loop through the rows of the image.
-    for( double y = y_min; y < y_max; y += incr ){
-        for( double x = x_min; x < x_max; x += incr ){
-            layer().store({x,y}, value);
+    for( double northing = northing_min; northing < northing_max; northing += incr ){
+        for( double easting = easting_min; easting < easting_max; easting += incr ){
+            layer().store( { easting, northing }, value);
         }
     }
     return true;

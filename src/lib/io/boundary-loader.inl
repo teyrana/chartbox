@@ -69,10 +69,10 @@ bool BoundaryLoader<layer_t>::load( const std::filesystem::path& filepath ){
 
 
 template<typename layer_t>
-bool BoundaryLoader<layer_t>::load_boundary_box( const CPLJSONObject& root, bool fill ){
-    using chartbox::frame::BoundBox;
-    using chartbox::frame::Location2LL;
-    using chartbox::frame::Location2xy;
+bool BoundaryLoader<layer_t>::load_boundary_box( const CPLJSONObject& root ){
+    using chartbox::geometry::BoundBox;
+    using chartbox::geometry::GlobalLocation;
+    using chartbox::geometry::UTMLocation;
 
     auto bound_box_elem = root.GetArray("bbox");
     if( ! bound_box_elem.IsValid()){
@@ -94,8 +94,8 @@ bool BoundaryLoader<layer_t>::load_boundary_box( const CPLJSONObject& root, bool
         return false;
     }
 
-    const BoundBox<Location2LL> bounds_lat_lon( Location2LL( south_latitude, west_longitude ),
-                                                Location2LL( north_latitude, east_longitude ) );
+    const BoundBox<GlobalLocation> bounds_lat_lon( GlobalLocation( south_latitude, west_longitude ),
+                                                   GlobalLocation( north_latitude, east_longitude ) );
 
     const bool move_success = mapping_.move_to_corners( bounds_lat_lon );
 
@@ -104,8 +104,9 @@ bool BoundaryLoader<layer_t>::load_boundary_box( const CPLJSONObject& root, bool
 
 template<typename layer_t>
 bool BoundaryLoader<layer_t>::load_boundary_polygon( const CPLJSONObject& root ){
-    using chartbox::frame::Location2LL;
-    using chartbox::frame::Location2xy;
+using chartbox::geometry::BoundBox;
+    using chartbox::geometry::GlobalLocation;
+    using chartbox::geometry::LocalLocation;
 
     if( root["features"].IsValid() ){
         CPLJSONObject feature0 = root.GetArray("features")[0];
@@ -120,11 +121,11 @@ bool BoundaryLoader<layer_t>::load_boundary_polygon( const CPLJSONObject& root )
 
             OGRPolygon* world_frame_polygon = geom->toPolygon();
             if( nullptr == world_frame_polygon ){
-                fmt::print( stderr, "!!? Could not convert GeoJSON data to a polygon." );;
+                fmt::print( stderr, "!!? Could not convert GeoJSON data to a polygon." );
                 return false;
             }
 
-            // translate from WGS84 (lat,lon) -> Local Frame (probably UTM)
+            // translate from WGS84 (lat,lon) -> Local Frame (UTM, but offset relative to the local origin)
             const OGRLinearRing * world_frame_ring = world_frame_polygon->getExteriorRing();
             OGRLinearRing utm_frame_ring;
 
@@ -133,9 +134,8 @@ bool BoundaryLoader<layer_t>::load_boundary_polygon( const CPLJSONObject& root )
                 const double latitude = (*iter).getY();
                 const double longitude = (*iter).getX();
 
-                const Location2xy to = mapping_.to_local( Location2LL( latitude, longitude ) );
-
-                utm_frame_ring.addPoint( new OGRPoint( to.x, to.y ) );
+                const LocalLocation& to = mapping_.map_to_local( GlobalLocation( latitude, longitude ) );
+                utm_frame_ring.addPoint( new OGRPoint( to.easting, to.northing ) );
             }
             utm_frame_ring.closeRings();
            

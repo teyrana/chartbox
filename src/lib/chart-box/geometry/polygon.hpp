@@ -1,7 +1,6 @@
-// GPL v3 (c) 2020, Daniel Williams 
+// GPL v3 (c) 2021, Daniel Williams 
 
-#ifndef _GEOMETRY_POLYGON_HPP_
-#define _GEOMETRY_POLYGON_HPP_
+#pragma once
 
 #include <initializer_list>
 #include <memory>
@@ -10,21 +9,17 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Geometry>
+#include "chart-box/geometry/bound-box.hpp"
 
-#include <nlohmann/json.hpp>
+namespace chartbox::geometry {
 
-#include "geometry/bounds.hpp"
-
-namespace chart::geometry {
-
+template<typename frame_vector_t>
 class Polygon {
-  public:
+public:
     Polygon();
     Polygon(size_t initial_capacity);
-    Polygon(nlohmann::json doc);
-    Polygon(std::vector<Eigen::Vector2d>& init);
-    Polygon(std::initializer_list<Eigen::Vector2d> init);
+    Polygon( std::vector<frame_vector_t>& init);
+    Polygon(std::initializer_list<frame_vector_t> init);
 
     inline const auto begin() const { return points.cbegin(); }
 
@@ -35,46 +30,41 @@ class Polygon {
     // clears the internal point vector
     void clear();
 
-    void emplace(const double x, const double y);
+    inline const BoundBox<frame_vector_t>& bounds() const { return bounds_; }
 
     inline const auto end() const { return points.cend(); }
 
-    /// \brief generates a simple 4-point rhomboid polygon
-    /// \param width tip-to-tip width of the polygon
-    static Polygon make_diamond(const double width);
+    bool load( std::vector<frame_vector_t> source );
 
-    // Retrieves the precomputed center of the polygon:
-    // Currently, this is a naive, unweighted average of the polygon points.
-    // \return was the load successful?
-    // \sidef
-    bool load(std::vector<Eigen::Vector2d> source);
+    Polygon& move(const frame_vector_t& delta);
 
-    bool load(nlohmann::json doc);
+    /// \brief tests if the two polygons overlap in 2d space
+    ///
+    /// \param other -- another polygon of the same type
+    /// \return true if the polygons overlap.  Otherwise false
+    inline bool overlap(const Polygon<frame_vector_t>& other) const {
+        return this->bounds_.overlaps(other.bounds());  }
 
-    const Bounds& get_bounds() const;
+    // void set( size_t index, double x, double y );
+    void set( size_t index, frame_vector_t value );
+    // frame_vector_t& operator[](const size_t index);
 
-    Polygon& move(const Eigen::Vector2d& delta);
+    const frame_vector_t& operator[](const size_t index) const;
 
-    Eigen::Vector2d& operator[](const size_t index);
-
-    const Eigen::Vector2d& operator[](const size_t index) const;
-
-    void push_back(const Eigen::Vector2d p);
     void resize(size_t capacity);
+
     size_t size() const;
 
-    // dumps the contains points to stderr
-    // \param title - text to print in the output header
-    // \param pts - set of points to dump
-    std::string to_yaml(const std::string& indent = "") const;
+    // \brief formats the contents to a given string
+    std::string yaml(const std::string& indent = "") const;
 
-  protected:
     // if necessary, adds an extra point to the end of the polygon-point vector
     // to wrap it back to the first point. this is not strictly operationally
     // necessary, but it simplifies most of the algorithms that need to iterate
     // over the points.
-    void enclose_polygon();
+    void enclose();
 
+protected:
     // \brief isRightHanded()
     // calculates if the polygon is defined in a right-handed // CCW direction.
     // runs in O(n).
@@ -84,22 +74,18 @@ class Polygon {
     // \returns true: polgyon is right-handed.  false: left-handed
     bool is_right_handed() const;
 
-    void set_default();
-
     void recalculate_bounding_box();
 
-  protected: // Configuration parameters
-    std::vector<Eigen::Vector2d>
-        points; ///< Main data store for this class.
-                ///< Contains the vertices of the polygon
-    Bounds bounds;
+protected: // Configuration parameters
+    constexpr static size_t default_size = 12;
 
-  private:
-    friend class Polygon_DefaultConfiguration_Test;
-    friend class Polygon_LoadList_5Point_Test;
-    // friend class Polygon_LoadList_Diamond_Test;
+    /// \brief Main data store -- rontains polygon vertices
+    std::vector<frame_vector_t> points;
+
+    BoundBox<frame_vector_t> bounds_;
+
 };
 
 } // namespace chart::geometry
 
-#endif // #endif _GEOMETRY_POLYGON_HPP_
+#include "polygon.inl"

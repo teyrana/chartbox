@@ -20,7 +20,7 @@ using Eigen::Vector2d;
 using chartbox::layer::FixedGridLayer;
 using chartbox::layer_purpose_t;
 
-FixedGridLayer::FixedGridLayer( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose )
+FixedGridLayer::FixedGridLayer( const BoundBox<UTMLocation>& _bounds, layer_purpose_t _purpose )
     : chartbox::ChartLayerInterface< uint8_t, FixedGridLayer>(_bounds, _purpose)
 {
 

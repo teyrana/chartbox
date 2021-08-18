@@ -1,136 +1,76 @@
-// GPL v3 (c) 2020, Daniel Williams 
+// GPL v3 (c) 2021, Daniel Williams 
 
-#include <iostream>
-#include <memory>
-#include <vector>
+#include <cstddef>
 
-#include "gtest/gtest.h"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+using Catch::Approx;
 
-#include "polygon.hpp"
+#include "bound-box.hpp"
+#include "global-location.hpp"
+#include "local-location.hpp"
+#include "utm-location.hpp"
+#include "xy-location.hpp"
 
-// #include "geometry/layout.hpp"
+using chartbox::geometry::GlobalLocation;
+using chartbox::geometry::LocalLocation;
+using chartbox::geometry::UTMLocation;
+using chartbox::geometry::XYLocation;
+using chartbox::geometry::BoundBox;
 
-using std::cerr;
-using std::endl;
+TEST_CASE( "BoundTests" ){
 
-using Eigen::Vector2d;
+    SECTION( "Default Construct Works Normally" ) {
+        const BoundBox<XYLocation> bounds;
+        CHECK( bounds.min.x == Approx(std::numeric_limits<double>::max()) );
+        CHECK( bounds.min.y == Approx(std::numeric_limits<double>::max()) );
+        CHECK( bounds.max.x == Approx(-std::numeric_limits<double>::max()) );
+        CHECK( bounds.max.y == Approx(-std::numeric_limits<double>::max()) );
 
-using chart::geometry::Bounds;
+        CHECK( bounds.southwest().x == Approx( std::numeric_limits<double>::max()) );
+        CHECK( bounds.southwest().y == Approx( std::numeric_limits<double>::max()) );
+        CHECK( bounds.northeast().x == Approx( -std::numeric_limits<double>::max()) );
+        CHECK( bounds.northeast().y == Approx( -std::numeric_limits<double>::max()) );
+    }
 
-namespace chart::geometry {
+    SECTION( "Bounds can be constructed in all supported vector-spaces" ){
+        // if it compiles, then the test passes.
+        const BoundBox<GlobalLocation> global_bounds({41.0, 10.0}, {42.0, 11.0});
+        const BoundBox<UTMLocation>    utm_bounds({5,6}, {22,57});
+        const BoundBox<LocalLocation>  local_bounds({5,6}, {22,57});
+        const BoundBox<XYLocation>     xy_bounds({5,6}, {22,57});
+    }
 
-TEST(Bounds, ConstructConfiguration) {
-    const Bounds b;
-    ASSERT_DOUBLE_EQ(b.southwest().x(), DBL_MAX);
-    ASSERT_DOUBLE_EQ(b.southwest().y(), DBL_MAX);
-    ASSERT_DOUBLE_EQ(b.northeast().x(), -DBL_MAX);
-    ASSERT_DOUBLE_EQ(b.northeast().y(), -DBL_MAX);
-}
+    SECTION( "Bounds can be constructed from an initializer lists" ){
+        const BoundBox<XYLocation> bounds({5,6}, {22,57});
 
-TEST(Bounds, ConstructFromCorners) {
-    const Bounds b({5,6}, {22,57});
-    ASSERT_DOUBLE_EQ(b.southwest().x(), 5);
-    ASSERT_DOUBLE_EQ(b.southwest().y(), 6);
-    ASSERT_DOUBLE_EQ(b.northeast().x(), 22);
-    ASSERT_DOUBLE_EQ(b.northeast().y(), 57);
-}
+        CHECK( bounds.southwest().x == Approx(5) );
+        CHECK( bounds.southwest().y == Approx(6) );
+        CHECK( bounds.northeast().x == Approx(22) );
+        CHECK( bounds.northeast().y == Approx(57) );
+    }
 
-TEST(Bounds, MakeFromCorners){
-    const Bounds b = Bounds::make_from_corners( {1,2}, {12,11} );
-    ASSERT_DOUBLE_EQ(b.southwest().x(), 1);
-    ASSERT_DOUBLE_EQ(b.southwest().y(), 2);
-    ASSERT_DOUBLE_EQ(b.northeast().x(), 12);
-    ASSERT_DOUBLE_EQ(b.northeast().y(), 11);
-}
+    SECTION( "Bounds can indicate if it is a square (true)" ){
+        const BoundBox<XYLocation> bounds({0,0}, {22,22});
+        REQUIRE( bounds.is_square() );
+    }
 
-TEST(Bounds, MakeFromCenter) {
-    const Vector2d center(0,0);
-    const Vector2d widths(120,112);
-    const Bounds b = Bounds::make_from_center(center,widths);
+    SECTION( "Bounds can indicate if it is a square (false)" ){
+        const BoundBox<XYLocation> bounds({0,0}, {22,57});
+        REQUIRE( not bounds.is_square() );
+    }
 
-    ASSERT_DOUBLE_EQ(b.southwest().x(), -60);
-    ASSERT_DOUBLE_EQ(b.southwest().y(), -56);
-    ASSERT_DOUBLE_EQ(b.northeast().x(), 60);
-    ASSERT_DOUBLE_EQ(b.northeast().y(), 56);
-}
+    SECTION( "Bounds can grow to accomodate new points" ){
+        BoundBox<XYLocation> bounds;
+        bounds.grow({3, 4});
+        bounds.grow({5, 6});
+        bounds.grow({9, 5});
+        bounds.grow({12, 8});
+        bounds.grow({5, 11});
 
-TEST(Bounds, MakeSquare) {
-    const Vector2d center(0,0);
-    const Vector2d widths(20,50);
-    const Bounds rectangle = Bounds::make_from_center(center,widths);
-
-    ASSERT_FALSE(rectangle.is_square());
-    ASSERT_DOUBLE_EQ(rectangle.southwest().x(), -10);
-    ASSERT_DOUBLE_EQ(rectangle.southwest().y(), -25);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().x(),  10);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().y(),  25);
-
-    // test target:
-    const Bounds square = Bounds::make_square(rectangle);
-
-    EXPECT_TRUE(square.is_square());
-    ASSERT_DOUBLE_EQ(square.southwest().x(), -25);
-    ASSERT_DOUBLE_EQ(square.southwest().y(), -25);
-    ASSERT_DOUBLE_EQ(square.northeast().x(),  25);
-    ASSERT_DOUBLE_EQ(square.northeast().y(),  25);
-}
-
-TEST(Bounds, TranslateFromGlobalRoundTrip) {
-    const Bounds b({5,6}, {22,57});
-
-    const Vector2d p_global = {8,8};
-
-    const Vector2d p_local = b.as_local(p_global);
-    ASSERT_DOUBLE_EQ(p_local.x(), 3);
-    ASSERT_DOUBLE_EQ(p_local.y(), 2);
-
-    const Vector2d p_final = b.as_global(p_local);
-    ASSERT_DOUBLE_EQ(p_final.x(), p_global.x());
-    ASSERT_DOUBLE_EQ(p_final.y(), p_global.y());
-}
-
-TEST(Bounds, LoadJSONMalformed) {
-   nlohmann::json doc = { {"x", 100}, {"y", 100}, {"width", 64} };
-    
-    const Bounds rectangle = Bounds::make_from_json(doc);
-
-    ASSERT_FALSE( rectangle.is_valid() );
-}
-
-TEST(Bounds, LoadJSONCorners) {
-    nlohmann::json doc = { {"northeast",{40,42}}, {"southwest",{50,66}} };
-
-    const Bounds rectangle = Bounds::make_from_json(doc);
-
-    ASSERT_FALSE(rectangle.is_square());
-    ASSERT_DOUBLE_EQ(rectangle.southwest().x(), 40);
-    ASSERT_DOUBLE_EQ(rectangle.southwest().y(), 42);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().x(), 50);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().y(), 66);
-}
-
-TEST(Bounds, LoadJSONAnchorWidth) {
-   nlohmann::json doc = {{"anchor", {20,22}},{"width",10}};
-    
-    const Bounds rectangle = Bounds::make_from_json(doc);
-
-    ASSERT_TRUE(rectangle.is_square());
-    ASSERT_DOUBLE_EQ(rectangle.southwest().x(), 20);
-    ASSERT_DOUBLE_EQ(rectangle.southwest().y(), 22);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().x(), 30);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().y(), 32);
-}
-
-TEST(Bounds, LoadJSONCenterWidth) {
-    nlohmann::json doc = {{"center", {50,50}},{"width",10}};
-    
-    const Bounds rectangle = Bounds::make_from_json(doc);
-
-    ASSERT_TRUE(rectangle.is_square());
-    ASSERT_DOUBLE_EQ(rectangle.southwest().x(), 45);
-    ASSERT_DOUBLE_EQ(rectangle.southwest().y(), 45);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().x(), 55);
-    ASSERT_DOUBLE_EQ(rectangle.northeast().y(), 55);
-}
-
+        CHECK( bounds.west()  == Approx( 3.0) );
+        CHECK( bounds.south() == Approx( 4.0) );
+        CHECK( bounds.east()  == Approx(12.0) );
+        CHECK( bounds.north() == Approx(11.0) );
+    }
 }

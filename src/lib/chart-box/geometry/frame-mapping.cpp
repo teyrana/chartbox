@@ -8,10 +8,12 @@
 
 #include "frame-mapping.hpp"
 
-using chartbox::frame::FrameMapping;
-using chartbox::frame::Location2EN;
-using chartbox::frame::Location2LL;
-using chartbox::frame::Location2xy;
+using chartbox::geometry::BoundBox;
+using chartbox::geometry::FrameMapping;
+using chartbox::geometry::LocalLocation;
+using chartbox::geometry::GlobalLocation;
+using chartbox::geometry::Polygon;
+using chartbox::geometry::UTMLocation;
 
 FrameMapping::FrameMapping()
     : global_bounds_( Eigen::Vector2d(0,0), Eigen::Vector2d(1,1) )
@@ -51,8 +53,76 @@ FrameMapping::FrameMapping()
     utm_to_global_transform_ = OGRCreateCoordinateTransformation( &utm_frame_,  &global_frame_ );
 }
 
+// BoundBox<GlobalLocation> FrameMapping::map_to_global( const BoundBox<UTMLocation>& from ) const { 
+//     const GlobalLocation bounds_min_local = map_to_global( bounds_lat_lon.min );
+//     const GlobalLocation bounds_max_local = map_to_global( bounds_lat_lon.max );
+//     const BoundBox<GlobalLocation> bounds_local( bounds_min_local, bounds_max_local );
+//     return std::move( bounds_local );
+// }
 
-bool FrameMapping::move_to_corners( const BoundBox<Location2LL>& bounds ){
+BoundBox<LocalLocation> FrameMapping::local_bounds() const {
+    return { LocalLocation(0,0), LocalLocation( utm_bounds_.width(), utm_bounds_.height()) };
+}
+
+GlobalLocation FrameMapping::map_to_global( const UTMLocation& from ) const {
+    double xs[] = { from.easting };
+    double ys[] = { from.northing };
+    if( utm_to_global_transform_->Transform( 1, xs, ys ) ){
+        return GlobalLocation( xs[0], ys[0] );
+    }
+    return GlobalLocation( NAN,NAN );
+}
+
+BoundBox<LocalLocation> FrameMapping::map_to_local( const BoundBox<GlobalLocation>& from ) const { 
+    const LocalLocation min_local = map_to_local( from.min );
+    const LocalLocation max_local = map_to_local( from.max );
+    return { min_local, max_local };
+}
+
+LocalLocation FrameMapping::map_to_local( const GlobalLocation& from ) const {
+    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
+    // -- and this order gets the correct answers.
+    double xs[] = { from.latitude };
+    double ys[] = { from.longitude };
+    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
+        return LocalLocation( xs[0] - utm_bounds_.min.easting, ys[0] - utm_bounds_.min.northing );
+    }
+    return {NAN, NAN};
+}
+
+Polygon<LocalLocation> FrameMapping::map_to_local( const Polygon<GlobalLocation>& global_polygon ) const { 
+    Polygon<LocalLocation> local_polygon( global_polygon.size() );
+
+    size_t index = 0;
+    for( auto& each_global_point : global_polygon ){
+
+        fmt::print( stderr, "                    >>> each-point: latitude:  {} < {}\n", each_global_point.latitude,  each_global_point.latitude );
+        fmt::print( stderr, "                    >>> each-point: longitude: {} < {}\n", each_global_point.longitude, each_global_point.longitude );
+
+        const LocalLocation each_local_point = map_to_local(each_global_point);
+        fmt::print( stderr, "                    <<< each-point: easting:  {} < {}\n", each_local_point.easting, each_local_point.easting );
+        fmt::print( stderr, "                    <<< each-point: northing: {} < {}\n", each_local_point.northing, each_local_point.northing );
+
+        break;
+        local_polygon.set( index, map_to_local(each_global_point) );
+        ++index;
+    }
+
+    return local_polygon;
+}
+
+UTMLocation FrameMapping::map_to_utm( const GlobalLocation& from ) const {
+    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
+    // -- and this order gets the correct answers.
+    double xs[] = { from.latitude };
+    double ys[] = { from.longitude };
+    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
+        return UTMLocation( xs[0], ys[0] );
+    }
+    return UTMLocation( NAN, NAN );
+}
+
+bool FrameMapping::move_to_corners( const BoundBox<GlobalLocation>& bounds ){
     if( (nullptr== global_to_utm_transform_) || (nullptr==utm_to_global_transform_) ){
         fmt::print( stderr, "XXX null transformations.  aborting.\n");
         return false;
@@ -65,8 +135,8 @@ bool FrameMapping::move_to_corners( const BoundBox<Location2LL>& bounds ){
         return false;
 
     }else{
-        xs[0] = std::floor(xs[0]);
-        ys[0] = std::floor(ys[0]);
+        xs[0] = xs[0];
+        ys[0] = ys[0];
 
         const double raw_width = std::max( std::abs(xs[1]-xs[0]), std::abs(ys[1]-ys[0]) );
         
@@ -78,8 +148,8 @@ bool FrameMapping::move_to_corners( const BoundBox<Location2LL>& bounds ){
 
         const double snap_width = snap_power_2( (raw_width<min_local_width_) ? min_local_width_ : raw_width );
 
-        const Location2EN accept_min_xy( xs[0], ys[0] ); // this is just an alias
-        const Location2EN accept_max_xy( xs[0] + snap_width, ys[0] + snap_width );
+        const UTMLocation accept_min_xy( xs[0], ys[0] ); // this is just an alias
+        const UTMLocation accept_max_xy( xs[0] + snap_width, ys[0] + snap_width );
 
         double xs[] = { accept_max_xy.easting };
         double ys[] = { accept_max_xy.northing };
@@ -89,7 +159,7 @@ bool FrameMapping::move_to_corners( const BoundBox<Location2LL>& bounds ){
             return false;
         }else{
             global_bounds_.min = bounds.min;
-            global_bounds_.max = Location2LL( xs[0], ys[0] );
+            global_bounds_.max = GlobalLocation( xs[0], ys[0] );
             utm_bounds_.min = accept_min_xy;
             utm_bounds_.max = accept_max_xy;
             current_local_width_ = snap_width;
@@ -109,37 +179,6 @@ constexpr size_t FrameMapping::snap_power_2(const size_t target){
     }
 
     return threshold;
-}
-
-Location2LL FrameMapping::to_global( const Location2EN& from ){
-    double xs[] = { from.easting };
-    double ys[] = { from.northing };
-    if( utm_to_global_transform_->Transform( 1, xs, ys ) ){
-        return Location2LL( xs[0], ys[0] );
-    }
-    return Location2LL( NAN,NAN );
-}
-
-Location2xy FrameMapping::to_local( const Location2LL& from ){
-    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
-    // -- and this order gets the correct answers.
-    double xs[] = { from.latitude };
-    double ys[] = { from.longitude };
-    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
-        return Location2xy( xs[0] - utm_bounds_.min.easting, ys[0] - utm_bounds_.min.northing );
-    }
-    return Location2xy( NAN, NAN );
-}
-
-Location2EN FrameMapping::to_utm( const Location2LL& from ){
-    // WGS-84 and other Latitude-Longitude Frames use a non-intuitive axis order
-    // -- and this order gets the correct answers.
-    double xs[] = { from.latitude };
-    double ys[] = { from.longitude };
-    if( global_to_utm_transform_->Transform( 1, xs, ys ) ){
-        return Location2EN( xs[0], ys[0] );
-    }
-    return Location2EN( NAN, NAN );
 }
 
 void FrameMapping::print() const {

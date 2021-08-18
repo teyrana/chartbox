@@ -7,15 +7,19 @@
 #include <gdal.h>
 #include <ogr_geometry.h>
 
-#include "frame/bound-box.hpp"
-#include "frame/location2en.hpp"
-#include "frame/location2xy.hpp"
+#include "geometry/bound-box.hpp"
+#include "geometry/global-location.hpp"
+#include "geometry/local-location.hpp"
+#include "geometry/polygon.hpp"
+#include "geometry/utm-location.hpp"
 
 namespace chartbox {
 
-using chartbox::frame::BoundBox;
-using chartbox::frame::Location2EN;
-using chartbox::frame::Location2xy;
+using chartbox::geometry::BoundBox;
+using chartbox::geometry::GlobalLocation;
+using chartbox::geometry::LocalLocation;
+using chartbox::geometry::Polygon;
+using chartbox::geometry::UTMLocation;
 
 typedef enum { LAYER_PURPOSE_BOUNDARY, 
        LAYER_PURPOSE_CONTOUR,
@@ -32,7 +36,7 @@ class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
 
-    ChartLayerInterface( const BoundBox<Location2EN>& bounds, layer_purpose_t _purpose );
+    ChartLayerInterface( const BoundBox<UTMLocation>& bounds, layer_purpose_t _purpose );
 
 public:
 
@@ -62,9 +66,9 @@ public:
 
     /// \brief Fill the given area with the given value.
     /// 
-    /// \param source - bounds defining the fill area, in local (UTM) coordinates
+    /// \param source - bounds defining the fill area, in local coordinates
     /// \param fill_value - value to write inside the box
-    bool fill( const BoundBox<Location2xy>& box, const cell_t value );
+    bool fill( const BoundBox<LocalLocation>& box, cell_t value );
 
     /// \brief Fills the interior of the given polygon with the given value.
     /// 
@@ -79,7 +83,7 @@ public:
     ///
     /// \param Eigen::Vector2d - the x,y coordinates to search at
     /// \return the cell value
-    cell_t get(const Location2EN& p) const { return layer().get(p); }
+    cell_t get(const UTMLocation& p) const { return layer().get(p); }
 
     /// \brief Access the value at an (x, y) Eigen::Vector2d
     ///!
@@ -125,7 +129,7 @@ protected:
 protected:
 
     /// \brief the data layout this grid represents
-    const BoundBox<Location2EN>& bounds_;
+    const BoundBox<UTMLocation>& bounds_;
 
     /// \brief descriptive for this layer's purpose
     std::string name_;

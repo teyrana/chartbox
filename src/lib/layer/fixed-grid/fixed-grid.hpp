@@ -27,14 +27,14 @@ public:
 
     FixedGridLayer() = delete;
     
-    FixedGridLayer( const BoundBox<Location2EN>& _bounds, layer_purpose_t _purpose );
+    FixedGridLayer( const BoundBox<UTMLocation>& _bounds, layer_purpose_t _purpose );
 
     cell_t* data();
 
     // override from ChartLayerInterface
     bool fill( const cell_t value );
 
-    bool fill( const BoundBox<Location2xy>& box, const cell_t value ){
+    bool fill( const BoundBox<LocalLocation>& box, const cell_t value ){
         return super().fill( box, value ); }
 
     bool fill( const OGRLinearRing& source, cell_t value ){ 

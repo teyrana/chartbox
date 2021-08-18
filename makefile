@@ -46,14 +46,18 @@ main: debug
 
 .PHONY: test testgrid
 test: test-all
+
+test-bounds: debug
+	$(TEST_EXE) BoundTests
+
 test-frame: debug
 	$(TEST_EXE) FrameTests
 
+test-polygon: debug
+	$(TEST_EXE) PolygonTests
+
 test-roll-grid: debug
 	$(TEST_EXE) --gtest_filter=RollingGrid*
-
-test-quad-tree: debug
-	$(TEST_EXE) --gtest_filter=QuadTree*
 
 test-search: debug
 	$(TEST_EXE) --gtest_filter=Search*
