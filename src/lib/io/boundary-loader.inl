@@ -44,7 +44,7 @@ bool BoundaryLoader<layer_t>::load( const std::filesystem::path& filepath ){
                                 && root.GetArray("features")[0]["geometry"]["type"].IsValid()
                                 && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
 
-        if( has_bound_box && ( ! load_boundary_box(root, !has_polygon ))){
+        if( has_bound_box && ( not load_boundary_box(root) )){
             fmt::print( stderr, "!! Could not load GeoJSON bounding box: !!!\n");
             fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
             return false;
@@ -56,6 +56,10 @@ bool BoundaryLoader<layer_t>::load( const std::filesystem::path& filepath ){
             return false;
         }
 
+        if( not has_polygon ){
+            layer_.fill( mapping_.utm_bounds(), layer_.clear_value );
+        }
+        
         return true;
     }else{
         fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n");
@@ -95,12 +99,6 @@ bool BoundaryLoader<layer_t>::load_boundary_box( const CPLJSONObject& root, bool
 
     const bool move_success = mapping_.move_to_corners( bounds_lat_lon );
 
-    if( move_success && fill ){
-        const Location2xy bounds_min_local = mapping_.to_local( bounds_lat_lon.min );
-        const Location2xy bounds_max_local = mapping_.to_local( bounds_lat_lon.max );
-        const BoundBox<Location2xy> bounds_local( bounds_min_local, bounds_max_local );
-        return layer_.fill( bounds_local, layer_.clear_value );
-    }
     return move_success;
 }
 
