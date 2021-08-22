@@ -27,8 +27,6 @@ BoundaryLoader<layer_t>::BoundaryLoader( FrameMapping& _mapping, layer_t& _desti
 
 template<typename layer_t>
 bool BoundaryLoader<layer_t>::load( const std::filesystem::path& filepath ){
-    fmt::print("        >>> With BoundaryLoader:\n");
-
     if( not std::filesystem::exists(filepath) ) {
         fmt::print( stderr, "!! Could not find input path !!: {}\n", filepath.string() );
         return false;
@@ -127,20 +125,22 @@ using chartbox::geometry::BoundBox;
 
             // translate from WGS84 (lat,lon) -> Local Frame (UTM, but offset relative to the local origin)
             const OGRLinearRing * world_frame_ring = world_frame_polygon->getExteriorRing();
-            OGRLinearRing utm_frame_ring;
 
+            size_t write_index=0;
+            Polygon<LocalLocation> local_frame_polygon( world_frame_ring->getNumPoints() );
             for ( auto iter = world_frame_ring->begin(); iter != world_frame_ring->end(); ++iter ) {
-                // not the slightly anti-intuitive axis order, here
+                // note the slightly anti-intuitive axis order, here
                 const double latitude = (*iter).getY();
                 const double longitude = (*iter).getX();
 
-                const LocalLocation& to = mapping_.map_to_local( GlobalLocation( latitude, longitude ) );
-                utm_frame_ring.addPoint( new OGRPoint( to.easting, to.northing ) );
-            }
-            utm_frame_ring.closeRings();
-           
+                const LocalLocation to = mapping_.map_to_local( GlobalLocation( latitude, longitude ) );
 
-            return layer_.fill( utm_frame_ring, layer_.clear_value );
+                local_frame_polygon.set( write_index, to );
+                ++write_index;
+            }
+            local_frame_polygon.enclose();
+
+            return layer_.fill( local_frame_polygon, layer_.clear_value );
         }
     }
     fmt::print( stderr, "    << no boundary polygon found -- defaulting to boundary box.\n" );

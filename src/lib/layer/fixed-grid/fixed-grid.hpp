@@ -37,9 +37,9 @@ public:
     bool fill( const BoundBox<LocalLocation>& box, const cell_t value ){
         return super().fill( box, value ); }
 
-    bool fill( const OGRLinearRing& source, cell_t value ){ 
-        return super().fill( source, value ); }
-    
+    bool fill( const Polygon<LocalLocation>& poly, cell_t value ){
+        return super().fill( poly, value ); }
+
     /// \brief Fill the entire grid with values from the buffer
     /// 
     /// \param source - values to fill.  This must be the same byte-count as this layer

@@ -40,12 +40,12 @@ bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<LocalLocation>& b
 }
 
 template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill( const OGRLinearRing& ring, cell_t value ){
+bool ChartLayerInterface<cell_t, layer_t>::fill( const Polygon<LocalLocation>& poly, cell_t value ){
     // adapted from:
     //  Public-domain code by Darel Rex Finley, 2007:  "Efficient Polygon Fill Algorithm With C Code Sample"
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07
 
-    const size_t vertex_count = ring.getNumPoints();
+    const size_t vertex_count = poly.size();
     const double x_max = layer().bounds_.width();
     const double x_min = 0;
     const double x_incr = layer().precision();  // == y_incr.  This is a square grid.
@@ -58,19 +58,19 @@ bool ChartLayerInterface<cell_t, layer_t>::fill( const OGRLinearRing& ring, cell
 
         // generate a list of line-segment crossings from the polygon
         std::vector<double> crossings;
-        auto iter = ring.begin();
+        auto iter = poly.begin();
         for (size_t i=0; i < (vertex_count-1); ++i) {
-            const OGRPoint segment_start = *iter;
+            const LocalLocation segment_start = *iter;
             ++iter;
-            const OGRPoint segment_end = *iter;
+            const LocalLocation segment_end = *iter;
 
-            const double segment_y_min = std::min( segment_start.getY(), segment_end.getY());
-            const double segment_y_max = std::max( segment_start.getY(), segment_end.getY());
+            const double segment_y_min = std::min( segment_start.y(), segment_end.y() );
+            const double segment_y_max = std::max( segment_start.y(), segment_end.y() );
 
             // if y is in range:
             if( (segment_y_min <= y) && (y < segment_y_max) ){
                 // construct x-coordinate that crosses this line:
-                const double x_crossing = segment_start.getX() + (y - segment_start.getY()) * (segment_end.getX()-segment_start.getX())/(segment_end.getY() - segment_start.getY());
+                const double x_crossing = segment_start.x() + (y - segment_start.y()) * (segment_end.x()-segment_start.x())/(segment_end.y() - segment_start.y());
                 crossings.emplace_back(x_crossing);
             }
         }
@@ -79,7 +79,7 @@ bool ChartLayerInterface<cell_t, layer_t>::fill( const OGRLinearRing& ring, cell
         if( 0 == crossings.size()){
             continue;
         }
-        
+
         // Sort the crossings:
         std::sort(crossings.begin(), crossings.end());
 
