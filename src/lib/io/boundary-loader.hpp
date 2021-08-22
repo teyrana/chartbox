@@ -11,8 +11,9 @@
 // fmt
 #include <fmt/core.h>
 
-#include "chart-box.hpp"
 #include "base-loader.hpp"
+#include "chart-box.hpp"
+#include "geometry/frame-mapping.hpp"
 
 namespace chartbox::io::geojson {
 

@@ -50,16 +50,16 @@ bool BoundaryLoader<layer_t>::load( const std::filesystem::path& filepath ){
             return false;
         }
 
-        if( has_polygon && ( ! load_boundary_polygon(root))){
-            fmt::print( stderr, "!! Could not load GeoJSON bounding polygon ?!?!");
-            fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
-            return false;
+        if( has_polygon ){
+            if( not load_boundary_polygon(root) ){
+                fmt::print( stderr, "!! Could not load GeoJSON bounding polygon ?!?!");
+                fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
+                return false;
+            }
+        }else{
+            layer_.fill( mapping_.local_bounds(), layer_.clear_value );
         }
 
-        if( not has_polygon ){
-            layer_.fill( mapping_.utm_bounds(), layer_.clear_value );
-        }
-        
         return true;
     }else{
         fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n");
