@@ -57,45 +57,32 @@ bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
         const CPLJSONArray& features = root.GetArray("features");
         fmt::print( stderr, "        ::Contains {} features\n", features.Size() );
 
-        layer_.fill( layer_.clear_value );
+        layer_.fill( layer_.unknown_value );
 
         for( int feature_index = 0; feature_index < features.Size(); ++feature_index ){
             const CPLJSONObject& each_properties = features[feature_index].GetObj("properties");
-            const int id = each_properties.GetInteger("OBJECTID");
-            const bool outside = (not static_cast<bool>(each_properties.GetInteger("INSIDE")));
+            // const int id = each_properties.GetInteger("OBJECTID");
+            const bool inside = static_cast<bool>(each_properties.GetInteger("INSIDE"));
 
-            // DEBUG -- DO NOT COMMIT THIS CODE!
-            // specific only to the devel file 
-            if( 60 > id ){
-                continue;
-            }else if( 60 == id ){
-                // continue;
-            }else if( 61 == id ){
-                // continue;
-            }
-            // DEBUG
-
-            if( outside ){
-                fmt::print( stderr, "            [{: >3d}]: outside >> skipping. \n", id );
-                continue;
-            }
-
-            fmt::print( stderr, "            [{: >3d}]: inside.\n", id );
             // fmt::print( stderr, "            [{: >3d}]: {} \n", id, (outside?"outside":"inside") );
 
             const CPLJSONObject& each_geometry = features[feature_index].GetObj("geometry");
             const CPLJSONArray& polygon_list = each_geometry.GetArray("coordinates")[0].ToArray();
             
-            if( load_feature( polygon_list, layer_.block_value, layer_.clear_value ) ){
-            
-                fmt::print( stderr, "                <<< Loaded.\n" );
-            // }else{
-            //     fmt::print( stderr, "                <<< Skipped.\n");
+            if( inside ){
+                // fmt::print( stderr, "            [{: >3d}]: inside >> fill blocked \n", id );
+                if( load_feature( polygon_list, layer_.block_value, layer_.clear_value ) ){
+                    // fmt::print( stderr, "                <<< Loaded.\n" );
+                }
+            }else{
+                // fmt::print( stderr, "            [{: >3d}]: outside >> fill clear. \n", id );
+                if( load_feature( polygon_list, layer_.clear_value, layer_.block_value ) ){
+                    // fmt::print( stderr, "                <<< Loaded.\n" );
+                }
             }
-
         }
-        fmt::print( stderr, "            << finished processing features.\n");
 
+        fmt::print( stderr, "        << finished processing features.\n");
         return true;
     }else{
         fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"); 
@@ -104,7 +91,8 @@ bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
 }
 
 template<typename layer_t>
-bool ContourLoader<layer_t>::load_feature( const CPLJSONArray& feat, uint8_t fill_value, uint8_t /*except_value*/ ){
+bool ContourLoader<layer_t>::load_feature( const CPLJSONArray& feat, uint8_t fill_value, uint8_t except_value ){
+    // fmt::print( stderr, "            >>> Loading Feature: {} polygons.\n", feat.Size() );
 
     const auto& chart_local_bounds = mapping_.local_bounds();
 
@@ -115,39 +103,21 @@ bool ContourLoader<layer_t>::load_feature( const CPLJSONArray& feat, uint8_t fil
         }
 
         if( outer_polygon.bounds().overlaps( chart_local_bounds ) ){
-            fmt::print( stderr, "                <<< feature overlaps: {} vertices.\n", outer_polygon.size() );
-            fmt::print( stderr, "                    ::bounds: easting:  {} < {}\n", outer_polygon.bounds().min.easting, outer_polygon.bounds().max.easting );
-            fmt::print( stderr, "                    ::bounds: northing: {} < {}\n", outer_polygon.bounds().min.northing, outer_polygon.bounds().max.northing );
-
-            // DEBUG -- DO NOT COMMIT THIS CODE!
-            if( 10 > outer_polygon.size() ){
-                for (size_t i=0; i < outer_polygon.size(); ++i) {
-                    const auto& each = outer_polygon[i];
-                    fmt::print( stderr, "                    :[{:>3d}]: easting:  {},    northing: {}\n", i, each.easting, each.northing );
-                }
-            } // DEBUG
-
+            // fmt::print( stderr, "                >>> feature overlaps. Filling outer border.\n" );
             layer_.fill( outer_polygon, fill_value );
 
+
+            // fill interior holes
+            if( false ){
+                for( int hole_index = 1; hole_index < feat.Size(); ++hole_index ){
+                    // fmt::print( stderr, "                    >> Hole[{:>2d}]...\n", hole_index );
+                    const Polygon<LocalLocation> hole_polygon = load_polygon( feat[0].ToArray() );
+                    layer_.fill( hole_polygon, except_value );
+                }
+            }
+
             return true;
-        }else{
-            return false;
         }
-    }
-
-    {
-    // const CPLJSONArray& hole = feat[1].ToArray();
-    // const CPLJSONArray& holep0 = hole[0].ToArray();
-    // fmt::print( stderr, "                ::Hole[1]:p[0]: ( {}, {} )\n", holep0[0].ToDouble(), holep0[1].ToDouble() );
-
-        // load outer polygon
-        //auto success = 
-        // load_polygon( each_geometry, layer_.unknown_value );
-
-        // load interior holes
-        // for( int hole_index = 1; hole_index < polygons.Size(); ++hole_index ){
-        //     load_polygon( polygons[hole_index].ToArray(), layer_.clear_value );
-        // }
     }
 
     return false;

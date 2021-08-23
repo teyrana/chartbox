@@ -66,6 +66,8 @@ private:
     layer_t& layer_;
     FrameMapping& mapping_;
 
+    constexpr static bool fill_holes = false;
+
 };
 
 } // namespace chart::io
