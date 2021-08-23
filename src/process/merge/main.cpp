@@ -38,13 +38,14 @@ int main( void ){
     const std::string boundary_input_arg("data/block-island/boundary.polygon.geojson");
     // const std::string boundary_input_path("data/massachusetts/navigation_area_100k.shp");
 
+    // const std::string contour_input_arg("");
     const std::string contour_input_arg("data/block-island/coastline.geojson");
 
     std::string boundary_output_arg("");
-    // boundary_output_arg = "boundary.png";
+    //            boundary_output_arg = "boundary.png";
 
     std::string contour_output_arg("");
-    // boundary_output_arg = "countour.png";
+                contour_output_arg = "countour.png";
 
 
     // Boundary Layer
@@ -60,7 +61,7 @@ int main( void ){
 
     // Contour Layer
     // ==============
-    if( ! std::filesystem::is_regular_file(contour_input_arg)){
+    if( (not contour_input_arg.empty()) && ( not std::filesystem::is_regular_file(contour_input_arg)) ){
         fmt::print(stderr, "!! Could not find contour input path!! : {}\n", contour_input_arg);
         return EXIT_FAILURE;
     }
@@ -75,9 +76,9 @@ int main( void ){
 
     chartbox::ChartBox box;
 
-    const auto start_load = std::chrono::high_resolution_clock::now(); 
-    {
+    {   // load inputs 
         fmt::print( stderr, ">>> Starting Load: \n");
+        const auto start_load = std::chrono::high_resolution_clock::now(); 
 
         if ( ! boundary_input_path.empty() ) {
             fmt::print("    >>> Loading boundary layer from path: {}\n", boundary_input_path.string() );
@@ -97,7 +98,9 @@ int main( void ){
 
         const auto finish_load = std::chrono::high_resolution_clock::now(); 
         const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load - start_load).count())/1000;
-        fmt::print(  "<< Loaded in:   {:5.2f} s \n\n", load_duration );
+        if( 0.5 < load_duration ){
+            fmt::print(  "<< Loaded in:   {:5.2f} s \n\n", load_duration );
+        }
     }
 
 
@@ -113,18 +116,18 @@ int main( void ){
         // const auto boundary_layer = box.get_boundary_layer();
         // box.get_boundary_layer().print_contents();
 
-        // // this layer is not yet relevant... or interesting.
         // const auto contour_layer = box.get_contour_layer();
         // box.get_contour_layer().print_contents();
 
     }   // DEBUG
 
-    {
+    {   // write outputs
+
         const auto start_write = std::chrono::high_resolution_clock::now();
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
-            fmt::print( stderr, ">>> Write Boundary Layer ...\n" );
+            fmt::print( stderr, ">>> Write Layer: {}:\n", box.get_boundary_layer().name() );
             chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> writer( box.get_boundary_layer() );
             if( boundary_output_path.extension() == writer.extension ){
                 writer.write(boundary_output_path);
@@ -132,7 +135,7 @@ int main( void ){
         }
 
         if( ! contour_output_path.empty() ){
-            fmt::print( stderr, ">>> Write Contour Layer ...\n" );
+            fmt::print( stderr, ">>> Write Layer: {}:\n", box.get_contour_layer().name() );
             chartbox::io::PNGWriter<chartbox::layer::FixedGridLayer> writer( box.get_contour_layer() );
             if( contour_output_path.extension() == writer.extension ){
                 writer.write( contour_output_path );
@@ -141,7 +144,7 @@ int main( void ){
         
         const auto finish_write = std::chrono::high_resolution_clock::now(); 
         const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;
-        if( 0.1 < write_duration ){
+        if( 0.5 < write_duration ){
             fmt::print( stderr, "<<< Written in:   {:5.2f} s \n\n", write_duration );
         }
     }

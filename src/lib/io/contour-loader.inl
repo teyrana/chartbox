@@ -16,7 +16,15 @@
 #include <gdal.h>
 #include <ogr_geometry.h>
 
+#include "geometry/global-location.hpp"
+#include "geometry/local-location.hpp"
+#include "geometry/polygon.hpp"
+
 using chartbox::io::geojson::ContourLoader;
+using chartbox::geometry::GlobalLocation;
+using chartbox::geometry::LocalLocation;
+using chartbox::geometry::Polygon;
+using chartbox::geometry::UTMLocation;
 
 template<typename layer_t>
 const std::string ContourLoader<layer_t>::extension = ".geojson";
@@ -29,8 +37,6 @@ ContourLoader<layer_t>::ContourLoader( FrameMapping& _mapping, layer_t& _destina
 
 template<typename layer_t>
 bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
-    fmt::print("        >>> With ContourLoader:\n");
-
     if( not std::filesystem::exists(filepath) ) {
         fmt::print( stderr, "!! Could not find input path: '{}' !!\n", filepath.string() );
         return false;
@@ -38,11 +44,10 @@ bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
 
     CPLJSONDocument doc;
     if( doc.Load( filepath.string()) ){
+        fmt::print( "        ::Name: {}\n", doc.GetRoot().GetString("name") );
+
         const CPLJSONObject& root = doc.GetRoot();
         const bool has_features = ( root.GetArray("features").IsValid() );
-
-        fmt::print( "        >>> Loading GeoJSON. name: {}\n", root.GetString("name") );
-
         if( not has_features ){
             fmt::print( stderr, "!! Could not find GeoJSON polygon features ?!?!" );
             fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
@@ -50,46 +55,48 @@ bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
         }
 
         const CPLJSONArray& features = root.GetArray("features");
-        fmt::print( stderr, "        >> Loading {} features\n", features.Size() );
+        fmt::print( stderr, "        ::Contains {} features\n", features.Size() );
 
         layer_.fill( layer_.clear_value );
 
         for( int feature_index = 0; feature_index < features.Size(); ++feature_index ){
             const CPLJSONObject& each_properties = features[feature_index].GetObj("properties");
-            const CPLJSONObject& each_geometry = features[feature_index].GetObj("geometry");
-
             const int id = each_properties.GetInteger("OBJECTID");
-            const bool is_inside = static_cast<bool>(each_properties.GetInteger("INSIDE"));
+            const bool outside = (not static_cast<bool>(each_properties.GetInteger("INSIDE")));
 
-            fmt::print("            [{: >3d}]: (inside: {})\n", id,  is_inside );
+            // DEBUG -- DO NOT COMMIT THIS CODE!
+            // specific only to the devel file 
+            if( 60 > id ){
+                continue;
+            }else if( 60 == id ){
+                // continue;
+            }else if( 61 == id ){
+                // continue;
+            }
+            // DEBUG
 
-        // this is how the Spec representions polygons + holes
-        //
-        //   "geometry": { ...
-        //     "coordinates": [
-        //       [
-        //         {polygon},
-        //         {hole},
-        //         {hole},
-        //         {hole}
-        //       ]
-        //     ]
-            const CPLJSONArray& polygons = each_geometry.GetArray("coordinates")[0].ToArray();
-
-            //auto success = 
-            load_polygon( polygons[0].ToArray(), layer_.unknown_value );
-
-            for( int hole_index = 1; hole_index < polygons.Size(); ++hole_index ){
-                load_polygon( polygons[hole_index].ToArray(), layer_.clear_value );
+            if( outside ){
+                fmt::print( stderr, "            [{: >3d}]: outside >> skipping. \n", id );
+                continue;
             }
 
-            // devel code.  Temporary only.
-            break;
+            fmt::print( stderr, "            [{: >3d}]: inside.\n", id );
+            // fmt::print( stderr, "            [{: >3d}]: {} \n", id, (outside?"outside":"inside") );
+
+            const CPLJSONObject& each_geometry = features[feature_index].GetObj("geometry");
+            const CPLJSONArray& polygon_list = each_geometry.GetArray("coordinates")[0].ToArray();
+            
+            if( load_feature( polygon_list, layer_.block_value, layer_.clear_value ) ){
+            
+                fmt::print( stderr, "                <<< Loaded.\n" );
+            // }else{
+            //     fmt::print( stderr, "                <<< Skipped.\n");
+            }
+
         }
+        fmt::print( stderr, "            << finished processing features.\n");
 
-        return false;
-
-        // return true;
+        return true;
     }else{
         fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"); 
         return false;
@@ -97,58 +104,78 @@ bool ContourLoader<layer_t>::load( const std::filesystem::path& filepath ){
 }
 
 template<typename layer_t>
-bool ContourLoader<layer_t>::load_polygon( const CPLJSONArray& points, uint8_t /*fill_value*/ ){
-    using chartbox::frame::Location2LL;
-    using chartbox::frame::Location2xy;
+bool ContourLoader<layer_t>::load_feature( const CPLJSONArray& feat, uint8_t fill_value, uint8_t /*except_value*/ ){
 
-    // just an alias
-    // const CPLJSONArray& coords = poly;
-    fmt::print("                ::exterior-polygon:  {} points\n", points.Size() );
+    const auto& chart_local_bounds = mapping_.local_bounds();
 
-    const CPLJSONArray& point0 = points[0].ToArray();
-    fmt::print("                    ::start: {}, {}\n", point0[0].ToDouble(), point0[1].ToDouble() );
+    if( 0 < feat.Size() ){
+        const Polygon<LocalLocation> outer_polygon = load_polygon( feat[0].ToArray() );
+        if( 0 == outer_polygon.size() ){
+            return false;
+        }
 
-    // dev return
+        if( outer_polygon.bounds().overlaps( chart_local_bounds ) ){
+            fmt::print( stderr, "                <<< feature overlaps: {} vertices.\n", outer_polygon.size() );
+            fmt::print( stderr, "                    ::bounds: easting:  {} < {}\n", outer_polygon.bounds().min.easting, outer_polygon.bounds().max.easting );
+            fmt::print( stderr, "                    ::bounds: northing: {} < {}\n", outer_polygon.bounds().min.northing, outer_polygon.bounds().max.northing );
+
+            // DEBUG -- DO NOT COMMIT THIS CODE!
+            if( 10 > outer_polygon.size() ){
+                for (size_t i=0; i < outer_polygon.size(); ++i) {
+                    const auto& each = outer_polygon[i];
+                    fmt::print( stderr, "                    :[{:>3d}]: easting:  {},    northing: {}\n", i, each.easting, each.northing );
+                }
+            } // DEBUG
+
+            layer_.fill( outer_polygon, fill_value );
+
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    {
+    // const CPLJSONArray& hole = feat[1].ToArray();
+    // const CPLJSONArray& holep0 = hole[0].ToArray();
+    // fmt::print( stderr, "                ::Hole[1]:p[0]: ( {}, {} )\n", holep0[0].ToDouble(), holep0[1].ToDouble() );
+
+        // load outer polygon
+        //auto success = 
+        // load_polygon( each_geometry, layer_.unknown_value );
+
+        // load interior holes
+        // for( int hole_index = 1; hole_index < polygons.Size(); ++hole_index ){
+        //     load_polygon( polygons[hole_index].ToArray(), layer_.clear_value );
+        // }
+    }
+
     return false;
+}
 
-//     if( root["features"].IsValid() ){
-//         CPLJSONObject feature0 = root.GetArray("features")[0];
-//         if( feature0["geometry"].IsValid() ){
-//             CPLJSONObject geom_obj = feature0["geometry"];
+template<typename layer_t>
+Polygon<LocalLocation> ContourLoader<layer_t>::load_polygon( const CPLJSONArray& source ){
+    if( 4 > source.Size() ){
+        return {};
+    }else{
+        Polygon<LocalLocation> dest( source.Size() );
 
-//             OGRGeometry *geom = OGRGeometryFactory::createFromGeoJson( geom_obj );
-//             if( nullptr == geom ){
-//                 fmt::print( stderr, "!! Could not load GeoJSON !! :(" );
-//                 return false;
-//             }
+        for( int point_index = 0; point_index < source.Size(); ++point_index ){
+            const CPLJSONArray& each = source[point_index].ToArray();
+            if( 2 != each.Size()){
+                return {};
+            }
 
-//             OGRPolygon* world_frame_polygon = geom->toPolygon();
-//             if( nullptr == world_frame_polygon ){
-//                 fmt::print( stderr, "!!? Could not convert GeoJSON data to a polygon." );
-//                 return false;
-//             }
+            const GlobalLocation each_global( each[1].ToDouble(), each[0].ToDouble() );
 
-//             // translate from WGS84 (lat,lon) -> Local Frame (probably UTM)
-//             const OGRLinearRing * world_frame_ring = world_frame_polygon->getExteriorRing();
-//             OGRLinearRing utm_frame_ring;
+            const LocalLocation each_local = mapping_.map_to_local( each_global );
 
-//             for ( auto iter = world_frame_ring->begin(); iter != world_frame_ring->end(); ++iter ) {
-//                 // not the slightly anti-intuitive axis order, here
-//                 const double latitude = (*iter).getY();
-//                 const double longitude = (*iter).getX();
+            dest.set( point_index, each_local );
+        }
 
-//                 const Location2xy to = mapping_.to_local( Location2LL( latitude, longitude ) );
+        dest.enclose();
 
-//                 utm_frame_ring.addPoint( new OGRPoint( to.x, to.y ) );
-//             }
-//             utm_frame_ring.closeRings();
-           
-
-//             return layer_.fill( utm_frame_ring, fill_value );
-//         }
-//     }
-
-    fmt::print( stderr, "        << no polygon found??  Errorr!! \n" );
-    return false;
+        return dest;
+    }
 }
 

@@ -18,7 +18,7 @@ public:
     typedef Eigen::Matrix<uint32_t,2,1> Vector2u;
 
     /// \brief number of cells along each dimension of this grid
-    constexpr static size_t dimension = 128;//1024;
+    constexpr static size_t dimension = 1024;
 
     constexpr static cell_t default_value = 0xff;
     constexpr static cell_t blocking_threshold = 'A';
