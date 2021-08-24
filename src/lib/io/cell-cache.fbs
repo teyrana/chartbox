@@ -1,0 +1,17 @@
+// IDL file for local-disk storage of grid cells
+
+namespace chartbox.flatbuffer;
+
+struct Location { 
+    easting:float32;
+    northing:float32;
+}
+
+table Cell {
+    origin:Location;
+    height:uint16;
+    width:uint16;
+    data:[ubyte];
+}
+
+root_type Cell;
