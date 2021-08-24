@@ -3,6 +3,7 @@
 SET(LIB_NAME chartloaders)
 SET(LIB_HEADERS base-loader.hpp debug-loader.hpp
                 geojson-loader.hpp geojson-loader.inl
+                flatbuffer-loader.hpp flatbuffer-loader.inl
                 )
 SET(LIB_SOURCES 
                 )
@@ -30,6 +31,7 @@ target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_SRC_DIRECTORY}/src/lib/
 SET(LIB_NAME chartwriters)
 SET(LIB_HEADERS base-writer.hpp debug-writer.hpp
                 png-writer.hpp png-writer.inl
+                flatbuffer-writer.hpp flatbuffer-writer.inl
                 )
 SET(LIB_SOURCES 
                 )

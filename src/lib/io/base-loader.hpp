@@ -10,7 +10,8 @@ namespace chartbox::io {
 template< typename layer_t, typename loader_t >
 class BaseLoader {
 public:
-    bool load(const std::filesystem::path& path){ return loader().load(path); }
+    bool load(const std::filesystem::path& path){ 
+        return loader().load(path); }
 
 protected:
 

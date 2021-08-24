@@ -15,9 +15,6 @@ public:
     bool write( const std::filesystem::path& filename ){ 
         return writer().write(filename); }
 
-    // bool write_to_stream( std::ostream& stream ){ 
-    //     return writer().write_to_stream(stream); }
-
 protected:
     BaseWriter() = default;
 

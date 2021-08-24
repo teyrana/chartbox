@@ -45,6 +45,14 @@ public:
     constexpr static cell_t unknown_value = 128u;
     
 public:
+
+
+    /// \brief Fetch the bounds of the given layer
+    ///
+    /// \return reference to the cell value
+    const BoundBox<UTMLocation>& bounds() const {
+        return layer().bounds_; }
+
     // /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
     // ///
     // /// \param Eigen::Vector2d - the x,y coordinates to search at
@@ -62,6 +70,11 @@ public:
     /// \param fill_value - fill value for entire grid
     bool fill( const cell_t value ){
         return layer().fill(value); }
+
+    /// \brief sets the entire grid contents to the given byte values
+    /// \param fill_array  contents to write into this layer
+    bool fill( const cell_t* const buffer, size_t count ){
+        return layer().fill(buffer, count); }
 
     /// \brief Fill the given area with the given value.
     /// 
@@ -91,9 +104,11 @@ public:
     cell_t& get( const Eigen::Vector2d& point ){
         return layer().get(point); }
 
-    std::string name() const { return name_; }
+    inline std::string name() const { return name_; }
 
     layer_t name( const std::string& _name ){ name_ = _name; return layer(); }
+
+    inline layer_purpose_t purpose() const { return purpose_; }
 
     /// \brief reset the layer to its default state
     void reset() { 

@@ -13,8 +13,10 @@
 // #include "io/debug-loader.hpp"
 #include "io/boundary-loader.hpp"
 #include "io/contour-loader.hpp"
+#include "io/flatbuffer-loader.hpp"
 
 // #include "io/debug-writer.hpp"
+#include "io/flatbuffer-writer.hpp"
 #include "io/png-writer.hpp"
 
 // using chartbox::io::DebugLoader;
@@ -88,7 +90,10 @@ int main( void ){
             fmt::print( stderr, ">>> Load Layer: {}  to: {}\n", boundary_layer.name(), boundary_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 auto loader = BoundaryLoader<FixedGridLayer>( mapping, boundary_layer );
-                loader.load(boundary_input_path);
+                loader.load( boundary_input_path );
+            }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
+                auto loader = FlatBufferLoader<FixedGridLayer>( mapping, boundary_layer );
+                loader.load( boundary_input_path );
             }
         }
 
@@ -96,9 +101,12 @@ int main( void ){
             auto& contour_layer = box.get_contour_layer();
             auto& mapping = box.mapping();
             fmt::print("    >>> Loading layer: {}  from: {}\n", contour_layer.name(), contour_input_path.string() );
-            if( contour_input_path.extension() == chartbox::io::geojson::extension ){
+            if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 auto loader = ContourLoader<FixedGridLayer>( mapping, contour_layer );
-                loader.load(contour_input_path);
+                loader.load( contour_input_path );
+            }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
+                auto loader = FlatBufferLoader<FixedGridLayer>( mapping, contour_layer );
+                loader.load( contour_input_path );
             }
         }
 
@@ -137,7 +145,10 @@ int main( void ){
             fmt::print( stderr, ">>> Write Layer: {}  to: {}\n", boundary_layer.name(), boundary_output_path.string() );
             if( boundary_output_path.extension() == chartbox::io::png::extension ){
                 auto writer = PNGWriter<FixedGridLayer>( boundary_layer );
-                writer.write( boundary_output_path );
+                writer.write(boundary_output_path);
+            }else if( boundary_output_path.extension() == chartbox::io::flatbuffer::extension ){
+                auto writer = FlatBufferWriter<FixedGridLayer>( boundary_layer );
+                writer.write(boundary_output_path);
             }
         }
 
@@ -147,6 +158,9 @@ int main( void ){
             if( contour_output_path.extension() == chartbox::io::png::extension ){
                 auto writer = PNGWriter<FixedGridLayer>( contour_layer );
                 writer.write( contour_output_path );
+            }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
+                auto writer = FlatBufferWriter<FixedGridLayer>( contour_layer );
+                writer.write(contour_output_path);
             }
         }
         

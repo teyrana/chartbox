@@ -29,11 +29,14 @@ public:
     
     FixedGridLayer( const BoundBox<UTMLocation>& _bounds, layer_purpose_t _purpose );
 
+    const std::array<cell_t, dimension*dimension> & array() const;
     cell_t* data();
 
     // override from ChartLayerInterface
     bool fill( const cell_t value );
 
+    bool fill( const cell_t* const buffer, size_t count );
+    
     bool fill( const BoundBox<LocalLocation>& box, const cell_t value ){
         return super().fill( box, value ); }
 

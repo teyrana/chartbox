@@ -48,6 +48,14 @@ bool FixedGridLayer::fill( const cell_t value) {
     return true;
 }
 
+bool FixedGridLayer::fill( const cell_t* const source, size_t count ){
+    if ( count > grid.size()) {
+        return false;
+    }
+    memcpy( grid.data(), source, sizeof(cell_t) * std::min(count, grid.size()) );
+    return true;
+}
+
 bool FixedGridLayer::fill(const std::vector<cell_t>& source) {
     if (source.size() != grid.size()) {
         return false;
