@@ -4,6 +4,7 @@
 [requires]
 catch2/3.0.0@catchorg/stable
 eigen/3.3.9
+flatbuffers/2.0.0
 fmt/8.0.0
 gdal/3.2.1
 libcurl/7.77.0  #explicitly specify this to resolve version conflict
