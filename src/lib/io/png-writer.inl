@@ -46,10 +46,12 @@ bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){
     // optional property of layers... also: yes, it's a hack
     std::byte* layer_start_p = reinterpret_cast<std::byte*>( layer_.data() );
 
-    // copy one line at a time, reading from the bottom-up, but writing top-down (i.e. Raster-Order) 
-    for( size_t line_index = 0; line_index < dimension; ++line_index ){
-        void* read_p = layer_start_p + ((dimension-line_index) * dimension);
-        if (CE_Failure == p_gray_band->RasterIO(GF_Write, 0, line_index, dimension, 1, read_p, dimension, dimension, GDT_Byte, 1, 0)) {
+    // copy one line at a time, reading from the bottom-up, but writing top-down (i.e. Raster-Order)
+    for( size_t write_line_index = 0; write_line_index < dimension; ++write_line_index ){
+        const size_t read_line_index = dimension - 1 - write_line_index;
+        void* read_ptr = layer_start_p + (read_line_index * dimension);
+
+        if (CE_Failure == p_gray_band->RasterIO(GF_Write, 0, write_line_index, dimension, 1, read_ptr, dimension, dimension, GDT_Byte, 1, 0)) {
             fmt::print( stderr, "?? Could not copy into the RasterIO buffer.\n" );
             GDALClose(p_grid_dataset);
             return false;

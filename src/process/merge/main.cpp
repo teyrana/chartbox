@@ -42,10 +42,10 @@ int main( void ){
     const std::string contour_input_arg("data/block-island/coastline.geojson");
 
     std::string boundary_output_arg("");
-    //            boundary_output_arg = "boundary.png";
+                // boundary_output_arg = "boundary.png";
 
     std::string contour_output_arg("");
-                contour_output_arg = "countour.png";
+                // contour_output_arg = "countour.png";
 
 
     // Boundary Layer
