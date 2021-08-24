@@ -9,10 +9,7 @@
 
 #include "gdal_priv.h"
 
-using chartbox::io::PNGWriter;
-
-template< typename layer_t >
-const std::string PNGWriter<layer_t>::extension = ".png";
+using chartbox::io::png::PNGWriter;
 
 template< typename layer_t >
 bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){

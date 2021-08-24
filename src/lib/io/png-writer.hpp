@@ -6,13 +6,14 @@
 
 #include "base-writer.hpp"
 
-namespace chartbox::io {
+namespace chartbox::io::png {
+
+const std::string extension = ".png";
 
 template< typename layer_t >
 class PNGWriter : BaseWriter<layer_t, PNGWriter<layer_t> > {
 public:
-    const static std::string extension;
-    
+
     PNGWriter( layer_t& _source_layer )
         : layer_(_source_layer)
         {}
