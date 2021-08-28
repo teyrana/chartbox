@@ -10,19 +10,15 @@
 #include <fmt/core.h>
 
 #include "chart-box.hpp"
-// #include "io/debug-loader.hpp"
-#include "io/boundary-loader.hpp"
-#include "io/contour-loader.hpp"
-#include "io/flatbuffer-loader.hpp"
 
-// #include "io/debug-writer.hpp"
-#include "io/flatbuffer-writer.hpp"
-#include "io/png-writer.hpp"
+#include "io/flatbuffer.hpp"
+#include "io/geojson.hpp"
+#include "io/png.hpp"
 
-// using chartbox::io::DebugLoader;
-// using chartbox::io::GeoJSONLoader;
-
+using chartbox::layer::BOUNDARY;
+using chartbox::layer::CONTOUR;
 using chartbox::layer::FixedGridLayer;
+using namespace chartbox::io;
 
 constexpr double boundary_width = 4096.;
 constexpr double desired_precision = 1.0;
@@ -36,12 +32,12 @@ int main( void ){
     // bool enable_input_lidar = false;
     // std::string input_path_terrain;
 
-    std::string boundary_input_arg("data/block-island/boundary.simple.geojson");
-            // boundary_input_arg("data/block-island/boundary.polygon.geojson");
-            // boundary_input_arg("data/massachusetts/navigation_area_100k.shp");
+    // std::string boundary_input_arg("data/block-island/boundary.simple.geojson");
+    std::string boundary_input_arg("data/block-island/boundary.polygon.geojson");
+    // std::string boundary_input_arg("data/massachusetts/navigation_area_100k.shp");
 
     std::string contour_input_arg("");
-                // contour_input_arg = "data/block-island/coastline.geojson";
+                contour_input_arg = "data/block-island/coastline.geojson";
                 // contour_input_arg = "contour.cache.fb";
 
     std::string boundary_output_arg("");
@@ -81,44 +77,44 @@ int main( void ){
     chartbox::ChartBox box;
 
     {   // load inputs 
-        fmt::print( stderr, ">>> Starting Load: \n");
+
+        fmt::print( ">>> Starting Load: \n");
         const auto start_load = std::chrono::high_resolution_clock::now(); 
 
         if ( ! boundary_input_path.empty() ) {
-            auto& boundary_layer = box.get_boundary_layer();
+            auto& layer = box.get_boundary_layer();
             auto& mapping = box.mapping();
-            fmt::print( stderr, ">>> Load Layer: {}  to: {}\n", boundary_layer.name(), boundary_input_path.string() );
+            fmt::print( ">>> Load Layer: {}  to: {}\n", layer.name(), boundary_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-                auto loader = BoundaryLoader<FixedGridLayer>( mapping, boundary_layer );
-                loader.load( boundary_input_path );
-            }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
-                auto loader = FlatBufferLoader<FixedGridLayer>( mapping, boundary_layer );
-                loader.load( boundary_input_path );
+                geojson::load( boundary_input_path, mapping, layer );
+            // NYI
+            // }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
+            //     flatbuffer::load( boundary_input_path, layer );
             }
         }
 
         if ( ! contour_input_path.empty() ) {
-            auto& contour_layer = box.get_contour_layer();
+            auto& layer = box.get_contour_layer();
             auto& mapping = box.mapping();
-            fmt::print("    >>> Loading layer: {}  from: {}\n", contour_layer.name(), contour_input_path.string() );
+            fmt::print( ">>> Loading layer: {}  from: {}\n", layer.name(), contour_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-                auto loader = ContourLoader<FixedGridLayer>( mapping, contour_layer );
-                loader.load( contour_input_path );
+                geojson::load( contour_input_path, mapping, layer );
             }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
-                auto loader = FlatBufferLoader<FixedGridLayer>( mapping, contour_layer );
-                loader.load( contour_input_path );
+                flatbuffer::load( contour_input_path, layer );
             }
         }
 
         const auto finish_load = std::chrono::high_resolution_clock::now(); 
         const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load - start_load).count())/1000;
         if( 0.5 < load_duration ){
-            fmt::print(  "<< Loaded in:   {:5.2f} s \n\n", load_duration );
+            fmt::print( "<< Loaded in:   {:5.2f} s \n\n", load_duration );
         }
     }
 
 
     {   // DEBUG
+        using namespace chartbox::io;
+
         //print the resultant bounds:
         box.mapping().print();
 
@@ -141,33 +137,31 @@ int main( void ){
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
-            auto& boundary_layer = box.get_boundary_layer();
-            fmt::print( stderr, ">>> Write Layer: {}  to: {}\n", boundary_layer.name(), boundary_output_path.string() );
+            const auto& layer = box.get_boundary_layer();
+            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), boundary_output_path.string() );
             if( boundary_output_path.extension() == chartbox::io::png::extension ){
-                auto writer = PNGWriter<FixedGridLayer>( boundary_layer );
-                writer.write(boundary_output_path);
-            }else if( boundary_output_path.extension() == chartbox::io::flatbuffer::extension ){
-                auto writer = FlatBufferWriter<FixedGridLayer>( boundary_layer );
-                writer.write(boundary_output_path);
+                png::save( layer, boundary_output_path );
+
+            // NYI
+            // }else if( boundary_output_path.extension() == chartbox::io::flatbuffer::extension ){
+            //     flatbuffer::save( layer, boundary_output_path);
             }
         }
 
         if( ! contour_output_path.empty() ){
-            auto& contour_layer = box.get_contour_layer();
-            fmt::print( stderr, ">>> Write Layer: {}  to: {}\n", contour_layer.name(), contour_output_path.string() );
+            const auto& layer = box.get_contour_layer();
+            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
             if( contour_output_path.extension() == chartbox::io::png::extension ){
-                auto writer = PNGWriter<FixedGridLayer>( contour_layer );
-                writer.write( contour_output_path );
+                png::save( layer, contour_output_path );
             }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
-                auto writer = FlatBufferWriter<FixedGridLayer>( contour_layer );
-                writer.write(contour_output_path);
+                flatbuffer::save( layer, contour_output_path);
             }
         }
         
         const auto finish_write = std::chrono::high_resolution_clock::now(); 
         const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;
         if( 0.5 < write_duration ){
-            fmt::print( stderr, "<<< Written in:   {:5.2f} s \n\n", write_duration );
+            fmt::print( "<<< Written in:   {:5.2f} s \n\n", write_duration );
         }
     }
 

@@ -13,17 +13,16 @@
 
 #include <fmt/core.h>
 
-using chartbox::ChartLayerInterface;
+using chartbox::layer::ChartLayerInterface;
+using chartbox::layer::role_t;
 
-
-template<typename cell_t, typename layer_t>
-ChartLayerInterface<cell_t, layer_t>::ChartLayerInterface( const BoundBox<UTMLocation>& _bounds, layer_purpose_t _purpose )
+template< typename layer_t, role_t layer_role >
+ChartLayerInterface<layer_t, layer_role>::ChartLayerInterface( const BoundBox<UTMLocation>& _bounds )
     : bounds_(_bounds)
-    , purpose_(_purpose)
 {}
 
-template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<LocalLocation>& box, const cell_t value) {
+template< typename layer_t, role_t layer_role >
+bool ChartLayerInterface<layer_t, layer_role>::fill(const BoundBox<LocalLocation>& box, const cell_t value) {
     const double incr = layer().precision();
     const double easting_max = box.max.easting;
     const double easting_min = box.min.easting + incr/2;
@@ -39,8 +38,8 @@ bool ChartLayerInterface<cell_t, layer_t>::fill(const BoundBox<LocalLocation>& b
     return true;
 }
 
-template<typename cell_t, typename layer_t>
-bool ChartLayerInterface<cell_t, layer_t>::fill( const Polygon<LocalLocation>& poly, cell_t value ){
+template< typename layer_t, role_t layer_role >
+bool ChartLayerInterface<layer_t, layer_role>::fill( const Polygon<LocalLocation>& poly, cell_t value ){
     // adapted from:
     //  Public-domain code by Darel Rex Finley, 2007:  "Efficient Polygon Fill Algorithm With C Code Sample"
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07

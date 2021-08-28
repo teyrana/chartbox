@@ -12,7 +12,7 @@
 #include "geometry/polygon.hpp"
 #include "geometry/utm-location.hpp"
 
-namespace chartbox {
+namespace chartbox::layer {
 
 using chartbox::geometry::BoundBox;
 using chartbox::geometry::GlobalLocation;
@@ -20,29 +20,34 @@ using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
 
-typedef enum { LAYER_PURPOSE_BOUNDARY, 
-       LAYER_PURPOSE_CONTOUR,
-       LAYER_PURPOSE_TARGET,
-       LAYER_PURPOSE_LIDAR,
-       LAYER_PURPOSE_RADAR
-} layer_purpose_t;
+typedef enum {
+       BOUNDARY, 
+       CONTOUR,
+       TARGET,
+       LIDAR,
+       RADAR
+} role_t;
 
 // base class of a CRTP pattern, as described here:
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
 // https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
-template<typename cell_t, typename layer_t>
+template< typename layer_t, chartbox::layer::role_t layer_role >
 class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
 
-    ChartLayerInterface( const BoundBox<UTMLocation>& bounds, layer_purpose_t _purpose );
+    ChartLayerInterface( const BoundBox<UTMLocation>& bounds );
 
 public:
+
+    typedef uint8_t cell_t; 
 
     /// \brief how wide each cell is, in real-world navigation units
     constexpr static cell_t block_value = 0xFF;
     constexpr static cell_t clear_value = 0;
     constexpr static cell_t unknown_value = 128u;
+    
+    constexpr static cell_t default_value = unknown_value;
     
 public:
 
@@ -108,7 +113,7 @@ public:
 
     layer_t name( const std::string& _name ){ name_ = _name; return layer(); }
 
-    inline layer_purpose_t purpose() const { return purpose_; }
+    inline role_t role() const { return layer_role; }
 
     /// \brief reset the layer to its default state
     void reset() { 
@@ -147,8 +152,6 @@ protected:
 
     /// \brief descriptive for this layer's purpose
     std::string name_;
-
-    layer_purpose_t purpose_;
 
 }; // class ChartLayerInterface< cell_t, layer_t >
 

@@ -9,14 +9,14 @@
 
 #include "gdal_priv.h"
 
-using chartbox::io::png::PNGWriter;
+namespace chartbox::io::png {
 
 template< typename layer_t >
-bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){
-    fmt::print( stderr, "    >>> Write Layer to: {}\n", filepath.string() );
+bool save( const layer_t& from_layer, const std::filesystem::path& to_path ) {
+    fmt::print( stderr, "    >>> Write Layer to: {}\n", to_path.string() );
 
     // not a guaranteed property of the layer; not all of them have this...
-    const size_t dimension = layer_.dimension;
+    const size_t dimension = from_layer.dimension;
 
     // might be a duplicate call, but duplicate calls don't seem to cause any problems.
     GDALAllRegister();
@@ -41,7 +41,7 @@ bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){
     }
 
     // optional property of layers... also: yes, it's a hack
-    std::byte* layer_start_p = reinterpret_cast<std::byte*>( layer_.data() );
+    std::byte* layer_start_p = const_cast<std::byte*>(reinterpret_cast<const std::byte*>( from_layer.data() ));
 
     // copy one line at a time, reading from the bottom-up, but writing top-down (i.e. Raster-Order)
     for( size_t write_line_index = 0; write_line_index < dimension; ++write_line_index ){
@@ -57,14 +57,16 @@ bool PNGWriter<layer_t>::write( const std::filesystem::path& filepath ){
 
     // Use the png driver to copy the source dataset
     GDALDriver* p_png_driver = GetGDALDriverManager()->GetDriverByName("PNG");
-    GDALDataset* p_png_dataset = p_png_driver->CreateCopy( filepath.string().c_str(), p_grid_dataset, false, nullptr, nullptr, nullptr);
+    GDALDataset* p_png_dataset = p_png_driver->CreateCopy( to_path.string().c_str(), p_grid_dataset, false, nullptr, nullptr, nullptr);
 
     if (p_png_dataset) {
         GDALClose(p_grid_dataset);
         GDALClose(p_png_dataset);
     }
 
-    fmt::print(  "    <<< Successfuly wrote Layer to: {} \n", filepath.string() );
+    fmt::print(  "    <<< Successfuly wrote Layer.\n" );
 
     return true;
 }
+
+}  // namespace

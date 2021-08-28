@@ -19,8 +19,8 @@ using chartbox::geometry::FrameMapping;
 /// \brief A container of containers for various types of map data structures
 class ChartBox {
 public:
-    typedef chartbox::layer::FixedGridLayer boundary_layer_t;
-    typedef chartbox::layer::FixedGridLayer contour_layer_t;
+    typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::BOUNDARY> boundary_layer_t;
+    typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::CONTOUR> contour_layer_t;
     
 public:
     ChartBox();

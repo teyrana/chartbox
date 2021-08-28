@@ -1,37 +1,34 @@
 
 # ============= Chart Loaders Library =================
 SET(LIB_NAME chartloaders)
-SET(LIB_HEADERS base-loader.hpp debug-loader.hpp
-                geojson-loader.hpp geojson-loader.inl
-                flatbuffer-loader.hpp flatbuffer-loader.inl
+SET(LIB_HEADERS geojson.hpp geojson-boundary-loader.inl geojson-contour-loader.inl
+                flatbuffer.hpp flatbuffer-loader.inl
                 )
-SET(LIB_SOURCES 
+SET(LIB_SOURCES geojson.cpp
                 )
 
 MESSAGE( STATUS "Generating ChartBox Loaders Library: ${LIB_NAME}")
 MESSAGE( STATUS "    with headers: ${LIB_HEADERS}")
 MESSAGE( STATUS "    with sources: ${LIB_SOURCES}")
 
-# internal library dependency
-target_link_libraries(chartbox)
-
-add_library(${LIB_NAME} INTERFACE)
-target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_SRC_DIRECTORY}/src/lib/io)
-
-
+# header-only library variant
 # # Generate the static library from the sources
 # add_library(${LIB_NAME} INTERFACE ${LIB_HEADERS} ${LIB_SOURCES})
-# TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
+# target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_SRC_DIRECTORY}/src/lib/io)
 
-# include_directories(${CMAKE_SRC_DIRECTORY}/src/lib/io)
+# header + source static library
+add_library(${LIB_NAME} ${LIB_HEADERS} ${LIB_SOURCES})
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SRC_DIRECTORY}/src/lib/io)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SRC_DIRECTORY}/src/lib/chart-box)
+target_link_libraries(${LIB_NAME} PRIVATE chartbox)
+target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
 
 
 
 # ============= Chart Base Library =================
-SET(LIB_NAME chartwriters)
-SET(LIB_HEADERS base-writer.hpp debug-writer.hpp
-                png-writer.hpp png-writer.inl
-                flatbuffer-writer.hpp flatbuffer-writer.inl
+SET(LIB_NAME chartsavers)
+SET(LIB_HEADERS png.hpp png-saver.inl
+                flatbuffer.hpp flatbuffer-saver.inl
                 )
 SET(LIB_SOURCES 
                 )
@@ -40,15 +37,14 @@ MESSAGE( STATUS "Generating ChartBox Writers Library: ${LIB_NAME}")
 MESSAGE( STATUS "    with headers: ${LIB_HEADERS}")
 MESSAGE( STATUS "    with sources: ${LIB_SOURCES}")
 
-# internal library dependency
-target_link_libraries(chartbox)
-
+# header-only library variant
 add_library(${LIB_NAME} INTERFACE)
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_SRC_DIRECTORY}/src/lib/io)
+target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_SRC_DIRECTORY}/src/lib/chart-box)
 
-
-# # Generate the static library from the sources
-# add_library(${LIB_NAME} INTERFACE ${LIB_HEADERS} ${LIB_SOURCES})
+# header + source static library
+# add_library(${LIB_NAME} ${LIB_HEADERS} ${LIB_SOURCES})
+# target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SRC_DIRECTORY}/src/lib/io)
+# target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_SRC_DIRECTORY}/src/lib/chart-box)
+# target_link_libraries(${LIB_NAME} PRIVATE chartbox)
 # TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
-
-# include_directories(${CMAKE_SRC_DIRECTORY}/src/lib/io)

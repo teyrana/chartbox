@@ -14,6 +14,8 @@ target_include_directories( ${EXE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/lib/laye
 
 TARGET_LINK_LIBRARIES(${EXE_NAME} PRIVATE ${EXE_LINKAGE} ${LIBRARY_LINKAGE}) 
 target_link_libraries(${EXE_NAME} PRIVATE chartbox)
+target_link_libraries(${EXE_NAME} PRIVATE chartloaders)
+# target_link_libraries(${EXE_NAME} PRIVATE chartsavers)
 target_link_libraries(${EXE_NAME} PRIVATE fixedgrid)
 target_link_libraries(${EXE_NAME} PRIVATE CONAN_PKG::gdal )
 target_link_libraries(${EXE_NAME} PRIVATE CONAN_PKG::fmt)

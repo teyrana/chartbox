@@ -1,6 +1,6 @@
 // IDL file for local-disk storage of grid cells
 
-namespace chartbox.flatbuffer;
+namespace chartbox.io.flatbuffer;
 
 struct Location { 
     easting:float32;
