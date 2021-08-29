@@ -13,7 +13,7 @@
 namespace chartbox::layer {
 
 template< chartbox::layer::role_t layer_role >
-class FixedGridLayer : public ChartLayerInterface<FixedGridLayer<layer_role>, layer_role> {
+class StaticGridLayer : public ChartLayerInterface<StaticGridLayer<layer_role>, layer_role> {
 public:
     typedef Eigen::Matrix<uint32_t,2,1> Vector2u;
 
@@ -21,13 +21,13 @@ public:
     constexpr static size_t dimension = 1024;
 
     /// \brief name of this layer's type
-    constexpr static char type_name_[] = "FixedGridLayer";
+    constexpr static char type_name_[] = "StaticGridLayer";
 
 public:
 
-    FixedGridLayer() = delete;
+    StaticGridLayer() = delete;
     
-    FixedGridLayer( const BoundBox<UTMLocation>& _bounds );
+    StaticGridLayer( const BoundBox<UTMLocation>& _bounds );
 
 //    const std::array<uint8_t, dimension*dimension> & array() const;
 
@@ -79,7 +79,7 @@ public:
     /// \return reference to the cell value
     bool store(const LocalLocation& p, const uint8_t new_value);
 
-    ~FixedGridLayer() = default;
+    ~StaticGridLayer() = default;
 
     // /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
     // ///
@@ -126,16 +126,16 @@ protected:
 
 private:
 
-    ChartLayerInterface< FixedGridLayer<layer_role>, layer_role>& super() {
-        return *static_cast< ChartLayerInterface< FixedGridLayer<layer_role>, layer_role>* >(this);
+    ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>& super() {
+        return *static_cast< ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>* >(this);
     }
 
-    const ChartLayerInterface< FixedGridLayer<layer_role>, layer_role>& super() const {
-        return *static_cast< const ChartLayerInterface< FixedGridLayer<layer_role>, layer_role>* >(this);
+    const ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>& super() const {
+        return *static_cast< const ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>* >(this);
     }
 };
 
 
 } // namespace
 
-#include "fixed-grid.inl"
+#include "static-grid.inl"

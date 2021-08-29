@@ -12,7 +12,7 @@
 namespace chartbox::io::png {
 
 template< role_t layer_role >
-bool save( const FixedGridLayer<layer_role>& from_layer, const std::filesystem::path& to_path ) {
+bool save( const StaticGridLayer<layer_role>& from_layer, const std::filesystem::path& to_path ) {
     fmt::print( stderr, "    >>> Write Layer to: {}\n", to_path.string() );
 
     // not a guaranteed property of the layer; not all of them have this...

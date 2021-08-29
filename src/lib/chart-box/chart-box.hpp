@@ -10,7 +10,7 @@
 
 #include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
-#include "layer/fixed-grid/fixed-grid.hpp"
+#include "layer/static-grid/static-grid.hpp"
 
 namespace chartbox {
 
@@ -20,8 +20,8 @@ using chartbox::geometry::LocalLocation;
 /// \brief A container of containers for various types of map data structures
 class ChartBox {
 public:
-    typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::BOUNDARY> boundary_layer_t;
-    typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::CONTOUR> contour_layer_t;
+    typedef chartbox::layer::StaticGridLayer<chartbox::layer::role_t::BOUNDARY> boundary_layer_t;
+    typedef chartbox::layer::StaticGridLayer<chartbox::layer::role_t::CONTOUR> contour_layer_t;
 
 public:
     ChartBox();

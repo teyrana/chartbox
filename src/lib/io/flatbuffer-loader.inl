@@ -6,20 +6,20 @@
 
 #include <fstream>
 
-#include "layer/fixed-grid/fixed-grid.hpp"
+#include "layer/static-grid/static-grid.hpp"
 #include "chart-box/geometry/global-location.hpp"
 #include "chart-box/geometry/local-location.hpp"
 #include "chart-box/geometry/polygon.hpp"
 
 #include "cell-cache-generated.h"
 
-using chartbox::layer::FixedGridLayer;
+using chartbox::layer::StaticGridLayer;
 using chartbox::layer::CONTOUR;
 
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool load< FixedGridLayer<CONTOUR> > ( const std::filesystem::path& from_path, FixedGridLayer<CONTOUR>& to_layer ){
+inline bool load< StaticGridLayer<CONTOUR> > ( const std::filesystem::path& from_path, StaticGridLayer<CONTOUR>& to_layer ){
     using chartbox::geometry::GlobalLocation;
     using chartbox::geometry::LocalLocation;
     using chartbox::geometry::Polygon;

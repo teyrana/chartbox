@@ -10,7 +10,7 @@
 #include "chart-box/geometry/global-location.hpp"
 #include "chart-box/geometry/local-location.hpp"
 #include "chart-box/geometry/polygon.hpp"
-#include "layer/fixed-grid/fixed-grid.hpp"
+#include "layer/static-grid/static-grid.hpp"
 
 using chartbox::geometry::FrameMapping;
 using chartbox::geometry::GlobalLocation;
@@ -18,12 +18,12 @@ using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
 using chartbox::layer::CONTOUR;
-using chartbox::layer::FixedGridLayer;
+using chartbox::layer::StaticGridLayer;
 
 namespace chartbox::io::geojson {
 
 template<>
-inline bool load<FixedGridLayer<CONTOUR>>( const std::filesystem::path& from_path, FrameMapping& mapping, FixedGridLayer<CONTOUR>& to_layer ){
+inline bool load<StaticGridLayer<CONTOUR>>( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer<CONTOUR>& to_layer ){
 
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path: '{}' !!\n", from_path.string() );

@@ -76,8 +76,7 @@ SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
 ADD_SUBDIRECTORY(src/lib/io)
 SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartloaders chartsavers )
 
-ADD_SUBDIRECTORY(src/lib/layer/fixed-grid)
-# ADD_SUBDIRECTORY(src/lib/layer/roll-grid)
+ADD_SUBDIRECTORY(src/lib/layer/static-grid)
 # ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
 # ADD_SUBDIRECTORY(src/lib/layer/view)
 

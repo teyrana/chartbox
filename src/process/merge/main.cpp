@@ -17,7 +17,6 @@
 
 using chartbox::layer::BOUNDARY;
 using chartbox::layer::CONTOUR;
-using chartbox::layer::FixedGridLayer;
 using namespace chartbox::io;
 
 constexpr double boundary_width = 4096.;

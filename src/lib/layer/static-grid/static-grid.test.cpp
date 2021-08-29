@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 
-#include "fixed-grid.hpp"
+#include "static-grid.hpp"
 
 
 using std::cerr;
@@ -18,12 +18,12 @@ using std::string;
 using Eigen::Vector2d;
 using nlohmann::json;
 
-using chart::layer::FixedGridLayer;
+using chart::layer::StaticGridLayer;
 
 namespace chartbox::layer {
 
-TEST( FixedGrid, ConstructDefault64) {
-    FixedGrid64 g;
+TEST( StaticGrid, ConstructDefault64) {
+    StaticGrid64 g;
  
     auto& bds = g.bounds();
     EXPECT_DOUBLE_EQ( bds.max().x(),  4.);
@@ -37,8 +37,8 @@ TEST( FixedGrid, ConstructDefault64) {
     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
 }
 
-TEST( FixedGrid, ConstructDefault1k) {
-    FixedGrid1k g;
+TEST( StaticGrid, ConstructDefault1k) {
+    StaticGrid1k g;
  
     auto& bds = g.bounds();
     EXPECT_DOUBLE_EQ( bds.max().x(),  16.);
@@ -52,8 +52,8 @@ TEST( FixedGrid, ConstructDefault1k) {
     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
 }
 
-TEST( FixedGrid, ConstructFromSquareBounds) {
-    FixedGrid1k g(Bounds({0., 1.},{32., 33.}));
+TEST( StaticGrid, ConstructFromSquareBounds) {
+    StaticGrid1k g(Bounds({0., 1.},{32., 33.}));
 
     auto& bds = g.bounds();
     EXPECT_DOUBLE_EQ( bds.max().x(), 32.);
@@ -67,8 +67,8 @@ TEST( FixedGrid, ConstructFromSquareBounds) {
     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
 }
 
-TEST( FixedGrid, ConstructFromUnevenBounds) {
-    FixedGrid1k g(Bounds({-2., -4.},{2., 4.}));
+TEST( StaticGrid, ConstructFromUnevenBounds) {
+    StaticGrid1k g(Bounds({-2., -4.},{2., 4.}));
 
     auto& bds = g.bounds();
     EXPECT_DOUBLE_EQ( bds.max().x(), 16.);
@@ -82,8 +82,8 @@ TEST( FixedGrid, ConstructFromUnevenBounds) {
     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
 }
 
-TEST( FixedGrid, ConstructFromOversizeBounds) {
-    FixedGrid1k g(Bounds({-2,-55},{2., 55.}));
+TEST( StaticGrid, ConstructFromOversizeBounds) {
+    StaticGrid1k g(Bounds({-2,-55},{2., 55.}));
 
     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
 
@@ -97,9 +97,9 @@ TEST( FixedGrid, ConstructFromOversizeBounds) {
     EXPECT_DOUBLE_EQ( b.size().y(), 32.);
 }
 
-TEST( FixedGrid, UpdateBounds) {
+TEST( StaticGrid, UpdateBounds) {
     const Bounds b0({-2., -4.},{2., 4.});
-    FixedGrid1k g(b0);
+    StaticGrid1k g(b0);
 
     auto& b1 = g.bounds();
     EXPECT_DOUBLE_EQ( b1.min().x(), -16.);
@@ -117,8 +117,8 @@ TEST( FixedGrid, UpdateBounds) {
     EXPECT_DOUBLE_EQ( b3.max().y(), 44.);
 }
 
-TEST( FixedGrid, DeflateRoundTrip) {
-    FixedGrid1k g(Bounds({5.5,2.5}, {37.5, 34.5}));
+TEST( StaticGrid, DeflateRoundTrip) {
+    StaticGrid1k g(Bounds({5.5,2.5}, {37.5, 34.5}));
     ASSERT_DOUBLE_EQ( g.precision(), 1.0);
     ASSERT_DOUBLE_EQ( g.bounds().min().x(), 5.5);
     ASSERT_DOUBLE_EQ( g.bounds().min().y(), 2.5);
@@ -169,8 +169,8 @@ static const std::vector<uint8_t> default_tile = chart::geometry::vflip<uint8_t>
     76, 75,  0,  0,   0,  0, 72, 71,
     75, 74, 74, 74,  73, 73, 73, 72}, 8);
 
-TEST( FixedGrid, FillFromVector) {
-    FixedGrid64 g;
+TEST( StaticGrid, FillFromVector) {
+    StaticGrid64 g;
 
     ASSERT_EQ(default_tile.size(), g.size());
 
@@ -204,8 +204,8 @@ TEST( FixedGrid, FillFromVector) {
 }
 
 
-TEST( FixedGrid, FillFromPath) {
-    FixedGrid64 g(Bounds({10.2,10.2}, {18.2,18.2}));
+TEST( StaticGrid, FillFromPath) {
+    StaticGrid64 g(Bounds({10.2,10.2}, {18.2,18.2}));
 
     // preconditions
     ASSERT_TRUE( g.fill(126) ); // == '~'
@@ -239,8 +239,8 @@ TEST( FixedGrid, FillFromPath) {
     ASSERT_EQ( g.classify({ 18.0, 18.0}), fill_value);
 }
 
-TEST( FixedGrid, ClassifyIntoVector) {
-    FixedGrid64 g;
+TEST( StaticGrid, ClassifyIntoVector) {
+    StaticGrid64 g;
 
     g.set_bounds({{32,32}, {64,64}});
 
@@ -284,8 +284,8 @@ TEST( FixedGrid, ClassifyIntoVector) {
     ASSERT_EQ( g.classify({ 45, 62}), 67);
 }
 
-TEST( FixedGrid, StoreReadLoop) {
-    FixedGrid64 g({{32,32}, {64,64}});
+TEST( StaticGrid, StoreReadLoop) {
+    StaticGrid64 g({{32,32}, {64,64}});
 
     g.fill(55);
     EXPECT_EQ( g.classify({50,46}), 55);
@@ -294,8 +294,8 @@ TEST( FixedGrid, StoreReadLoop) {
     ASSERT_EQ( g.classify({50, 46}), 88);
 }
 
-TEST( FixedGrid, FillSimplePolygon) {
-    FixedGrid64 g(Bounds({0,0},{8,8}));
+TEST( StaticGrid, FillSimplePolygon) {
+    StaticGrid64 g(Bounds({0,0},{8,8}));
     EXPECT_DOUBLE_EQ( g.bounds().max().x(), 8.);
     EXPECT_DOUBLE_EQ( g.bounds().max().y(), 8.);
     EXPECT_DOUBLE_EQ( g.bounds().min().x(), 0.);
@@ -332,8 +332,8 @@ TEST( FixedGrid, FillSimplePolygon) {
     ASSERT_EQ( g.get_cell( 7, 5), 0x99);
 }
 
-TEST( FixedGrid, FillHoledPolygon) {
-    FixedGrid1k g;
+TEST( StaticGrid, FillHoledPolygon) {
+    StaticGrid1k g;
     EXPECT_DOUBLE_EQ( g.bounds().max().x(),  16.);
     EXPECT_DOUBLE_EQ( g.bounds().max().y(),  16.);
     EXPECT_DOUBLE_EQ( g.bounds().min().x(), -16.);

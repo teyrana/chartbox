@@ -9,13 +9,13 @@
 #include "chart-box/geometry/global-location.hpp"
 #include "chart-box/geometry/local-location.hpp"
 #include "chart-box/geometry/polygon.hpp"
-#include "layer/fixed-grid/fixed-grid.hpp"
+#include "layer/static-grid/static-grid.hpp"
 
 #include "geojson.hpp"
 
 using chartbox::layer::BOUNDARY;
 using chartbox::layer::CONTOUR;
-using chartbox::layer::FixedGridLayer;
+using chartbox::layer::StaticGridLayer;
 
 using chartbox::geometry::FrameMapping;
 using chartbox::geometry::GlobalLocation;
@@ -54,7 +54,7 @@ bool load_bound_box( const CPLJSONObject& root, FrameMapping& mapping ){
     return move_success;
 }
 
-bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, FixedGridLayer<CONTOUR>& to_layer ){
+bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, StaticGridLayer<CONTOUR>& to_layer ){
     // fmt::print( stderr, "            >>> Loading Feature: {} polygons.\n", feat.Size() );
 
     const auto& chart_local_bounds = mapping.local_bounds();
@@ -84,7 +84,7 @@ bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping&
     return false;
 }
 
-bool load_boundary_polygon( const CPLJSONObject& root, const FrameMapping& /*mapping*/, FixedGridLayer<BOUNDARY>& /*to_layer*/ ){
+bool load_boundary_polygon( const CPLJSONObject& root, const FrameMapping& /*mapping*/, StaticGridLayer<BOUNDARY>& /*to_layer*/ ){
     if( root["features"].IsValid() ){
         CPLJSONObject feature0 = root.GetArray("features")[0];
         if( feature0["geometry"].IsValid() ){

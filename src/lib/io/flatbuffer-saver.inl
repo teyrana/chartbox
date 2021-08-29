@@ -6,17 +6,17 @@
 
 #include <fstream>
 
-#include "layer/fixed-grid/fixed-grid.hpp"
+#include "layer/static-grid/static-grid.hpp"
 
 #include "cell-cache-generated.h"
 
-using chartbox::layer::FixedGridLayer;
+using chartbox::layer::StaticGridLayer;
 using chartbox::layer::CONTOUR;
 
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool save< FixedGridLayer<CONTOUR> >( const FixedGridLayer<CONTOUR>& from_layer, const std::filesystem::path& to_path){
+inline bool save< StaticGridLayer<CONTOUR> >( const StaticGridLayer<CONTOUR>& from_layer, const std::filesystem::path& to_path){
     using chartbox::io::flatbuffer::Cell;
     using chartbox::io::flatbuffer::CellBuilder;
     using chartbox::io::flatbuffer::Location;

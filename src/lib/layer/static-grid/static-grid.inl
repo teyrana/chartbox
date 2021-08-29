@@ -17,18 +17,18 @@ using Eigen::Vector2d;
 
 using chartbox::layer::role_t;
 using chartbox::layer::ChartLayerInterface;
-using chartbox::layer::FixedGridLayer;
+using chartbox::layer::StaticGridLayer;
 
 
 template<role_t role>
-FixedGridLayer<role>::FixedGridLayer( const BoundBox<UTMLocation>& _bounds )
-    : ChartLayerInterface<FixedGridLayer<role>, role>(_bounds)
+StaticGridLayer<role>::StaticGridLayer( const BoundBox<UTMLocation>& _bounds )
+    : ChartLayerInterface<StaticGridLayer<role>, role>(_bounds)
 {
     if( (dimension != static_cast<size_t>(_bounds.width()/precision())) || ( dimension != static_cast<size_t>(_bounds.width()/precision())) ){
         // yes, this is limiting.  This class is limiting -- it is only intended to be a fast / cheap / easy medium for testing other parts of the code
         // if you run up against this limitation, don't change it here: use a class which better fits your use case.
 
-        fmt::print( "======== ======== FixedGridLayer CTOR:  ======== ======== \n" );
+        fmt::print( "======== ======== StaticGridLayer CTOR:  ======== ======== \n" );
         fmt::print( "Bounds:\n");
         fmt::print( "      min:      {:12.6f}, {:12.6f} \n", _bounds.min.easting, _bounds.min.northing );
         fmt::print( "      max:      {:12.6f}, {:12.6f} \n", _bounds.max.easting, _bounds.max.northing );
@@ -39,13 +39,13 @@ FixedGridLayer<role>::FixedGridLayer( const BoundBox<UTMLocation>& _bounds )
 }
 
 template<role_t role>
-bool FixedGridLayer<role>::fill( const uint8_t  value) {
+bool StaticGridLayer<role>::fill( const uint8_t  value) {
     grid.fill( value);
     return true;
 }
 
 template<role_t role>
-bool FixedGridLayer<role>::fill( const uint8_t * const source, size_t count ){
+bool StaticGridLayer<role>::fill( const uint8_t * const source, size_t count ){
     if ( count > grid.size()) {
         return false;
     }
@@ -54,7 +54,7 @@ bool FixedGridLayer<role>::fill( const uint8_t * const source, size_t count ){
 }
 
 template<role_t role>
-bool FixedGridLayer<role>::fill(const std::vector<uint8_t >& source) {
+bool StaticGridLayer<role>::fill(const std::vector<uint8_t >& source) {
     if (source.size() != grid.size()) {
         return false;
     }
@@ -63,38 +63,38 @@ bool FixedGridLayer<role>::fill(const std::vector<uint8_t >& source) {
 }
 
 template<role_t role>
-uint8_t FixedGridLayer<role>::get(const LocalLocation& p ) const {
+uint8_t StaticGridLayer<role>::get(const LocalLocation& p ) const {
     return grid[ lookup(p) ];
 }
 
 template<role_t role>
-uint8_t & FixedGridLayer<role>::get(const LocalLocation& p ) {
+uint8_t & StaticGridLayer<role>::get(const LocalLocation& p ) {
     return grid[ lookup(p) ];
 }
 
 template<role_t role>
-size_t FixedGridLayer<role>::lookup( const uint32_t i, const uint32_t j ) const {
+size_t StaticGridLayer<role>::lookup( const uint32_t i, const uint32_t j ) const {
     return i + (j * dimension);
 }
 
 template<role_t role>
-size_t FixedGridLayer<role>::lookup( const LocalLocation& p ) const {
+size_t StaticGridLayer<role>::lookup( const LocalLocation& p ) const {
     return lookup( static_cast<uint32_t>(p.easting/precision()),
                    static_cast<uint32_t>(p.northing/precision()) );
 }
 
 template<role_t role>
-size_t FixedGridLayer<role>::lookup( const Vector2u i ) const {
+size_t StaticGridLayer<role>::lookup( const Vector2u i ) const {
     return i[0] + (i[1] * dimension);
 }
 
 template<role_t role>
-double FixedGridLayer<role>::precision() const {
+double StaticGridLayer<role>::precision() const {
     return this->bounds_.width() / dimension;
 }
 
 template<role_t role>
-void FixedGridLayer<role>::print_contents() const {
+void StaticGridLayer<role>::print_contents() const {
     fmt::print( "============ ============ Fixed-Grid-Layer Contents ============ ============\n" );
     for (size_t j = dimension - 1; j < dimension; --j) {
         for (size_t i = 0; i < dimension; ++i) {
@@ -118,7 +118,7 @@ void FixedGridLayer<role>::print_contents() const {
 }
 
 template<role_t role>
-bool FixedGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) {
+bool StaticGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) {
     const auto offset = lookup( p );
     grid[offset] = value;
     return true;
@@ -126,31 +126,31 @@ bool FixedGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) 
 
 
 // template<typename uint8_t , size_t dim>
-// Index2u FixedGridLayer<uint8_t ,dim>::as_index(const Eigen::Vector2d& location) const {
+// Index2u StaticGridLayer<uint8_t ,dim>::as_index(const Eigen::Vector2d& location) const {
 //     auto local = bounds_.as_local(location);
 //     return Index2u( static_cast<uint32_t>(local.x() / precision )
 //                   , static_cast<uint32_t>(local.y() / precision ) );
 // }
 
 // template<typename uint8_t , size_t dim>
-// Vector2d  FixedGridLayer<uint8_t ,dim>::as_location(const index::Index2u& index) const {
+// Vector2d  StaticGridLayer<uint8_t ,dim>::as_location(const index::Index2u& index) const {
 //     const Vector2d p_local = { (static_cast<float>(index.i) + 0.5) * precision_
 //                              , (static_cast<float>(index.j) + 0.5) * precision_ };
 //     return bounds_.as_global(p_local);
 // }
 
 // template<typename uint8_t , size_t dim>
-// bool FixedGridLayer<uint8_t ,dim>::blocked(const index::Index2u& at) const {
+// bool StaticGridLayer<uint8_t ,dim>::blocked(const index::Index2u& at) const {
 //     return (blocking_threshold <= operator[](at));
 // }
 
 // template<typename uint8_t , size_t dim>
-// bool FixedGridLayer<uint8_t ,dim>::contains(const Vector2d& p) const {
+// bool StaticGridLayer<uint8_t ,dim>::contains(const Vector2d& p) const {
 //     return bounds_.contains(p);
 // }
 
 // template<typename uint8_t , size_t dim>
-// bool FixedGridLayer<uint8_t ,dim>::contains(const Index2u& index) const {
+// bool StaticGridLayer<uint8_t ,dim>::contains(const Index2u& index) const {
 //     if (index.i < dim && index.j < dim ){
 //         return true;
 //     }
@@ -158,12 +158,12 @@ bool FixedGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) 
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t  FixedGridLayer<uint8_t ,dim>::classify(const Vector2d& p) const {
+// uint8_t  StaticGridLayer<uint8_t ,dim>::classify(const Vector2d& p) const {
 //     return classify(p, 0xFF);
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t  FixedGridLayer<uint8_t ,dim>::classify(const Vector2d& p, const uint8_t  default_value) const {
+// uint8_t  StaticGridLayer<uint8_t ,dim>::classify(const Vector2d& p, const uint8_t  default_value) const {
 //     if(bounds_.contains(p)){
 //         size_t i = index.lookup(as_index(p));
 //         return grid[i];
@@ -173,29 +173,29 @@ bool FixedGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) 
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t & FixedGridLayer<uint8_t ,dim>::get_cell(const size_t xi, const size_t yi) {
+// uint8_t & StaticGridLayer<uint8_t ,dim>::get_cell(const size_t xi, const size_t yi) {
 //     Index2u location(xi,yi);
 //     return grid[index.lookup(location)];
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t  FixedGridLayer<uint8_t ,dim>::get_cell(const size_t xi, const size_t yi) const {
+// uint8_t  StaticGridLayer<uint8_t ,dim>::get_cell(const size_t xi, const size_t yi) const {
 //     Index2u location(xi,yi);
 //     return grid[index.lookup(location)];
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t & FixedGridLayer<uint8_t ,dim>::operator[](const index::Index2u& location) {
+// uint8_t & StaticGridLayer<uint8_t ,dim>::operator[](const index::Index2u& location) {
 //     return grid[index.lookup(location)];
 // }
 
 // template<typename uint8_t , size_t dim>
-// uint8_t  FixedGridLayer<uint8_t ,dim>::operator[](const index::Index2u& location) const {
+// uint8_t  StaticGridLayer<uint8_t ,dim>::operator[](const index::Index2u& location) const {
 //     return grid[index.lookup(location)];
 // }
 
 // template<typename uint8_t , size_t dim>
-// bool FixedGridLayer<uint8_t ,dim>::store(const Vector2d& p, const uint8_t  new_value) {
+// bool StaticGridLayer<uint8_t ,dim>::store(const Vector2d& p, const uint8_t  new_value) {
 //     if(contains(p)){
 //         size_t i = index.lookup(as_index(p));
 //         grid[i] = new_value;
