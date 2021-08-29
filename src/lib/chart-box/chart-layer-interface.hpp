@@ -42,11 +42,11 @@ protected:
 public:
 
     /// \brief how wide each cell is, in real-world navigation units
-    constexpr static uint8_t block_value = 0xFF;
-    constexpr static uint8_t clear_value = 0;
-    constexpr static uint8_t unknown_value = 128u;
+    constexpr static uint8_t block_cell_value = 0xFF;
+    constexpr static uint8_t clear_cell_value = 0;
+    constexpr static uint8_t unknown_cell_value = 128u;
     
-    constexpr static uint8_t default_value = unknown_value;
+    constexpr static uint8_t default_cell_value = unknown_cell_value;
     
 public:
 

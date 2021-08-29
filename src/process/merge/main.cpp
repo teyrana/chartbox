@@ -105,11 +105,13 @@ int main( void ){
         if ( ! contour_input_path.empty() ) {
             auto& layer = box.get_contour_layer();
             auto& mapping = box.mapping();
-            fmt::print( ">>> Loading layer: {}  from: {}\n", layer.name(), contour_input_path.string() );
+            fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 geojson::load_contour_layer( contour_input_path, mapping, layer );
-            }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
-                flatbuffer::load( contour_input_path, layer );
+
+            // DEV: temporarily disable in this feature breanch
+            // }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
+            //     flatbuffer::load( contour_input_path, layer );
             }
         }
 
@@ -157,15 +159,17 @@ int main( void ){
             }
         }
 
-        if( ! contour_output_path.empty() ){
-            const auto& layer = box.get_contour_layer();
-            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
-            if( contour_output_path.extension() == chartbox::io::png::extension ){
-                png::save( layer, contour_output_path );
-            }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
-                flatbuffer::save( layer, contour_output_path);
-            }
-        }
+        // DEBUG
+        // temporarily disable... renable later.
+        // if( ! contour_output_path.empty() ){
+        //     const auto& layer = box.get_contour_layer();
+        //     fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
+        //     if( contour_output_path.extension() == chartbox::io::png::extension ){
+        //         png::save( layer, contour_output_path );
+        //     }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
+        //         flatbuffer::save( layer, contour_output_path);
+        //     }
+        // }
 
         if( ! chart_output_arg.empty() ){
             // const auto& layer = box.get_view_layer();

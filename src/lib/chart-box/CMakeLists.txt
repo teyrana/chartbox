@@ -26,7 +26,7 @@ target_link_libraries(${LIB_NAME} PRIVATE CONAN_PKG::fmt)
 # ============= Chart Base Tests =================
 
 # These tests can use the Catch2-provided main
-add_executable(chartbox-tests 
+add_executable(geometry-tests 
                 geometry/bound-box.hpp
                 geometry/bounds.test.cpp
                 geometry/frame-mapping.cpp geometry/frame-mapping.hpp
@@ -37,8 +37,8 @@ add_executable(chartbox-tests
                 geometry/utm-location.hpp
                 geometry/xy-location.hpp
                 )
-# target_link_libraries(chartbox-tests STATIC ${LIB_NAME})
-target_link_libraries(chartbox-tests PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(chartbox-tests PRIVATE CONAN_PKG::fmt)
-target_link_libraries(chartbox-tests PRIVATE CONAN_PKG::gdal )
-#target_link_libraries(chartbox-tests PRIVATE ${LIBRARY_LINKAGE})
+# target_link_libraries(geometry-tests STATIC ${LIB_NAME})
+target_link_libraries(geometry-tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(geometry-tests PRIVATE CONAN_PKG::fmt)
+target_link_libraries(geometry-tests PRIVATE CONAN_PKG::gdal )
+#target_link_libraries(geometry-tests PRIVATE ${LIBRARY_LINKAGE})

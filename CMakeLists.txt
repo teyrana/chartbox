@@ -79,6 +79,8 @@ SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chart-flatbuffer-io chart-geojson-io char
 ADD_SUBDIRECTORY(src/lib/layer/static-grid)
 SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} staticgridlayer )
 
+ADD_SUBDIRECTORY(src/lib/layer/rolling-grid)
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} rollinggridlayer )
 # ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
 # ADD_SUBDIRECTORY(src/lib/layer/view)
 

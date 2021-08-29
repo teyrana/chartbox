@@ -17,13 +17,13 @@ using chartbox::ChartBox;
 ChartBox::ChartBox()
     : mapping_()
     , boundary_layer_(mapping_.utm_bounds())
-    , contour_layer_(mapping_.utm_bounds())
+    , contour_layer_( 1.0, mapping_.utm_bounds())
 {
 
-    boundary_layer_.fill( boundary_layer_.default_value );
+    boundary_layer_.fill( boundary_layer_.default_cell_value );
     boundary_layer_.name("BoundaryLayerGrid");
     
-    contour_layer_.fill( boundary_layer_.default_value );
+    contour_layer_.fill( boundary_layer_.default_cell_value );
     contour_layer_.name("ContourLayerGrid");
 }
 
@@ -44,7 +44,7 @@ void ChartBox::print_layers() const {
     ++layer_index;
 
     // Contour Layer
-    fmt::print( "    [{:2d}] <{}> :{} ({} x {})\n", layer_index, contour_layer_.type(), contour_layer_.name(), contour_layer_.dimension, contour_layer_.dimension ); 
+    fmt::print( "    [{:2d}] <{}> :{}\n", layer_index, contour_layer_.type(), contour_layer_.name() ); 
     ++layer_index;
 
     // next layer 

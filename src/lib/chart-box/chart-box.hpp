@@ -11,6 +11,7 @@
 #include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
 #include "layer/static-grid/static-grid.hpp"
+#include "layer/rolling-grid/rolling-grid-layer.hpp"
 
 namespace chartbox {
 
@@ -21,7 +22,7 @@ using chartbox::geometry::LocalLocation;
 class ChartBox {
 public:
     typedef chartbox::layer::StaticGridLayer boundary_layer_t;
-    typedef chartbox::layer::StaticGridLayer contour_layer_t;
+    typedef chartbox::layer::RollingGridLayer contour_layer_t;
 
 public:
     ChartBox();

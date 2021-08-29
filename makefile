@@ -5,7 +5,7 @@ SRC_ROOT:=$(ROOT_DIR)/src
 BUILD_TYPE:="Release"
 BUILD_DIR=$(ROOT_DIR)/build
 CONAN_MARKER=$(BUILD_DIR)/conanbuildinfo.cmake
-TEST_EXE=build/bin/chartbox-tests
+
 
 MAIN_EXE=build/bin/mapmerge
 
@@ -48,21 +48,23 @@ main: debug
 test: test-all
 
 test-bounds: debug
-	$(TEST_EXE) BoundTests
+	build/bin/geometry-tests BoundTests
 
 test-frame: debug
-	$(TEST_EXE) FrameTests
+	build/bin/geometry-tests FrameTests
 
 test-polygon: debug
-	$(TEST_EXE) PolygonTests
+	build/bin/geometry-tests PolygonTests
 
-test-roll-grid: debug
-	$(TEST_EXE) --gtest_filter=RollingGrid*
+test-rolling: debug
+	build/bin/rolling-grid-tests
 
 test-search: debug
-	$(TEST_EXE) --gtest_filter=Search*
+	build/bin/search-tests
 
-test-all: build
+test-all: 
 	clear
-	$(TEST_EXE)
+	build/bin/geometry-tests
+	build/bin/rolling-grid-tests
+#	build/bin/search-tests
 
