@@ -16,11 +16,10 @@ using chartbox::layer::CONTOUR;
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool save< StaticGridLayer<CONTOUR> >( const StaticGridLayer<CONTOUR>& from_layer, const std::filesystem::path& to_path){
+inline bool save<StaticGridLayer>( const StaticGridLayer& from_layer, const std::filesystem::path& to_path){
     using chartbox::io::flatbuffer::Cell;
     using chartbox::io::flatbuffer::CellBuilder;
     using chartbox::io::flatbuffer::Location;
-
 
     fmt::print( stderr, "    >>> Write Layer to: {}\n", to_path.string() );
 

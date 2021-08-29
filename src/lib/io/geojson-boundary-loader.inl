@@ -17,7 +17,7 @@ using chartbox::layer::StaticGridLayer;
 namespace chartbox::io::geojson {
 
 template<>
-inline bool load<StaticGridLayer<BOUNDARY>>( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer<BOUNDARY>& to_layer ){
+inline bool load_boundary( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer& to_layer ){
 
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path !!: {}\n", from_path.string() );

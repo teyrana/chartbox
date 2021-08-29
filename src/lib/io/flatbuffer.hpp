@@ -7,6 +7,8 @@
 
 namespace chartbox::io::flatbuffer {
 
+using chartbox::layer::role_t;
+
 const std::string extension = ".fb";
 
 template< typename layer_t >

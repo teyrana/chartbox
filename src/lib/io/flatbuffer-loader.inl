@@ -19,7 +19,7 @@ using chartbox::layer::CONTOUR;
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool load< StaticGridLayer<CONTOUR> > ( const std::filesystem::path& from_path, StaticGridLayer<CONTOUR>& to_layer ){
+inline bool load( const std::filesystem::path& from_path, StaticGridLayer& to_layer ){
     using chartbox::geometry::GlobalLocation;
     using chartbox::geometry::LocalLocation;
     using chartbox::geometry::Polygon;

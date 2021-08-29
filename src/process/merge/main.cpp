@@ -95,7 +95,7 @@ int main( void ){
             auto& mapping = box.mapping();
             fmt::print( ">>> Load Layer: {}  to: {}\n", layer.name(), boundary_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-                geojson::load( boundary_input_path, mapping, layer );
+                geojson::load_boundary( boundary_input_path, mapping, layer );
             // NYI
             // }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
             //     flatbuffer::load( boundary_input_path, layer );
@@ -107,7 +107,7 @@ int main( void ){
             auto& mapping = box.mapping();
             fmt::print( ">>> Loading layer: {}  from: {}\n", layer.name(), contour_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-                geojson::load( contour_input_path, mapping, layer );
+                geojson::load_contour( contour_input_path, mapping, layer );
             }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
                 flatbuffer::load( contour_input_path, layer );
             }

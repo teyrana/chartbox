@@ -32,7 +32,7 @@ typedef enum {
 // base class of a CRTP pattern, as described here:
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
 // https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
-template< typename layer_t, chartbox::layer::role_t layer_role >
+template< typename layer_t >
 class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
@@ -112,8 +112,6 @@ public:
     inline std::string name() const { return name_; }
 
     layer_t name( const std::string& _name ){ name_ = _name; return layer(); }
-
-    inline role_t role() const { return layer_role; }
 
     /// \brief reset the layer to its default state
     void reset() { 

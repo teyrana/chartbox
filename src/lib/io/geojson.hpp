@@ -28,10 +28,24 @@ const std::string extension = ".geojson";
 ///   - https://datatracker.ietf.org/doc/html/rfc7946
 ///   - https://gdal.org/drivers/vector/geojson.html
 template< typename layer_t>
-inline bool load( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& /*mapping*/, layer_t& to_layer ){
+inline bool load_contour( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& /*mapping*/, layer_t& to_layer ){
     // fallback implementation
     fmt::print( "    <<< 'geojson::load' not implemented for: {} in role: {}  (from path: {})\n", to_layer.name(), to_layer.role(), from_path.string() );
     return false;
+}
+
+template< typename layer_t>
+inline bool load_boundary( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& /*mapping*/, layer_t& to_layer ){
+    // switch( to_layer.role() ){
+    // case BOUNDARY:
+            // return false;
+    // case CONTOUR:
+            // return false;
+    // default:
+        // fallback case
+        fmt::print( "    <<< 'geojson::load' not implemented for: {} in role: {}  (from path: {})\n", to_layer.name(), to_layer.role(), from_path.string() );
+        return false;
+    // };
 }
 
 // ====== ====== see: geojson.cpp ====== ====== 
@@ -44,7 +58,7 @@ chartbox::geometry::Polygon<chartbox::geometry::LocalLocation> load_polygon(cons
 ///     "[minx, miny, maxx, maxy]" (see Section 5).  --rfc 7946
 bool load_bound_box( const CPLJSONObject& root, chartbox::geometry::FrameMapping& mapping );
 
-bool load_boundary_polygon( const CPLJSONObject& root, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer<chartbox::layer::BOUNDARY>& to_layer );
+bool load_boundary_polygon( const CPLJSONObject& root, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
 
 // ====== Contour-Specific Functions ====== 
 /// \brief loads json data (of a specific shape) file into a layer
@@ -67,7 +81,7 @@ bool load_boundary_polygon( const CPLJSONObject& root, const chartbox::geometry:
 /// \param json array containing a list of point-lists (see above)
 /// \param fill_value -- fill the outer polygon with this value
 /// \param except_value -- fill the holes within the outer polygon with this value
-bool load_contour_feature( const CPLJSONArray& from_feature, const chartbox::geometry::FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, chartbox::layer::StaticGridLayer<chartbox::layer::CONTOUR>& to_layer );
+bool load_contour_feature( const CPLJSONArray& from_feature, const chartbox::geometry::FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, chartbox::layer::StaticGridLayer& to_layer );
 
 // internal options:
 constexpr static bool fill_interior_holes = false;

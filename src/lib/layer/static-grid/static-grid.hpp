@@ -12,10 +12,8 @@
 
 namespace chartbox::layer {
 
-template< chartbox::layer::role_t layer_role >
-class StaticGridLayer : public ChartLayerInterface<StaticGridLayer<layer_role>, layer_role> {
+class StaticGridLayer : public ChartLayerInterface<StaticGridLayer> {
 public:
-    typedef Eigen::Matrix<uint32_t,2,1> Vector2u;
 
     /// \brief number of cells along each dimension of this grid
     constexpr static size_t dimension = 1024;
@@ -58,9 +56,7 @@ public:
 
     uint8_t get(const LocalLocation& p) const;
 
-    size_t lookup( const uint32_t x, const uint32_t y ) const;
-
-    size_t lookup( const Vector2u i ) const;
+    size_t lookup( const uint32_t i, const uint32_t j ) const;
 
     size_t lookup( const LocalLocation& p ) const;
 
@@ -81,42 +77,6 @@ public:
 
     ~StaticGridLayer() = default;
 
-    // /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
-    // ///
-    // /// \param Eigen::Vector2d - the x,y coordinates to search at
-    // /// \param default_value to return on out-of-bounds
-    // /// \return the cell value
-    // uint8_t classify(const Eigen::Vector2d& p, const uint8_t default_value) const;
-
-    // /// note: this version has a default value of '0xFF'
-    // uint8_t classify(const Eigen::Vector2d& p) const;
-
-    // // Overide from ChartInterface
-    // bool contains(const Eigen::Vector2d& p) const;
-
-    // /// \brief convert a nav-space location to a storage-space index
-    // /// \warning behavior is undefined if `location` is outside of chart bounds
-    // /// \warning rounds up, on borders
-    // index::Index2u as_index(const Eigen::Vector2d& location) const;
-
-    // /// \brief convert a storage-space location to a navigation-space location
-    // /// \warning behavior is undefined if `index` is outside of chart bounds 
-    // Vector2d as_location(const index::Index2u& index) const;
-
-    // /// \brief Load data into the grid, in memory-order
-    // /// \param load n cells from the given pointer 
-    // int fill_from_buffer(const std::vector<uint8_t>& source);
-
-    // /// \brief simply returns the value or reference to the internal data
-    // /// \warning !! DOES NOT CHECK BOUNDS !!
-    // uint8_t& get_cell(const size_t xi, const size_t yi);
-    // uint8_t get_cell(const size_t xi, const size_t yi) const ;
-
-    // uint8_t& operator[](const index::Index2u& i);
-    // uint8_t operator[](const index::Index2u& i) const ;
-
-    // bool to_png(const std::string filename) const;
-
 
 protected:
 
@@ -126,16 +86,14 @@ protected:
 
 private:
 
-    ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>& super() {
-        return *static_cast< ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>* >(this);
+    ChartLayerInterface<StaticGridLayer>& super() {
+        return *static_cast< ChartLayerInterface<StaticGridLayer>* >(this);
     }
 
-    const ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>& super() const {
-        return *static_cast< const ChartLayerInterface< StaticGridLayer<layer_role>, layer_role>* >(this);
+    const ChartLayerInterface<StaticGridLayer>& super() const {
+        return *static_cast< const ChartLayerInterface<StaticGridLayer>* >(this);
     }
 };
 
 
 } // namespace
-
-#include "static-grid.inl"
