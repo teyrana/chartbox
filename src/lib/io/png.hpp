@@ -8,8 +8,8 @@ namespace chartbox::io::png {
 
 const std::string extension = ".png";
 
-template< typename layer_t >
-bool save( const layer_t& from_layer, const std::filesystem::path& to_path );
+template< typename source_t >
+bool save( const source_t& from_layer, const std::filesystem::path& to_path );
 
 } // namespace chartbox::io
 

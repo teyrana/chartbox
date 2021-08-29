@@ -15,13 +15,14 @@
 namespace chartbox {
 
 using chartbox::geometry::FrameMapping;
+using chartbox::geometry::LocalLocation;
 
 /// \brief A container of containers for various types of map data structures
 class ChartBox {
 public:
     typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::BOUNDARY> boundary_layer_t;
     typedef chartbox::layer::FixedGridLayer<chartbox::layer::role_t::CONTOUR> contour_layer_t;
-    
+
 public:
     ChartBox();
 
@@ -30,13 +31,16 @@ public:
     /// @param {double} x The x-coordinate; in real-world units; meters
     /// @param {double} y The y-coordinate; in real-world units; meters
     /// @return {cell_value_t} The value of the node, if available; or the default value.
-    int classify(const Eigen::Vector2d& p) const;
+    uint8_t classify(const LocalLocation& p) const;
 
-    boundary_layer_t& get_boundary_layer();
 
-    contour_layer_t& get_contour_layer();
-    
+    inline boundary_layer_t& get_boundary_layer() {  return boundary_layer_; }
+
+    inline contour_layer_t& get_contour_layer() {  return contour_layer_; }
+
     inline FrameMapping& mapping() { return mapping_; }
+
+    inline const FrameMapping& mapping() const { return mapping_; }
 
     void print_layers() const;
 
@@ -52,7 +56,6 @@ private:
 
     boundary_layer_t boundary_layer_;
     contour_layer_t contour_layer_;
-    // TreeLayer _tree_layer;
 
     // manually hard-coded. Unfortunately.
     constexpr static size_t layer_count = 2;

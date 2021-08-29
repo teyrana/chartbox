@@ -27,20 +27,10 @@ ChartBox::ChartBox()
     contour_layer_.name("ContourLayerGrid");
 }
 
-int ChartBox::classify( const Eigen::Vector2d& /*p*/) const { 
-    return 0;
-}
-
-// void* ChartBox::get_layer_at_index( const size_t index) {
-//     return this->operator[](index);
-// }
-
-ChartBox::boundary_layer_t& ChartBox::get_boundary_layer(){
-    return boundary_layer_;
-}
-
-ChartBox::contour_layer_t& ChartBox::get_contour_layer(){
-    return contour_layer_;
+uint8_t ChartBox::classify( const LocalLocation& location ) const { 
+    const uint8_t boundary_value = boundary_layer_.get( location );
+    const uint8_t contour_value = contour_layer_.get( location );
+    return std::max( boundary_value, contour_value );
 }
 
 void ChartBox::print_layers() const {

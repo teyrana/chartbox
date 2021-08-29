@@ -1,5 +1,5 @@
 # ============= Fixed-Grid Chart Layer Library =================
-SET(LIB_NAME fixedgrid )
+SET(LIB_NAME fixedgridlayer )
 SET(LIB_HEADERS fixed-grid.hpp fixed-grid.inl
                 # z-order-index.hpp z-order-index.inl
                 )

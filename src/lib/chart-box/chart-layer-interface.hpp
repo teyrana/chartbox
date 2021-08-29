@@ -25,7 +25,8 @@ typedef enum {
        CONTOUR,
        TARGET,
        LIDAR,
-       RADAR
+       RADAR,
+       VIEW
 } role_t;
 
 // base class of a CRTP pattern, as described here:
@@ -40,14 +41,12 @@ protected:
 
 public:
 
-    typedef uint8_t cell_t; 
-
     /// \brief how wide each cell is, in real-world navigation units
-    constexpr static cell_t block_value = 0xFF;
-    constexpr static cell_t clear_value = 0;
-    constexpr static cell_t unknown_value = 128u;
+    constexpr static uint8_t block_value = 0xFF;
+    constexpr static uint8_t clear_value = 0;
+    constexpr static uint8_t unknown_value = 128u;
     
-    constexpr static cell_t default_value = unknown_value;
+    constexpr static uint8_t default_value = unknown_value;
     
 public:
 
@@ -63,7 +62,7 @@ public:
     // /// \param Eigen::Vector2d - the x,y coordinates to search at
     // /// \note  this version has a default value of '0xFF'
     // /// \return the cell value
-    // cell_t classify(const Eigen::Vector2d& p) const {
+    // uint8_t classify(const Eigen::Vector2d& p) const {
     //     return static_cast<chart_t*>(this)->classify(p); }
 
     // /// \brief Test if this data structer contains this index-point
@@ -73,41 +72,42 @@ public:
 
     /// \brief sets the entire grid to the given value
     /// \param fill_value - fill value for entire grid
-    bool fill( const cell_t value ){
+    bool fill( const uint8_t value ){
         return layer().fill(value); }
 
     /// \brief sets the entire grid contents to the given byte values
     /// \param fill_array  contents to write into this layer
-    bool fill( const cell_t* const buffer, size_t count ){
+    bool fill( const uint8_t* const buffer, size_t count ){
         return layer().fill(buffer, count); }
 
     /// \brief Fill the given area with the given value.
     /// 
     /// \param source - bounds defining the fill area, in local coordinates
     /// \param fill_value - value to write inside the box
-    bool fill( const BoundBox<LocalLocation>& box, cell_t value );
+    bool fill( const BoundBox<LocalLocation>& box, uint8_t value );
 
     /// \brief Fills the interior of the given polygon with the given value.
     /// 
     /// \param source - polygon defining the fill araea. Assumed to be in local coordinates, closed, CCW, and non-intersectings
     /// \param fill_value - fill value for polygon interior
-    bool fill( const Polygon<LocalLocation>& source, cell_t value );
+    bool fill( const Polygon<LocalLocation>& source, uint8_t value );
 
     ///! \brief load a .shp file into this chart.
     // bool load_from_shape_file(target_t& chart, const std::string& filepath);
-
-    /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
-    ///
-    /// \param Eigen::Vector2d - the x,y coordinates to search at
-    /// \return the cell value
-    cell_t get(const UTMLocation& p) const { return layer().get(p); }
 
     /// \brief Access the value at an (x, y) Eigen::Vector2d
     ///!
     /// \param Eigen::Vector2d - the x,y coordinates to search at:
     /// \return reference to the cell value
-    cell_t& get( const Eigen::Vector2d& point ){
-        return layer().get(point); }
+    uint8_t& get( const LocalLocation& p ){
+        return layer().get(p); }
+
+    /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
+    ///
+    /// \param Eigen::Vector2d - the x,y coordinates to search at
+    /// \return the cell value
+    uint8_t get(const LocalLocation& p) const { 
+        return layer().get(p); }
 
     inline std::string name() const { return name_; }
 
@@ -124,7 +124,7 @@ public:
     /// \param point - the x,y coordinates to write to
     /// \param value - the value to write at the given coordinates
     /// \return true for success; else false
-    bool store(const Eigen::Vector2d& point, const cell_t value){
+    bool store(const Eigen::Vector2d& point, const uint8_t value){
         return layer().store(point,value); }
 
     std::string print_contents() const { return layer().print_contents(); }
@@ -153,7 +153,7 @@ protected:
     /// \brief descriptive for this layer's purpose
     std::string name_;
 
-}; // class ChartLayerInterface< cell_t, layer_t >
+}; // class ChartLayerInterface< uint8_t, layer_t >
 
 } // namespace chart
 

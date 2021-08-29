@@ -70,13 +70,16 @@ INCLUDE_DIRECTORIES(include)
 INCLUDE_DIRECTORIES(src/lib)
 
 ADD_SUBDIRECTORY(src/lib/chart-box)
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
+
 # depend on chart-box:
+ADD_SUBDIRECTORY(src/lib/io)
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartloaders chartsavers )
+
 ADD_SUBDIRECTORY(src/lib/layer/fixed-grid)
 # ADD_SUBDIRECTORY(src/lib/layer/roll-grid)
 # ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
-ADD_SUBDIRECTORY(src/lib/io)
-
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
+# ADD_SUBDIRECTORY(src/lib/layer/view)
 
 # ADD_SUBDIRECTORY(src/process/profile)
 ADD_SUBDIRECTORY(src/process/merge)

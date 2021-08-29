@@ -54,16 +54,15 @@ public:
     /// \param fill_value - value to write inside the area
     bool fill( const std::vector<uint8_t>& source );
 
-    // frame: local frame
-    uint8_t& get(const Eigen::Vector2d& p);
-    // frame: local frame
-    uint8_t get(const Eigen::Vector2d& p) const;
+    uint8_t& get( const LocalLocation& p );
+
+    uint8_t get(const LocalLocation& p) const;
 
     size_t lookup( const uint32_t x, const uint32_t y ) const;
 
     size_t lookup( const Vector2u i ) const;
 
-    size_t lookup( const Eigen::Vector2d& p ) const;
+    size_t lookup( const LocalLocation& p ) const;
 
     double precision() const;
 
@@ -78,7 +77,7 @@ public:
     ///!
     /// \param Eigen::Vector2d - the x,y coordinates to search at:
     /// \return reference to the cell value
-    bool store(const Eigen::Vector2d& p, const uint8_t new_value);
+    bool store(const LocalLocation& p, const uint8_t new_value);
 
     ~FixedGridLayer() = default;
 

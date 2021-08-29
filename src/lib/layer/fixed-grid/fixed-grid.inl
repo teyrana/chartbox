@@ -24,7 +24,6 @@ template<role_t role>
 FixedGridLayer<role>::FixedGridLayer( const BoundBox<UTMLocation>& _bounds )
     : ChartLayerInterface<FixedGridLayer<role>, role>(_bounds)
 {
-
     if( (dimension != static_cast<size_t>(_bounds.width()/precision())) || ( dimension != static_cast<size_t>(_bounds.width()/precision())) ){
         // yes, this is limiting.  This class is limiting -- it is only intended to be a fast / cheap / easy medium for testing other parts of the code
         // if you run up against this limitation, don't change it here: use a class which better fits your use case.
@@ -37,7 +36,6 @@ FixedGridLayer<role>::FixedGridLayer( const BoundBox<UTMLocation>& _bounds )
         fmt::print( "Grid:\n");
         fmt::print( "      dimension:    {:12lu} x {:%12lu} \n", dimension, dimension );
     }
-
 }
 
 template<role_t role>
@@ -65,12 +63,12 @@ bool FixedGridLayer<role>::fill(const std::vector<uint8_t >& source) {
 }
 
 template<role_t role>
-uint8_t FixedGridLayer<role>::get(const Eigen::Vector2d& p) const {
+uint8_t FixedGridLayer<role>::get(const LocalLocation& p ) const {
     return grid[ lookup(p) ];
 }
 
 template<role_t role>
-uint8_t & FixedGridLayer<role>::get(const Eigen::Vector2d& p) {
+uint8_t & FixedGridLayer<role>::get(const LocalLocation& p ) {
     return grid[ lookup(p) ];
 }
 
@@ -80,9 +78,9 @@ size_t FixedGridLayer<role>::lookup( const uint32_t i, const uint32_t j ) const 
 }
 
 template<role_t role>
-size_t FixedGridLayer<role>::lookup( const Eigen::Vector2d& p ) const {
-    return lookup( static_cast<uint32_t>(p.x()/precision()),
-                   static_cast<uint32_t>(p.y()/precision()) );
+size_t FixedGridLayer<role>::lookup( const LocalLocation& p ) const {
+    return lookup( static_cast<uint32_t>(p.easting/precision()),
+                   static_cast<uint32_t>(p.northing/precision()) );
 }
 
 template<role_t role>
@@ -120,7 +118,7 @@ void FixedGridLayer<role>::print_contents() const {
 }
 
 template<role_t role>
-bool FixedGridLayer<role>::store( const Eigen::Vector2d& p, const uint8_t  value) {
+bool FixedGridLayer<role>::store( const LocalLocation& p, const uint8_t  value) {
     const auto offset = lookup( p );
     grid[offset] = value;
     return true;

@@ -48,6 +48,11 @@ int main( void ){
                 // contour_output_arg = "countour.png";
                 // contour_output_arg = "contour.cache.fb";
 
+    // std::string lidar_output_arg("");
+
+    std::string chart_output_arg("");
+                // chart_output_arg = "composite.view.png";
+
     // Boundary Layer
     // ==============
     if( ! std::filesystem::is_regular_file(boundary_input_arg)){
@@ -68,6 +73,11 @@ int main( void ){
     std::filesystem::path contour_input_path( contour_input_arg );
 
     std::filesystem::path contour_output_path( contour_output_arg );
+
+
+    // Contour Layer
+    // ==============
+    std::filesystem::path view_output_path( chart_output_arg );
 
 
     // ^^^^ Configuration
@@ -157,7 +167,15 @@ int main( void ){
                 flatbuffer::save( layer, contour_output_path);
             }
         }
-        
+
+        if( ! chart_output_arg.empty() ){
+            // const auto& layer = box.get_view_layer();
+            fmt::print( ">>> Write chart to: {}\n", view_output_path.string() );
+            if( view_output_path.extension() == chartbox::io::png::extension ){
+                png::save( box, view_output_path );
+            }
+        }
+
         const auto finish_write = std::chrono::high_resolution_clock::now(); 
         const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;
         if( 0.5 < write_duration ){
