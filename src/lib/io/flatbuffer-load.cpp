@@ -7,23 +7,18 @@
 #include <fstream>
 
 #include "layer/static-grid/static-grid.hpp"
-#include "chart-box/geometry/global-location.hpp"
 #include "chart-box/geometry/local-location.hpp"
-#include "chart-box/geometry/polygon.hpp"
 
+#include "flatbuffer.hpp"
 #include "cell-cache-generated.h"
 
 using chartbox::layer::StaticGridLayer;
-using chartbox::layer::CONTOUR;
 
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool load( const std::filesystem::path& from_path, StaticGridLayer& to_layer ){
-    using chartbox::geometry::GlobalLocation;
+bool load( const std::filesystem::path& from_path, StaticGridLayer& to_layer ){
     using chartbox::geometry::LocalLocation;
-    using chartbox::geometry::Polygon;
-    using chartbox::geometry::UTMLocation;
     using chartbox::io::flatbuffer::Cell;
     using chartbox::io::flatbuffer::CellBuilder;
     using chartbox::io::flatbuffer::Location;
@@ -55,7 +50,7 @@ inline bool load( const std::filesystem::path& from_path, StaticGridLayer& to_la
     assert( cell->height() == to_layer.dimension );
     assert( cell->width() == to_layer.dimension );
 
-    const UTMLocation origin( cell->origin()->easting(), cell->origin()->northing() );
+    const LocalLocation origin( cell->origin()->easting(), cell->origin()->northing() );
 
     // current iteration -- eventually, this should be dynamic
     constexpr double tolerance = 1.0;

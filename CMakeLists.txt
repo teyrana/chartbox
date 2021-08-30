@@ -77,6 +77,8 @@ ADD_SUBDIRECTORY(src/lib/io)
 SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartloaders chartsavers )
 
 ADD_SUBDIRECTORY(src/lib/layer/static-grid)
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} staticgridlayer )
+
 # ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
 # ADD_SUBDIRECTORY(src/lib/layer/view)
 

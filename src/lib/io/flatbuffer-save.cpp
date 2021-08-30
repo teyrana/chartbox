@@ -8,15 +8,15 @@
 
 #include "layer/static-grid/static-grid.hpp"
 
+#include "flatbuffer.hpp"
 #include "cell-cache-generated.h"
 
 using chartbox::layer::StaticGridLayer;
-using chartbox::layer::CONTOUR;
 
 namespace chartbox::io::flatbuffer {
 
 template<>
-inline bool save<StaticGridLayer>( const StaticGridLayer& from_layer, const std::filesystem::path& to_path){
+bool save<StaticGridLayer>( const StaticGridLayer& from_layer, const std::filesystem::path& to_path){
     using chartbox::io::flatbuffer::Cell;
     using chartbox::io::flatbuffer::CellBuilder;
     using chartbox::io::flatbuffer::Location;
