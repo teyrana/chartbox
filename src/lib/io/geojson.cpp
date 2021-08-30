@@ -3,8 +3,14 @@
 // NOTE: This is not an independent compilation unit! 
 //       It is a template-class implementation, and should only be included from its header.
 
+// standard libraries
+#include <filesystem>
+#include <fstream> 
+
+// third-party libraries: GDAL:
 #include <cpl_json.h>
 
+// this project & libraries
 #include "chart-box/geometry/frame-mapping.hpp"
 #include "chart-box/geometry/global-location.hpp"
 #include "chart-box/geometry/local-location.hpp"
@@ -13,18 +19,52 @@
 
 #include "geojson.hpp"
 
-using chartbox::layer::BOUNDARY;
-using chartbox::layer::CONTOUR;
-using chartbox::layer::StaticGridLayer;
-
 using chartbox::geometry::FrameMapping;
 using chartbox::geometry::GlobalLocation;
 using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
+using chartbox::geometry::UTMLocation;
+using chartbox::layer::BOUNDARY;
+using chartbox::layer::CONTOUR;
+using chartbox::layer::StaticGridLayer;
 
 namespace chartbox::io::geojson {
 
-bool load_bound_box( const CPLJSONObject& root, FrameMapping& mapping ){
+// ====== Internal Function Declarations ====== 
+
+chartbox::geometry::Polygon<chartbox::geometry::LocalLocation> load_polygon(const CPLJSONArray& points, const chartbox::geometry::FrameMapping& mapping );
+
+///  The values of a "bbox" array are "[west, south, east, north]", not
+///     "[minx, miny, maxx, maxy]" (see Section 5).  --rfc 7946
+bool load_boundary_box( const CPLJSONObject& root, chartbox::geometry::FrameMapping& mapping );
+
+bool load_boundary_polygon( const CPLJSONObject& root, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
+
+// ====== Contour-Specific Functions ====== 
+/// \brief loads json data (of a specific shape) file into a layer
+///
+///     Partial Sample of expected json:
+///         "geometry": { ...
+///           "coordinates": [
+///             [
+///               [ // outer polygon
+///                 [ // point #0 of polygon
+///                   ...
+///                 ]
+///               ],[ // hole polygon #1
+///               ],[ // hole polygon #2
+///               ],[ // hole polygon #3
+///                   ...
+///               ]
+///             ...
+///
+/// \param json array containing a list of point-lists (see above)
+/// \param fill_value -- fill the outer polygon with this value
+/// \param except_value -- fill the holes within the outer polygon with this value
+bool load_contour_feature( const CPLJSONArray& from_feature, const chartbox::geometry::FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, chartbox::layer::StaticGridLayer& to_layer );
+
+// ====== Function Definitions ====== 
+bool load_boundary_box( const CPLJSONObject& root, FrameMapping& mapping ){
 
     auto bound_box_elem = root.GetArray("bbox");
     if( ! bound_box_elem.IsValid()){
@@ -54,34 +94,55 @@ bool load_bound_box( const CPLJSONObject& root, FrameMapping& mapping ){
     return move_success;
 }
 
-bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, StaticGridLayer& to_layer ){
-    // fmt::print( stderr, "            >>> Loading Feature: {} polygons.\n", feat.Size() );
+bool load_boundary_layer( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer& to_layer ){
 
-    const auto& chart_local_bounds = mapping.local_bounds();
+    if( not std::filesystem::exists(from_path) ) {
+        fmt::print( stderr, "!! Could not find input path !!: {}\n", from_path.string() );
+        return false;
+    }
 
-    if( 0 < from_feature.Size() ){
-        const Polygon<LocalLocation> outer_polygon = load_polygon( from_feature[0].ToArray(), mapping );
-        if( 0 == outer_polygon.size() ){
+    CPLJSONDocument doc;
+    if( doc.Load( from_path.string()) ){
+        const CPLJSONObject& root = doc.GetRoot();
+        const bool has_bound_box = ( root["bbox"].IsValid() );
+        const bool has_polygon = ( root["features"].IsValid() 
+                                && root.GetArray("features")[0].IsValid() 
+                                && root.GetArray("features")[0]["geometry"].IsValid()
+                                && root.GetArray("features")[0]["geometry"]["type"].IsValid()
+                                && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
+
+        if( has_bound_box && ( not load_boundary_box(root, mapping) )){
+            fmt::print( stderr, "!! Could not load GeoJSON bounding box: !!!\n");
+            fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
             return false;
         }
 
-        if( outer_polygon.bounds().overlaps( chart_local_bounds ) ){
-            // fmt::print( stderr, "                >>> feature overlaps. Filling outer border.\n" );
-            to_layer.fill( outer_polygon, fill_value );
-
-            if( chartbox::io::geojson::fill_interior_holes ){
-                for( int hole_index = 1; hole_index < from_feature.Size(); ++hole_index ){
-                    // fmt::print( stderr, "                    >> Hole[{:>2d}]...\n", hole_index );
-                    const Polygon<LocalLocation> hole_polygon = load_polygon( from_feature[0].ToArray(), mapping );
-                    to_layer.fill( hole_polygon, except_value );
-                }
+        if( has_polygon ){
+            CPLJSONObject geom = root.GetArray("features")[0]["geometry"];
+            if( not geom.IsValid() ){
+                fmt::print( stderr, "!! Could not load geom from feature: !!!\n{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
+                return false;
             }
 
-            return true;
-        }
-    }
+            CPLJSONArray points = geom.GetArray("coordinates")[0].ToArray();
+            if( 0 == points.Size() ){
+                fmt::print( stderr, "!! Could not load ponits from geom: !!!\n{}\n", geom.Format(CPLJSONObject::PrettyFormat::Pretty) );
+                return false;
+            }
 
-    return false;
+            const auto polygon = load_polygon( points, mapping );
+
+            to_layer.fill( polygon, to_layer.clear_value );
+
+        }else{
+            to_layer.fill( mapping.local_bounds(), to_layer.clear_value );
+        }
+
+        return true;
+    }else{
+        fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n");
+        return false;
+    }
 }
 
 bool load_boundary_polygon( const CPLJSONObject& root, const FrameMapping& /*mapping*/, StaticGridLayer& /*to_layer*/ ){
@@ -123,6 +184,92 @@ Polygon<LocalLocation> load_polygon( const CPLJSONArray& source, const FrameMapp
         dest.enclose();
 
         return dest;
+    }
+}
+
+
+bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, StaticGridLayer& to_layer ){
+    // fmt::print( stderr, "            >>> Loading Feature: {} polygons.\n", feat.Size() );
+
+    const auto& chart_local_bounds = mapping.local_bounds();
+
+    if( 0 < from_feature.Size() ){
+        const Polygon<LocalLocation> outer_polygon = load_polygon( from_feature[0].ToArray(), mapping );
+        if( 0 == outer_polygon.size() ){
+            return false;
+        }
+
+        if( outer_polygon.bounds().overlaps( chart_local_bounds ) ){
+            // fmt::print( stderr, "                >>> feature overlaps. Filling outer border.\n" );
+            to_layer.fill( outer_polygon, fill_value );
+
+            if( chartbox::io::geojson::fill_interior_holes ){
+                for( int hole_index = 1; hole_index < from_feature.Size(); ++hole_index ){
+                    // fmt::print( stderr, "                    >> Hole[{:>2d}]...\n", hole_index );
+                    const Polygon<LocalLocation> hole_polygon = load_polygon( from_feature[0].ToArray(), mapping );
+                    to_layer.fill( hole_polygon, except_value );
+                }
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer& to_layer ){
+
+    if( not std::filesystem::exists(from_path) ) {
+        fmt::print( stderr, "!! Could not find input path: '{}' !!\n", from_path.string() );
+        return false;
+    }
+
+    CPLJSONDocument doc;
+    if( doc.Load( from_path.string()) ){
+        fmt::print( "        ::Name: {}\n", doc.GetRoot().GetString("name") );
+
+        const CPLJSONObject& root = doc.GetRoot();
+        const bool has_features = ( root.GetArray("features").IsValid() );
+        if( not has_features ){
+            fmt::print( stderr, "!! Could not find GeoJSON polygon features ?!?!" );
+            fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
+            return false;
+        }
+
+        const CPLJSONArray& features = root.GetArray("features");
+        fmt::print( stderr, "        ::Contains {} features\n", features.Size() );
+
+        to_layer.fill( to_layer.unknown_value );
+
+        for( int feature_index = 0; feature_index < features.Size(); ++feature_index ){
+            const CPLJSONObject& each_properties = features[feature_index].GetObj("properties");
+            // const int id = each_properties.GetInteger("OBJECTID");
+            const bool inside = static_cast<bool>(each_properties.GetInteger("INSIDE"));
+
+            // fmt::print( stderr, "            [{: >3d}]: {} \n", id, (outside?"outside":"inside") );
+
+            const CPLJSONObject& each_geometry = features[feature_index].GetObj("geometry");
+            const CPLJSONArray& polygon_list = each_geometry.GetArray("coordinates")[0].ToArray();
+            
+            if( inside ){
+                // fmt::print( stderr, "            [{: >3d}]: inside >> fill blocked \n", id );
+                if( load_contour_feature( polygon_list, mapping, to_layer.block_value, to_layer.clear_value, to_layer ) ){
+                    // fmt::print( stderr, "                <<< Loaded.\n" );
+                }
+            }else{
+                // fmt::print( stderr, "            [{: >3d}]: outside >> fill clear. \n", id );
+                if( load_contour_feature( polygon_list, mapping, to_layer.clear_value, to_layer.block_value, to_layer ) ){
+                    // fmt::print( stderr, "                <<< Loaded.\n" );
+                }
+            }
+        }
+
+        fmt::print( stderr, "        << finished processing features.\n");
+        return true;
+    }else{
+        fmt::print( stderr, "?!?! Unknown failure while loading GeoJSON text into GDAL...\n"); 
+        return false;
     }
 }
 

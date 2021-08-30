@@ -9,6 +9,10 @@
 
 #include "gdal_priv.h"
 
+#include "layer/static-grid/static-grid.hpp"
+
+using chartbox::layer::StaticGridLayer;
+
 namespace chartbox::io::png {
 
 template<>

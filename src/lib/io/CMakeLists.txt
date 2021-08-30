@@ -1,7 +1,7 @@
 
 # ============= Chart Loaders Library =================
 SET(LIB_NAME chartloaders)
-SET(LIB_HEADERS geojson.hpp geojson-boundary-loader.inl geojson-contour-loader.inl
+SET(LIB_HEADERS geojson.hpp
                 flatbuffer.hpp
                 )
 SET(LIB_SOURCES 
