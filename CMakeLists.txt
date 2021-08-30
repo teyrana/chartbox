@@ -74,7 +74,7 @@ SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
 
 # depend on chart-box:
 ADD_SUBDIRECTORY(src/lib/io)
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartloaders chartsavers )
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chart-flatbuffer-io chart-geojson-io chart-png-io )
 
 ADD_SUBDIRECTORY(src/lib/layer/static-grid)
 SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} staticgridlayer )

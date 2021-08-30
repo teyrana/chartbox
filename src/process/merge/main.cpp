@@ -11,9 +11,9 @@
 
 #include "chart-box.hpp"
 
-#include "io/flatbuffer.hpp"
-#include "io/geojson.hpp"
-#include "io/png.hpp"
+#include "io/flatbuffer/flatbuffer.hpp"
+#include "io/geojson/geojson.hpp"
+#include "io/png/png.hpp"
 
 using chartbox::layer::BOUNDARY;
 using chartbox::layer::CONTOUR;

@@ -5,12 +5,17 @@
 //       function implementations.
 
 #include <cstddef>
+#include <filesystem>
 #include <string>
 
 #include "gdal_priv.h"
 
+#include "chart-box/chart-box.hpp"
 #include "layer/static-grid/static-grid.hpp"
 
+#include "png.hpp"
+
+using chartbox::ChartBox;
 using chartbox::layer::StaticGridLayer;
 
 namespace chartbox::io::png {
