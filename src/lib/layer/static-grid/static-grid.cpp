@@ -35,6 +35,15 @@ StaticGridLayer::StaticGridLayer( const BoundBox<UTMLocation>& _bounds )
     }
 }
 
+bool StaticGridLayer::contains(const LocalLocation& p ) const {
+    if( 0 > p.easting || 0 > p.northing ){
+        return false;
+    }else if( dimension < p.easting || dimension < p.northing ){
+        return false;
+    }
+    return true;
+}
+
 bool StaticGridLayer::fill( const uint8_t  value) {
     grid.fill( value);
     return true;

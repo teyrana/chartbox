@@ -33,7 +33,6 @@ public:
     /// @return {cell_value_t} The value of the node, if available; or the default value.
     uint8_t classify(const LocalLocation& p) const;
 
-
     inline boundary_layer_t& get_boundary_layer() {  return boundary_layer_; }
 
     inline contour_layer_t& get_contour_layer() {  return contour_layer_; }
@@ -47,10 +46,6 @@ public:
     /// \brief Releases all memory associated with this quad tree.
     ~ChartBox() = default;
 
-public:
-    // NYI -- this should include all the to-global, and to-local code...
-    // Transform transform;
-
 private:
     FrameMapping mapping_;
 
@@ -59,15 +54,6 @@ private:
 
     // manually hard-coded. Unfortunately.
     constexpr static size_t layer_count = 2;
-
-// private:
-//     friend class QuadTreeTest_ConstructDefault_Test;
-//     friend class QuadTreeTest_LoadValidTree_Test;
-//     friend class QuadTreeTest_CalculateLoadFactor_Test;
-//     friend class QuadTreeTest_LoadGridFromJSON_Test;
-//     friend class QuadTreeTest_WriteLoadCycle_Test;
-//     friend class QuadTreeTest_SearchExplicitTree_Test;
-//     friend class QuadTreeTest_InterpolateTree_Test;
 
 };
 } // namespace chart

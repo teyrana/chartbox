@@ -29,6 +29,8 @@ public:
 
 //    const std::array<uint8_t, dimension*dimension> & array() const;
 
+    bool contains(const LocalLocation& p ) const;
+
     inline uint8_t* data() {
         return grid.data(); }
 
