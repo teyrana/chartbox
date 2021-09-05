@@ -17,7 +17,7 @@ using chartbox::ChartBox;
 ChartBox::ChartBox()
     : mapping_()
     , boundary_layer_(mapping_.utm_bounds())
-    , contour_layer_( 1.0, mapping_.utm_bounds())
+    , contour_layer_(mapping_.utm_bounds())
 {
 
     boundary_layer_.fill( boundary_layer_.default_cell_value );

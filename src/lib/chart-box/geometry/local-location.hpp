@@ -33,6 +33,14 @@ struct LocalLocation {
                && tolerance > std::fabs( northing - other.northing) );
     }
 
+    LocalLocation operator+( const LocalLocation& other ) const { 
+        return { easting + other.easting, northing + other.northing };
+    }
+
+    LocalLocation operator-( const LocalLocation& other ) const { 
+        return { easting - other.easting, northing - other.northing };
+    }
+
     bool operator==( const LocalLocation& other ) const {
         return this->nearby(other);
     }

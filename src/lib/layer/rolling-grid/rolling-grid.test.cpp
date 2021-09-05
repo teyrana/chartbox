@@ -143,16 +143,112 @@ TEST_CASE( "RollingGridSector sets & gets correctly "){
 
 
 // ============ ============ ============ ============  Rolling-Grid-Layer-Tests  ============ ============ ============ ============
-TEST_CASE( "RollingGridLayerTests" ){
+template<typename T>
+void populate_markers_per_cell( T& layer ) {
+    // sets a distinct debug value for each cell
+    // iteration progress West => East, South => North;  Cell 0,0 starts in the Southwest Corner.
+    for (double northing = layer.visible().min.northing + 0.5*layer.meters_across_cell; northing < layer.visible().max.northing; northing += layer.meters_across_cell ) {
+        for (double easting = layer.visible().min.easting + 0.5*layer.meters_across_cell; easting < layer.visible().max.easting; easting += layer.meters_across_cell) {
+            const uint8_t value = (static_cast<uint8_t>(easting-layer.visible().min.easting) << 4) + static_cast<uint8_t>(northing - layer.visible().min.northing);
+            layer.store( {easting, northing}, value );
+        }
+    }
+}
 
-    SECTION( "Initialize Simple Layer"){
+template<typename T>
+void populate_markers_per_sector( T& layer ) {
+    // sets a distinct debug value for each sector
+    // iteration progress West => East, South => North;  Cell 0,0 and Sector 0,0 both start in the Southwest Corner.
+    for (double sector_northing = layer.visible().min.northing; sector_northing < layer.visible().max.northing; sector_northing += layer.meters_across_sector ) {
+        for (double sector_easting = layer.visible().min.easting; sector_easting < layer.visible().max.easting; sector_easting += layer.meters_across_sector ) {
+            const uint8_t sector_value = (static_cast<uint8_t>(sector_easting-layer.visible().min.easting) << 4) + static_cast<uint8_t>(sector_northing - layer.visible().min.northing);            
+            for (double cell_northing = sector_northing + 0.5*layer.meters_across_cell; cell_northing < (sector_northing + layer.meters_across_sector); cell_northing += layer.meters_across_cell ) {
+                for (double cell_easting = sector_easting + 0.5*layer.meters_across_cell; cell_easting < (sector_easting + layer.meters_across_sector); cell_easting += layer.meters_across_cell ) {
+                    const LocalLocation store_at ( cell_easting, cell_northing );
+                    layer.store( store_at, sector_value );
+                }
+            }
+        }
+    }
+}
+ 
+TEST_CASE( "Verify Layer Initialization Bounds"){
+    // tracks the interval [ 0.0, 12.0 ]
+    const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
+    RollingGridLayer layer( utm_bounds );
 
-    } // SECTION
+    // it's a constexpr variable.  So it _BETTER_ be.)
+    REQUIRE( 1.0 == Approx(layer.precision) );
 
+    // the UTM bounds are incidentally set, not in a realistic way
+    // (i.e. not like they'd be set in a actual production use)
 
-// TEST( RollingGrid, UpdateBounds) {
-//     const Bounds b0({-2., -4.},{2., 4.});
-//     RollingGrid64 g(b0);
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
+    REQUIRE( LocalLocation( 12.0, 12.0) == layer.tracked().max );
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 12.0, 12.0) == layer.visible().max );
+
+    {   const LocalLocation loc(  0.0,  0.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  0.1,  0.1 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc( 11.9, 11.9 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc( 12.0, 12.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  6.0,  0.1 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  6.0, 12.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  0.0,  6.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc( 12.0,  6.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  1.0,  8.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  0.1,  3.0 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }{  const LocalLocation loc(  1.0, 11.9 );  CHECK( layer.tracked(loc) );  CHECK( layer.visible(loc) );
+    }
+} // TEST_CASE
+
+TEST_CASE( "Verify Layer Stores Values"){
+    // tracks the interval [ 0.0, 12.0 ]
+    const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
+    RollingGridLayer layer( utm_bounds );
+
+    // documentation / expected steps:
+    REQUIRE( 1.0 == Approx(layer.precision) );
+
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
+    REQUIRE( LocalLocation( 12.0, 12.0) == layer.tracked().max );
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 12.0, 12.0) == layer.visible().max );
+
+    populate_markers_per_cell( layer );
+
+    // sector 0,0
+    REQUIRE( layer.tracked({0.5, 0.5}) );
+    CHECK( 0 == layer.get( 0.5, 0.5) );
+    REQUIRE( layer.tracked({1.5, 1.5}));
+    CHECK( 0x11 == layer.get( 1.5, 1.5 ) );
+    REQUIRE(  layer.tracked({ 2.5, 2.5 }) );
+    CHECK( 0x22 == layer.get( 2.5, 2.5 ) );
+    REQUIRE(  layer.tracked( { 3.5, 3.5 }) );
+    CHECK( 0x33 == layer.get({ 3.5, 3.5 }) );
+
+    // sector 1,1
+    REQUIRE(  layer.tracked( { 4.5, 4.5 }) );
+    CHECK( 0x44 == layer.get({ 4.5, 4.5 }) );
+    REQUIRE(  layer.tracked( { 5.5, 5.5 }) );
+    CHECK( 0x55 == layer.get({ 5.5, 5.5 }) );
+    REQUIRE( layer.tracked({  6.5, 6.5 }));
+    CHECK( 0x66 == layer.get( 6.5, 6.5 ));
+    REQUIRE( layer.tracked({ 7.5, 7.5 }));
+    CHECK( 0x77 == layer.get( 7.5, 7.5 ));
+
+    // sector 2.2
+    REQUIRE(  layer.tracked( {  8.5,  8.5 }) );
+    CHECK( 0x88 == layer.get({  8.5,  8.5 }) );
+    REQUIRE(  layer.tracked( {  9.5,  9.5 }) );
+    CHECK( 0x99 == layer.get({  9.5,  9.5 }) );
+    REQUIRE(  layer.tracked( { 10.5, 10.5 }) );
+    CHECK( 0xAA == layer.get({ 10.5, 10.5 }) );
+    REQUIRE(  layer.tracked( { 11.5, 11.5 }) );
+    CHECK( 0xBB == layer.get({ 11.5, 11.5 }) );
+
+} // TEST_CASE
+
 
     // SECTION( "Verify RollingGrid Can Refocus" ){
     //     // tracks the interval [ 0.0, 12.0 ]
@@ -611,7 +707,7 @@ TEST_CASE( "RollingGridLayerTests" ){
 //     // above-diagonal square
 //     ASSERT_EQ( terrain.classify({ 2.2, 5.2}), 0x99);
 //     ASSERT_EQ( terrain.classify({ 2.2, 5.7}), 0x99);
-}
+// }
 
 // TEST(Grid, LoadOffsetPolygon) {
 //     Terrain<Grid> terrain;

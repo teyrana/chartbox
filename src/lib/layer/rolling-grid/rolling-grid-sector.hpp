@@ -21,8 +21,6 @@ public:
     // internal storage coordinates of the southest corner, in the frame of the larger owning grid.
     typedef CellInSectorIndex<cells_across_sector> CellIndex;
 
-    LocalLocation location;
-
 public:
     // constexpr static uint8_t ERROR_VALUE = 0xFF;
 
