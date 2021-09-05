@@ -39,11 +39,6 @@ struct BoundBox {
         return true;
     }
 
-    inline void dump() const {
-        fmt::print( "::Bounds[0]: {} -> {} \n", min[0], max[0] );
-        fmt::print( "::Bounds[1]: {} -> {} \n", min[1], max[1] );
-    }
-
     inline double east() const { return max.x; }
 
     inline void grow( double zeroth, double first ){
