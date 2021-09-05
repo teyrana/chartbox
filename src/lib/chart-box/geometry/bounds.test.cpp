@@ -60,6 +60,16 @@ TEST_CASE( "BoundTests" ){
         REQUIRE( not bounds.is_square() );
     }
 
+
+    SECTION( "Bounds can grow to accomodate new points" ){
+        BoundBox<XYLocation> bounds( {0,0}, {9,9} );
+        CHECK( bounds.contains({3, 4}) );
+        CHECK( bounds.contains({5, 6}) );
+        CHECK( bounds.contains({8, 5}) );
+        CHECK( ! bounds.contains({12, 8}) );
+        CHECK( ! bounds.contains({5, 11}) );
+    }
+
     SECTION( "Bounds can grow to accomodate new points" ){
         BoundBox<XYLocation> bounds;
         bounds.grow({3, 4});

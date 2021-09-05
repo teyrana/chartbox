@@ -32,6 +32,13 @@ struct BoundBox {
         max = { -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max() };
     }
 
+    inline bool contains( const frame_vector_t& p ) const {
+        if(( min[0] > p[0] )||( min[1] > p[1] )||( max[0] < p[0] )||( max[1] < p[1] ) ){
+            return false;
+        }
+        return true;
+    }
+
     inline void dump() const {
         fmt::print( "::Bounds[0]: {} -> {} \n", min[0], max[0] );
         fmt::print( "::Bounds[1]: {} -> {} \n", min[1], max[1] );
