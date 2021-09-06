@@ -57,6 +57,7 @@ test-polygon: debug
 	build/bin/geometry-tests PolygonTests
 
 test-rolling: debug
+#	# build/bin/rolling-grid-tests RollingGridIndexTests
 	build/bin/rolling-grid-tests
 
 test-search: debug

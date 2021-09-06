@@ -96,6 +96,10 @@ struct BoundBox {
     
     inline const frame_vector_t& northeast() const { return max; }
 
+    BoundBox<frame_vector_t> move( const frame_vector_t& delta ) const {
+        return { { min[0] + delta[0], min[1] + delta[1]}, { max[0] + delta[0], max[1] + delta[1]} };
+    }
+
     bool overlaps( const BoundBox<frame_vector_t>& other ) const {
         if( max[0] < other.min[0] ){
             return false;

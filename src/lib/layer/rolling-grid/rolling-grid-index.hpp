@@ -86,10 +86,6 @@ struct CellInViewIndex {
         return column + row*(cells_across_sector*sectors_across_view);
     }
 
-    inline SectorInViewIndex<sectors_across_view> divide() const { 
-        return divide({0u,0u});
-    }
-
     inline SectorInViewIndex<sectors_across_view> divide( SectorInViewIndex<sectors_across_view> anchor ) const {
         return { (static_cast<uint32_t>(column/cells_across_sector) + anchor.column + sectors_across_view)%sectors_across_view,
                  (static_cast<uint32_t>(row/cells_across_sector) + anchor.row + sectors_across_view)%sectors_across_view };

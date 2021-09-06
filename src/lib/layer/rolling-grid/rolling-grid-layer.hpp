@@ -45,15 +45,15 @@ public:
 
     // used to address a cell within a sector
     // Is explicitly a different type to prevent cross-talk
-    typedef Index2u32<cells_across_sector> CellIndex;
+    typedef CellInSectorIndex<cells_across_sector> CellIndex;
 
     // used to address a sector within the active view
     // Is explicitly a different type to prevent cross-talk
-    typedef Index2u32<sectors_across_view> SectorIndex;
+    typedef SectorInViewIndex<sectors_across_view> SectorIndex;
 
     // used to address a cell within the active view
     // Is explicitly a different type to prevent cross-talk
-    typedef Index2u32<cells_across_sector*sectors_across_view> ViewIndex;
+    typedef CellInViewIndex<cells_across_sector,sectors_across_view> ViewIndex;
 
 public:
     /// \brief Constructs a new 2d square grid
@@ -94,7 +94,20 @@ public:
     const BoundBox<LocalLocation>& visible() const;
     bool visible(const LocalLocation& p) const;
 
-private:
+    bool save( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
+
+    bool load( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
+
+// // private: 
+//     ///     => old terrain is no longer visible, and is disposed of, then recycled
+//     /// \param columns_right == >0: columns to scroll right,   <0: columns to scroll left
+//     /// \param rows_up == >0: rows to scroll upward,   <0: rows to scroll downward
+//     void scroll( int32_t columns_right, int32_t rows_up );
+
+    bool scroll_east();
+    bool scroll_north();
+    bool scroll_south();
+    bool scroll_west();
 
     std::filesystem::path cache_path;
 
@@ -108,6 +121,7 @@ private:
 
     // Just wrap the indexes around the grid, starting from the anchor:
     SectorIndex anchor;
+
 
 private:
 

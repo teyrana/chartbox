@@ -1,6 +1,6 @@
 // GPL v3 (c) 2020, Daniel Williams 
 
-// #include <cmath>
+#include <cmath>
 
 #include <Eigen/Geometry>
 
@@ -16,16 +16,15 @@ using chartbox::geometry::Polygon;
 
 namespace chartbox::layer {
 
+// /// \brief calculate index within a 2d grid, with rows of length `across` 
+// template<uint32_t across>
+// size_t lookup( uint32_t column, uint32_t row ) {
+//     return column + row*across;
+// }
+
 RollingGridLayer::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
     : ChartLayerInterface<RollingGridLayer>(_bounds)
 {
-
-    // fmt::print( "Bounds:\n");
-    // fmt::print( "      min:      {:12.6f}, {:12.6f} \n", _bounds.min.easting, _bounds.min.northing );
-    // fmt::print( "      max:      {:12.6f}, {:12.6f} \n", _bounds.max.easting, _bounds.max.northing );
-    // fmt::print( "      Width:    {:12.6f}, {:12.6f} \n", _bounds.width(), _bounds.width() );
-    // fmt::print( "Grid:\n");
-    // fmt::print( "      dimension:    {:12lu} x {:%12lu} \n", dimension, dimension );
 
     // temporary / placeholder version:
     track_bounds_.min = {0,0};
@@ -67,11 +66,10 @@ uint8_t RollingGridLayer::get(const LocalLocation& layer_location ) const {
                                         static_cast<uint32_t>(view_location.northing / meters_across_cell) };
 
         /// index of the sector to lookup in
-        // const size_t sector_offset = view_index.divide<SectorIndex>(cells_across_sector).offset();
-        const size_t sector_offset = view_index.divide<SectorIndex>(cells_across_sector).wrap().offset();
+        const size_t sector_offset = view_index.divide(anchor).offset();
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = view_index.zoom<CellIndex>(cells_across_sector).offset();
+        const size_t cell_offset = view_index.zoom().offset();
 
         // current_index.get_sector()  // refactor idea ==> retreives raw-index to sector-within-layer
         // current_index.get_cell()    // refactor idea: retreives raw-index to cell-within-sector
@@ -94,35 +92,111 @@ uint8_t RollingGridLayer::get(const LocalLocation& layer_location ) const {
     return default_cell_value;
 }
 
-bool RollingGridLayer::focus(const BoundBox<LocalLocation>& new_bounds ) {
-
-    if( view_bounds_.overlaps(new_bounds) ){
-
-        // iteration progress West => East, South => North;  Cell 0,0 and Sector 0,0 both start in the Southwest Corner.
-
-        // for( uint32_t sector_column=0; sector_column < sectors.size(); ++sector_column ){
-        //     const uint32_t each_cell_column = sector_column * cells_across_sector; // cell column, in the layer frame
-        //     for( uint32_t sector_row=0; sector_row < sectors.size(); ++sector_row ){
-        //         const uint32_t sector_index = sector_column + (sector_row * sectors_across_view);
-        //         const uint32_t each_cell_row = sector_row * cells_across_sector; // cell row, in the layer frame
-                
-        //         auto& each_sector = sectors[sector_index];
-        //         each_sector.anchor.column = each_cell_column;
-        //         each_sector.anchor.row = each_cell_row;
-
-        //         each_sector.fill(default_cell_value);
-
-        //         // debug
-        //         fmt::print( "      >> Moving cell: #{}  @ {}, {} \n", 0, sector_index, each_cell_column, each_cell_row );
-        //         each_sector.fill(sector_index);
-        //         // debug
-        //     }
-        // }
-
-        view_bounds_ = new_bounds;
-
-        return true;
+bool RollingGridLayer::focus( const BoundBox<LocalLocation>& request_bounds ) {
+    // if the requested bounds don't even ovelap the 
+    if( not track_bounds_.overlaps(request_bounds) ){
+        return false;
     }
+
+    // 1. enforce that views must align with the sectors
+    // 2. enforce that views must be EXACTLY the width x height that our code assumes
+    const BoundBox<LocalLocation> snapped_bounds = request_bounds.snap( meters_across_sector,  meters_across_view );
+    // fmt::print( "    :: snap bounds:\n{}", snapped_bounds.dump("    "));
+
+    fmt::print( "===========================================================\n" );
+    BoundBox<LocalLocation> next_bounds;
+    if( track_bounds_.contains(snapped_bounds) ){
+        // case A: (easy) new bounds are _entirely_withn tracked_bounds
+        next_bounds = snapped_bounds;
+    }else{
+        // case B: (complicated) new bounds must be adjusted:
+        if( snapped_bounds.min.easting < track_bounds_.min.easting ){
+            next_bounds.min.easting = track_bounds_.min.easting;
+            next_bounds.max.easting = track_bounds_.min.easting + meters_across_view;
+        }else if( snapped_bounds.max.easting > track_bounds_.max.easting ){
+            next_bounds.min.easting = track_bounds_.max.easting - meters_across_view;
+            next_bounds.max.easting = track_bounds_.max.easting;
+        }else{
+            next_bounds.min.easting = request_bounds.min.easting;
+            next_bounds.max.easting = request_bounds.max.easting;
+        }
+
+        if( snapped_bounds.min.northing < track_bounds_.min.northing ){
+            next_bounds.min.northing = track_bounds_.min.northing;
+            next_bounds.max.northing = track_bounds_.min.northing + meters_across_view;
+        }else if( snapped_bounds.max.northing > track_bounds_.max.northing ){
+            next_bounds.min.northing = track_bounds_.max.northing - meters_across_view;
+            next_bounds.max.northing = track_bounds_.max.northing;
+        }else{
+            next_bounds.min.northing = snapped_bounds.min.northing;
+            next_bounds.max.northing = snapped_bounds.max.northing;
+        }
+    }
+    // iteration direction: West => East, South => North;  Cell 0,0 and Sector 0,0 both start in the Southwest Corner.
+    // for( uint32_t sector_column=0; sector_column < sectors_across_view; ++sector_column ){
+    //     for( uint32_t sector_row=0; sector_row < sectors_across_view; ++sector_row ){
+    //         const uint32_t old_sector_index = sector_column + (sector_row * sectors_across_view);
+    //         const uint32_t new_sector_index = sector_column + (sector_row * sectors_across_view);
+
+    //         fmt::print( "  {}??{} \n", old_sector_index, new_sector_index );
+
+    // //         auto& each_sector = sectors[sector_index];
+    // //         each_sector.anchor.column = each_cell_column;
+    // //         each_sector.anchor.row = each_cell_row;
+
+    // //         each_sector.fill(default_cell_value);
+
+    // //         // debug
+    //         // fmt::print( "      >> Moving cell: #{}  @ {}, {} \n", 0, sector_index, each_cell_column, each_cell_row );
+    // //         each_sector.fill(sector_index);
+    // //         // debug
+    //     }
+    // }
+
+    {   // remap sectors:
+        fmt::print( "======== ======= ======= Remapping Sectors ======= ======= =======\n");
+        fmt::print( "    :: tracked:\n{}", track_bounds_.dump("    ") );
+
+        const LocalLocation delta_bounds = next_bounds.min - view_bounds_.min;
+        // const SectorIndex delta_index = delta_bounds.to_sector_index( meters_across_sector );
+        const int32_t column_delta = delta_bounds.easting * meters_across_sector;
+        const int32_t row_delta = delta_bounds.northing * meters_across_sector;
+
+        fmt::print( "    :: Δ:        {},{}\n", delta_bounds.easting, delta_bounds.northing );
+        fmt::print( "    :: move-by:  {},{}\n", column_delta, row_delta );
+
+        // scroll east/west: only one of these will be executed in practice, but it's simpler to just leave them like this.
+        for( int32_t i = column_delta; i > 0; i-- ){
+            scroll_east();
+        }
+        for( int32_t i = column_delta; i < 0; i-- ){
+            scroll_west();
+        }
+
+        // scroll north/south: only one of these will be executed in practice, but it's simpler to just leave them like this.
+        for( int32_t i = row_delta; i > 0; i-- ){
+            scroll_north();
+        }
+        for( int32_t i = row_delta; i < 0; i-- ){
+            scroll_south();
+        }
+    }
+
+    fmt::print( "    :: old view:\n{}", view_bounds_.dump("    ") );
+    fmt::print( "    :: next view:\n{}", next_bounds.dump("    "));
+
+    // ought to be redundant
+    // view_bounds_ = next_bounds;
+
+    // DEBUG
+    fmt::print( "{}\n", print_contents());
+
+    return true;
+}
+
+bool RollingGridLayer::load( const SectorIndex& index, const LocalLocation& /*location*/ ){
+    // placeholder -- just reset sector
+    sectors[ index.offset() ].fill(default_cell_value);
 
     return false;
 }
@@ -142,7 +216,7 @@ std::string RollingGridLayer::print_contents() const {
             const size_t sector_index = (cell_column_index/cells_across_sector) + (cell_row_index/cells_across_sector)*sectors_across_view;
             const auto& current_sector = sectors[ sector_index ];
 
-            const CellIndex cell_lookup_index( static_cast<uint32_t>(cell_column_index), static_cast<uint32_t>(cell_row_index) );
+            const CellIndex cell_lookup_index( cell_column_index, cell_row_index );
 
             uint8_t current_cell_value = 0xFF;
             if( current_sector.contains( cell_lookup_index )){
@@ -159,6 +233,10 @@ std::string RollingGridLayer::print_contents() const {
     }
 
     buf << "======== ======= ======= Printing By Location ======= ======= =======\n";
+    buf << "     View:      [ [ " << view_bounds_.min[0] << ", " << view_bounds_.min[1] << " ] < [ "
+                                 << view_bounds_.max[0] << ", " << view_bounds_.max[1] << " ] ]\n";
+    buf << "     Anchor:    ( " << anchor.column << ", " << anchor.row << " )\n";
+    
     // print location-aware contents
     for( double northing = (view_bounds_.max.northing - (meters_across_cell/2)); northing > view_bounds_.min.northing; northing -= meters_across_cell ) {
         for( double easting = (view_bounds_.min.easting + (meters_across_cell/2)); easting < view_bounds_.max.easting; easting += meters_across_cell ) {
@@ -167,9 +245,7 @@ std::string RollingGridLayer::print_contents() const {
             }
 
             const LocalLocation cell_lookup_index( easting, northing );
-
             uint8_t current_cell_value = get( cell_lookup_index );
-
             buf << ' ' << std::setw(2) << static_cast<int>(current_cell_value);
 
         }
@@ -184,20 +260,156 @@ std::string RollingGridLayer::print_contents() const {
     return buf.str();
 }
 
+bool RollingGridLayer::save( const SectorIndex& /*index*/, const LocalLocation& /*location*/ ){ 
+    // placeholder
+    // NYI
+    return false; 
+}
+
+bool RollingGridLayer::scroll_east() {
+ const auto& last_bounds = view_bounds_;
+    const LocalLocation delta( meters_across_sector, 0.0 );
+    const auto next_bounds = last_bounds.move( delta );
+    const uint32_t at_column = static_cast<uint32_t>(anchor.column + 1 + sectors_across_view)%sectors_across_view;
+    const SectorIndex next_anchor{ at_column, anchor.row };
+
+    // // debug
+    // fmt::print( stderr, ">>> scroll:east/+1:    anchor:    {}, {}:\n", anchor.column, anchor.row );
+    // fmt::print( "    :: old view:\n{}", last_bounds.dump("    "));
+    // fmt::print( "    :: next view:\n{}", next_bounds.dump("    "));
+    // fmt::print( "    :: Δ(m):           {},{}\n", delta.easting, delta.northing );
+    // fmt::print( "    :: Last Anchor:    {},{}\n", anchor.column, anchor.row );
+    // fmt::print( "    :: Next Anchor:    {},{}\n", next_anchor.column, next_anchor.row );
+
+    for( uint32_t at_row = 0; at_row < sectors_across_view; ++at_row ){
+        const SectorIndex at_index( anchor.column, at_row );
+
+        // (A) Store values to old location
+        const LocalLocation from_location = (LocalLocation( at_index.column, at_index.row) * meters_across_sector) + last_bounds.min;
+        // fmt::print( stderr, "    @[ {}, {}]:   >> store: ( {}, {} )\n", at_index.column, at_index.row, from_location.easting, from_location.northing );
+        save( at_index, from_location );
+
+        // (B) Load values at new location 
+        const LocalLocation to_location( (next_bounds.max.easting - meters_across_sector), from_location.northing );
+        // fmt::print( stderr, "                << load:  ( {}, {} )\n", to_location.easting, to_location.northing );
+        load( at_index, to_location );
+    }
+
+    anchor = next_anchor;
+    view_bounds_ = next_bounds;
+    return true;
+}
+
+bool RollingGridLayer::scroll_north() {
+    const auto& last_bounds = view_bounds_;
+    const LocalLocation delta( 0.0, meters_across_sector);
+    const auto next_bounds = last_bounds.move( delta );
+    const uint32_t at_row = static_cast<uint32_t>(anchor.row + 1 + sectors_across_view)%sectors_across_view;
+    const SectorIndex next_anchor{ anchor.column, at_row };
+
+    for( uint32_t at_column = 0; at_column < sectors_across_view; ++at_column ){
+        const SectorIndex at_index( at_column, anchor.row );
+
+        // (A) Store values to old location
+        const LocalLocation from_location = (LocalLocation(at_index.column, at_index.row) * meters_across_sector) + last_bounds.min;
+        // fmt::print( stderr, "    @[ {}, {}]:   >> store: ( {}, {} )\n", at_index.column, at_index.row, from_location.easting, from_location.northing );
+        save( at_index, from_location );
+
+        // (B) Load values at new location 
+        const LocalLocation to_location( from_location.easting, next_bounds.max.northing-meters_across_sector );
+        // fmt::print( stderr, "                << load:  ( {}, {} )\n", to_location.easting, to_location.northing );
+        load( at_index, to_location );
+    }
+
+    anchor = next_anchor;
+    view_bounds_ = next_bounds;
+    return true;
+}
+
+bool RollingGridLayer::scroll_south() {
+    const auto& last_bounds = view_bounds_;
+    const LocalLocation delta( 0.0, -meters_across_sector);
+    const auto next_bounds = last_bounds.move( delta );
+    
+    const uint32_t at_row = (anchor.row + sectors_across_view - 1 ) % sectors_across_view;
+    const SectorIndex next_anchor{ anchor.column, at_row };
+
+    // debug
+    // fmt::print( stderr, ">>> scroll:south/-1:    anchor:    {}, {}:\n", anchor.column, anchor.row );
+    // fmt::print( "    :: old view:\n{}", last_bounds.dump("    "));
+    // fmt::print( "    :: next view:\n{}", next_bounds.dump("    "));
+    // fmt::print( "    :: Δ(m):           {},{}\n", delta.easting, delta.northing );
+    // fmt::print( "    :: Last Anchor:    {},{}\n", anchor.column, anchor.row );
+    // fmt::print( "    :: Next Anchor:    {},{}\n", next_anchor.column, next_anchor.row );
+
+
+    for( uint32_t at_column = 0; at_column < sectors_across_view; ++at_column ){
+        const SectorIndex at_index( at_column, at_row );
+
+        // (A) Store values to old location
+        const LocalLocation from_location = (LocalLocation(at_index.column, at_index.row) * meters_across_sector) + last_bounds.min;
+        // fmt::print( stderr, "    @[ {}, {}]:   >> store: ( {}, {} )\n", at_index.column, at_index.row, from_location.easting, from_location.northing );
+        save( at_index, from_location );
+
+        // (B) Load values at new location 
+        const LocalLocation to_location( from_location.easting, next_bounds.min.northing );
+        // fmt::print( stderr, "                << load:  ( {}, {} )\n", to_location.easting, to_location.northing );
+        load( at_index, to_location );
+    }
+
+    anchor = next_anchor;
+    view_bounds_ = next_bounds;
+    return true;
+}
+
+bool RollingGridLayer::scroll_west() {
+    const auto& last_bounds = view_bounds_;
+    const LocalLocation delta( -meters_across_sector, 0.0 );
+    const auto next_bounds = last_bounds.move( delta );
+
+    const uint32_t at_column = (anchor.column + sectors_across_view - 1 )% sectors_across_view;
+    const SectorIndex next_anchor{ at_column, anchor.row };
+
+    // fmt::print( ">>> scroll:west/-1:    anchor:    {}, {}:\n", anchor.column, anchor.row );
+    // fmt::print( "    :: old view:\n{}", last_bounds.dump("    ") );
+    // fmt::print( "    :: next view:\n{}", next_bounds.dump("    "));
+    // fmt::print( "    :: Δ(m):        {},{}\n", delta.easting, delta.northing );
+    // fmt::print( "    :: Last Anchor:    {},{}\n", anchor.column, anchor.row );
+    // fmt::print( "    :: Next Anchor:    {},{}\n", next_anchor.column, next_anchor.row );
+
+
+    for( uint32_t at_row = 0; at_row < sectors_across_view; ++at_row ){
+        const SectorIndex at_index( at_column, at_row );
+
+        // (A) Store values to old location
+        const LocalLocation from_location = (LocalLocation( at_index.column, at_index.row) * meters_across_sector) + last_bounds.min;
+        // fmt::print( stderr, "    @[ {}, {}]:   >> store: ( {}, {} )\n", at_index.column, at_index.row, from_location.easting, from_location.northing );
+        save( at_index, from_location );
+
+        // (B) Load values at new location 
+        const LocalLocation to_location( next_bounds.min.easting, from_location.northing );
+        // fmt::print( stderr, "                << load:  ( {}, {} )\n", to_location.easting, to_location.northing );
+        load( at_index, to_location );
+    }
+
+    anchor = next_anchor;
+    view_bounds_ = next_bounds;
+    return true;
+}
+
 bool RollingGridLayer::store(const LocalLocation& layer_location, uint8_t new_value) {
     if( visible(layer_location) ){   
         
         const LocalLocation view_location = layer_location - view_bounds_.min;
 
-        const SectorIndex view_index = { static_cast<uint32_t>(view_location.easting / meters_across_cell),
+        const ViewIndex view_index = { static_cast<uint32_t>(view_location.easting / meters_across_cell),
                                          static_cast<uint32_t>(view_location.northing / meters_across_cell) };
 
         /// index of the sector to lookup in
-        // const size_t sector_offset = view_index.divide<SectorIndex>(cells_across_sector).offset();
-        const size_t sector_offset = view_index.divide<SectorIndex>(cells_across_sector).wrap().offset();
+        const size_t sector_offset = view_index.divide(anchor).offset();
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = view_index.zoom<CellIndex>(cells_across_sector).offset();
+        const size_t cell_offset = view_index.zoom().offset();
 
         sectors[ sector_offset ][ cell_offset ] = new_value;
 
