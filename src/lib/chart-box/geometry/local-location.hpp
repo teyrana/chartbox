@@ -33,12 +33,20 @@ struct LocalLocation {
                && tolerance > std::fabs( northing - other.northing) );
     }
 
-    LocalLocation operator+( const LocalLocation& other ) const { 
+    LocalLocation operator*( double factor ) const {
+        return { easting * factor, northing * factor };
+    }
+
+    LocalLocation operator+( const LocalLocation& other ) const {
         return { easting + other.easting, northing + other.northing };
     }
 
-    LocalLocation operator-( const LocalLocation& other ) const { 
+    LocalLocation operator-( const LocalLocation& other ) const {
         return { easting - other.easting, northing - other.northing };
+    }
+
+    LocalLocation operator/( double divisor ) const {
+        return { easting / divisor, northing / divisor };
     }
 
     bool operator==( const LocalLocation& other ) const {

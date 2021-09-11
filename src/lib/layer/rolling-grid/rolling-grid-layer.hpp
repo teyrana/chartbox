@@ -36,6 +36,7 @@ public:
     // constexpr static double area_per_sector = area_per_cell * cells_per_sector;
 
     constexpr static size_t cells_across_view = cells_across_sector * sectors_across_view;
+    constexpr static double meters_across_view = meters_across_cell * cells_across_view;
 
     constexpr static double precision = meters_across_cell;
 
@@ -74,7 +75,6 @@ public:
     uint8_t get( double easting, double northing ) const;
 
     // size_t lookup( const LocalLocation& p ) const;
-    // size_t lookup( const LocalLocation& p ) const;
 
     /// \brief Draws a simple debug representation of this grid to stderr
     std::string print_contents() const;
@@ -98,20 +98,16 @@ private:
 
     std::filesystem::path cache_path;
 
-    geometry::BoundBox<LocalLocation> tracked_bounds_;
-    geometry::BoundBox<LocalLocation> view_bounds_;
-
     // this tracks the outer bounds (that the whole chart is tracking)
-    // geometry::BoundBox<LocalLocation>& super().bounds_;
+    geometry::BoundBox<LocalLocation> track_bounds_;
+    geometry::BoundBox<LocalLocation> view_bounds_;
 
     //  chart => layer => sector => cell
     //                 ^^ you are here
     std::array<RollingGridSector<cells_across_sector>, sectors_across_view * sectors_across_view > sectors;
 
-    // optional (?)
-    // typedef uint8_t sector_map_t;  ///< placeholder
-    // std::array<sector_grid_t*, layer_dimension * layer_dimension> sector_map;
-
+    // Just wrap the indexes around the grid, starting from the anchor:
+    SectorIndex anchor;
 
 private:
 

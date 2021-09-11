@@ -28,10 +28,15 @@ RollingGridLayer::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
     // fmt::print( "      dimension:    {:12lu} x {:%12lu} \n", dimension, dimension );
 
     // temporary / placeholder version:
-    tracked_bounds_.min = {0,0};
-    tracked_bounds_.max = {_bounds.width(), _bounds.height()};
-    view_bounds_.min = {0,0};
-    view_bounds_.max = {_bounds.width(), _bounds.height()};
+    track_bounds_.min = {0,0};
+    track_bounds_.max = {_bounds.width(), _bounds.height()};
+
+    const auto center = track_bounds_.center();
+    view_bounds_.min = { center.easting - meters_across_view/2, center.northing - meters_across_view/2 };
+    view_bounds_.max = { center.easting + meters_across_view/2, center.northing + meters_across_view/2 };
+    view_bounds_ = view_bounds_.snap( meters_across_sector, meters_across_view );
+
+    anchor = {0,0};
 
     // iteration progress West => East, South => North;  Cell 0,0 and Sector 0,0 both start in the Southwest Corner.
     for( uint32_t sector_row=0; sector_row < sectors_across_view; ++sector_row ){
@@ -124,10 +129,10 @@ bool RollingGridLayer::focus(const BoundBox<LocalLocation>& new_bounds ) {
 
 std::string RollingGridLayer::print_contents() const {
     std::ostringstream buf;
-    buf << "======== ======= ======= Printing By Cell: ======= ======= =======\n";
-    buf << std::hex;
 
     // print raw contents
+    buf << "======== ======= ======= Printing By Cell: ======= ======= =======\n";
+    buf << std::hex;
     for (size_t cell_row_index = cells_across_view - 1; cell_row_index < cells_across_view; --cell_row_index) {
         for (size_t cell_column_index = 0; cell_column_index < cells_across_view; ++cell_column_index ) {
             if( 0 == ((cell_column_index) % cells_across_sector ) ){
@@ -137,7 +142,7 @@ std::string RollingGridLayer::print_contents() const {
             const size_t sector_index = (cell_column_index/cells_across_sector) + (cell_row_index/cells_across_sector)*sectors_across_view;
             const auto& current_sector = sectors[ sector_index ];
 
-            const CellIndex cell_lookup_index = { static_cast<uint32_t>(cell_column_index), static_cast<uint32_t>(cell_row_index) };
+            const CellIndex cell_lookup_index( static_cast<uint32_t>(cell_column_index), static_cast<uint32_t>(cell_row_index) );
 
             uint8_t current_cell_value = 0xFF;
             if( current_sector.contains( cell_lookup_index )){
@@ -152,12 +157,12 @@ std::string RollingGridLayer::print_contents() const {
 
         buf << '\n';
     }
+
     buf << "======== ======= ======= Printing By Location ======= ======= =======\n";
-    
     // print location-aware contents
     for( double northing = (view_bounds_.max.northing - (meters_across_cell/2)); northing > view_bounds_.min.northing; northing -= meters_across_cell ) {
         for( double easting = (view_bounds_.min.easting + (meters_across_cell/2)); easting < view_bounds_.max.easting; easting += meters_across_cell ) {
-            if( 0.6 > std::fabs(std::fmod( easting, meters_across_sector )) ){
+            if( 0.6 > std::fabs(std::fmod( easting - view_bounds_.min.easting, meters_across_sector )) ){
                 buf << "    ";
             }
 
@@ -168,21 +173,20 @@ std::string RollingGridLayer::print_contents() const {
             buf << ' ' << std::setw(2) << static_cast<int>(current_cell_value);
 
         }
-        if( 0.8 > std::fabs(std::fmod( northing, meters_across_sector ))){
+        if( 0.8 > std::fabs(std::fmod( northing - view_bounds_.min.northing, meters_across_sector ))){
             buf << '\n';
         }
 
         buf << '\n';
     }
-    buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
-    
 
+    buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
     return buf.str();
 }
 
 bool RollingGridLayer::store(const LocalLocation& layer_location, uint8_t new_value) {
-     if( visible(layer_location) ){   
-
+    if( visible(layer_location) ){   
+        
         const LocalLocation view_location = layer_location - view_bounds_.min;
 
         const SectorIndex view_index = { static_cast<uint32_t>(view_location.easting / meters_across_cell),
@@ -210,12 +214,12 @@ bool RollingGridLayer::store(const LocalLocation& layer_location, uint8_t new_va
 }
 
 const BoundBox<LocalLocation>& RollingGridLayer::tracked() const {
-    return tracked_bounds_;
+    return track_bounds_;
 }
 
 
 bool RollingGridLayer::tracked( const LocalLocation& p ) const {
-    return tracked_bounds_.contains(p);
+    return track_bounds_.contains(p);
 }
 
 const BoundBox<LocalLocation>& RollingGridLayer::visible() const {

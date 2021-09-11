@@ -32,11 +32,19 @@ struct BoundBox {
         max = { -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max() };
     }
 
+    inline frame_vector_t center() const {
+        return {  (min[0] + max[0])/2, (min[1] + max[1])/2 };
+    }
+
     inline bool contains( const frame_vector_t& p ) const {
         if(( min[0] > p[0] )||( min[1] > p[1] )||( max[0] < p[0] )||( max[1] < p[1] ) ){
             return false;
         }
         return true;
+    }
+
+    inline bool contains( const BoundBox<frame_vector_t> other) const {
+        return contains(other.min) && contains(other.max);
     }
 
     inline double east() const { return max.x; }
@@ -99,6 +107,14 @@ struct BoundBox {
             return false;
         }
         return true;
+    }
+
+    inline BoundBox<frame_vector_t> snap( double interval, double new_size  ) const {
+        const double snapped_easting = ::floor( min[0] / interval ) * interval;
+        const double snapped_northing = ::floor( min[1] / interval ) * interval;
+    
+        return { { snapped_easting, snapped_northing },
+                 { snapped_easting + new_size, snapped_northing + new_size } };
     }
 
     inline double south() const { return min.y; }
