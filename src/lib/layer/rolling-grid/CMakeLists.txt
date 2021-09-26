@@ -4,6 +4,7 @@ SET(LIB_NAME rollinggridlayer )
 SET(LIB_HEADERS 
                 rolling-grid-index.hpp
                 rolling-grid-layer.hpp
+                rolling-grid-sector.hpp
                 )
 SET(LIB_SOURCES 
                 rolling-grid-layer.cpp

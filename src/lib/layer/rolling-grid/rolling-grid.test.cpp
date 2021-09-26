@@ -12,7 +12,8 @@ using Catch::Approx;
 #include "chart-box/geometry/polygon.hpp"
 #include "rolling-grid-index.hpp"
 #include "rolling-grid-layer.hpp"
- 
+#include "rolling-grid-sector.hpp"
+
 using chartbox::geometry::BoundBox;
 using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
@@ -21,10 +22,9 @@ using chartbox::geometry::UTMLocation;
 using chartbox::layer::CellInSectorIndex;
 using chartbox::layer::CellInViewIndex;
 using chartbox::layer::Index2u32;
-using chartbox::layer::SectorInViewIndex;
-
-using chartbox::layer::Index2u32;
+using chartbox::layer::RollingGridSector;
 using chartbox::layer::RollingGridLayer;
+using chartbox::layer::SectorInViewIndex;
 
 // ============ ============  Rolling-Grid-Index-Tests  ============ ============
 TEST_CASE( "RollingGridIndex Simple Initialization" ){
@@ -70,111 +70,85 @@ TEST_CASE( "RollingGridIndex wraps correctly in both directions "){
 } // TEST_CASE
 
 
-TEST_CASE( "RollingGridTests" ){
+// ============ ============  Rolling-Grid-Sector-Tests  ============ ============
+TEST_CASE( "Default Initialize RollingGridSector"){
+    RollingGridSector<4> sector;
+    REQUIRE( sector.size() == 16 );
+    // nothing else is guaranteed to be initialized
+} // TEST_CASE
 
-    SECTION( "Initialize Simple Polygon"){
-        
+TEST_CASE( "Explicitly Initialize RollingGridSector"){
+    RollingGridSector<4> sector( 7);
+    REQUIRE( sector.size() == 16 );
+
+    CHECK( sector.contains({0,0}) );
+    CHECK( 7 ==  sector.get({0,0}) );
+    CHECK( sector.contains({2,2}) );
+    CHECK( 7 ==  sector.get({2,2}) );
+    CHECK( sector.contains({2,3}) );
+    CHECK( 7 ==  sector.get({2,3}) );
+    CHECK( sector.contains({3,3}) );
+    CHECK( 7 ==  sector.get({3,3}) );
+    
+    CHECK( not sector.contains({5,8}) );
+} // TEST_CASE
+
+TEST_CASE( "RollingGridSector populates and look-ups correctly "){
+    RollingGridSector<4> sector;
+
+    uint8_t value = 0;
+    CellInSectorIndex<4> index;
+    for( uint32_t j=0; j<sector.dimension(); ++j){
+        index.row = j;
+        for( uint32_t i=0; i<sector.dimension(); ++i){
+            index.column = i;
+            sector.set( index, value );
+            ++value; 
+        }
+    }
+
+    CHECK( sector.contains({0,0}) );
+    CHECK( 0 == sector.get({0,0}) );
+
+    CHECK( sector.contains({1,1}) );
+    CHECK( 5 == sector.get({1,1}) );
+
+    CHECK( sector.contains({3,1}) );
+    CHECK( 7 == sector.get({3,1}) );
+
+    CHECK(  sector.contains({0,3}) );
+    CHECK( 12 == sector.get({0,3}) );
+}
+
+TEST_CASE( "RollingGridSector sets & gets correctly "){
+    RollingGridSector<4> sector( 4 );
+
+    CHECK( sector.contains({1,1}) );
+    CHECK( 4 == sector.get({1,1}) );
+    CHECK( sector.contains({1,2}) );
+    CHECK( 4 == sector.get({1,2}) );
+    CHECK( sector.contains({1,3}) );
+    CHECK( 4 == sector.get({1,3}) );
+    
+    sector.set( {1,2}, 6 );
+
+    CHECK( sector.contains({1,1}) );
+    CHECK( 4 == sector.get({1,1}) );
+    CHECK( sector.contains({1,2}) );
+    CHECK( 6 == sector.get({1,2}) );
+    CHECK( sector.contains({1,3}) );
+    CHECK( 4 == sector.get({1,3}) );
+
+} // TEST_CASE
+
+
+// ============ ============ ============ ============  Rolling-Grid-Layer-Tests  ============ ============ ============ ============
+TEST_CASE( "RollingGridLayerTests" ){
+
+    SECTION( "Initialize Simple Layer"){
 
     } // SECTION
 
-
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(),  4.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(),  4.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), -4.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), -4.);
-
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 8);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 8);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
-
-// TEST( RollingGrid, ConstructDefault1k) {
-//     RollingGrid1k g;
- 
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(),  16.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(),  16.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), -16.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), -16.);
-
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 32);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 32);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
-
-// TEST( RollingGrid, ConstructDefault4k) {
-//     RollingGrid4k g;
- 
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(),  32.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(),  32.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), -32.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), -32.);
-
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 64);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 64);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
-
-// TEST( RollingGrid, ConstructFromSquareBounds) {
-//     RollingGrid1k g(Bounds({0., 1.},{32., 33.}));
-
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(), 32.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(), 33.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), 0.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), 1.);
-
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 32.);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 32.);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
-
-// TEST( RollingGrid, ConstructFromUnevenBounds) {
-//     RollingGrid1k g(Bounds({-2., -4.},{2., 4.}));
-
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(), 16.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(), 16.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), -16.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), -16.);
-    
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 32.);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 32.);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
-
-// TEST( RollingGrid, ConstructFromOversizeBounds) {
-//     RollingGrid1k g(Bounds({-2,-55},{2., 55.}));
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-
-//     auto& b = g.bounds();
-//     EXPECT_DOUBLE_EQ( b.max().x(), 16.);
-//     EXPECT_DOUBLE_EQ( b.max().y(), 16.);
-//     EXPECT_DOUBLE_EQ( b.min().x(), -16.);
-//     EXPECT_DOUBLE_EQ( b.min().y(), -16.);
-
-//     EXPECT_DOUBLE_EQ( b.size().x(), 32.);
-//     EXPECT_DOUBLE_EQ( b.size().y(), 32.);
-// }
-
-// static const std::vector<uint8_t> test_pattern = chart::geometry::vflip<uint8_t>({
-//     88,  0,  0,  0,  88, 88, 88, 88,
-//     88, 88,  0,  0,  88, 88, 88,  0,
-//     88, 88, 88,  0,  88, 88,  0,  0,
-//     88, 88, 88, 88,  88,  0,  0,  0,
-
-//      0,  0,  0, 88,  88, 88, 88, 88,
-//      0,  0, 88, 88,   0, 88, 88, 88,
-//      0, 88, 88, 88,   0,  0, 88, 88,
-//     88, 88, 88, 88,   0,  0,  0, 88,}, 8);
 
 // TEST( RollingGrid, UpdateBounds) {
 //     const Bounds b0({-2., -4.},{2., 4.});
