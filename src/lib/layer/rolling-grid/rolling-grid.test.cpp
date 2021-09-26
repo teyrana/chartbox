@@ -9,31 +9,66 @@
 using Catch::Approx;
 
 #include "chart-box/geometry/bound-box.hpp"
-// #include "chart-box/geometry/path.hpp"
 #include "chart-box/geometry/polygon.hpp"
+#include "rolling-grid-index.hpp"
 #include "rolling-grid-layer.hpp"
-
-using chartbox::geometry::LocalLocation;
+ 
 using chartbox::geometry::BoundBox;
+using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
+using chartbox::geometry::UTMLocation;
+ 
+using chartbox::layer::CellInSectorIndex;
+using chartbox::layer::CellInViewIndex;
+using chartbox::layer::Index2u32;
+using chartbox::layer::SectorInViewIndex;
 
+using chartbox::layer::Index2u32;
 using chartbox::layer::RollingGridLayer;
 
-TEST_CASE( "RollingSectorTests" ){
+// ============ ============  Rolling-Grid-Index-Tests  ============ ============
+TEST_CASE( "RollingGridIndex Simple Initialization" ){
+    const CellInViewIndex<2,2> viewIndex = {1,1};
+    CHECK( viewIndex.offset() == 5 );
+} // TEST_CASE
 
-    SECTION( "Initialize GridSector "){
-        RollingGridLayer::Sector sector;
+TEST_CASE( "RollingGridIndex can divide into sub-index "){
+    const CellInViewIndex<2,2> viewIndex = {2,3};
+    const auto sectorIndex = viewIndex.divide();
+    CHECK( Index2u32(1,1) == sectorIndex.data() );
+    CHECK( sectorIndex.offset() == 3 );
+} // TEST_CASE
 
-        sector.fill(1);
+TEST_CASE( "RollingGridIndex can clamp into sub-index "){
+    const CellInViewIndex<2,2> viewIndex = {2,3};
+    const auto sectorIndex = viewIndex.zoom();
+    CHECK( Index2u32(0,1) == sectorIndex.data() );
+    CHECK( sectorIndex.offset() == 2);
+} // TEST_CASE
 
-        CHECK( sector.size() == 16 );
+TEST_CASE( "RollingGridIndex calculates storage offset "){
+    CHECK(  0 == CellInSectorIndex<4>(0,0).offset() );
+    CHECK(  1 == CellInSectorIndex<4>(1,0).offset() );
+    CHECK(  2 == CellInSectorIndex<4>(2,0).offset() );
+    CHECK(  3 == CellInSectorIndex<4>(3,0).offset() );
+    CHECK(  4 == CellInSectorIndex<4>(0,1).offset() );
+    CHECK(  5 == CellInSectorIndex<4>(1,1).offset() );
+    CHECK( 10 == CellInSectorIndex<4>(2,2).offset() );
+    CHECK( 15 == CellInSectorIndex<4>(3,3).offset() );
+} // TEST_CASE
 
-        CHECK( 1 ==  sector.get(0,0) );
+TEST_CASE( "RollingGridIndex wraps correctly in both directions "){
+    const CellInViewIndex<2,3> viewIndex(2,3);
 
+    CHECK( Index2u32(1,1) == viewIndex.divide().data() );
 
+    //                           vvv Anchor vvv
+    REQUIRE( Index2u32(1,1) == (SectorInViewIndex<3>(0,0) + viewIndex.divide()).data() );
+    REQUIRE( Index2u32(2,2) == (SectorInViewIndex<3>(1,1) + viewIndex.divide()).data() );
+    REQUIRE( Index2u32(3,3) == (SectorInViewIndex<3>(2,2) + viewIndex.divide()).data() );
 
-    } // SECTION
-}
+} // TEST_CASE
+
 
 TEST_CASE( "RollingGridTests" ){
 
@@ -145,16 +180,56 @@ TEST_CASE( "RollingGridTests" ){
 //     const Bounds b0({-2., -4.},{2., 4.});
 //     RollingGrid64 g(b0);
 
-//     ASSERT_TRUE(g.fill(test_pattern));
+    // SECTION( "Verify RollingGrid Can Refocus" ){
+    //     // tracks the interval [ 0.0, 12.0 ]
+    //     const BoundBox<UTMLocation> utm_bounds( {0,0}, {32,32} );
+    //     RollingGridLayer layer( utm_bounds );
 
-//     // DEBUG
-//     cerr << g.to_string() << endl;
+    //     REQUIRE( 0.0 == Approx(layer.tracked().min.easting) );
+    //     REQUIRE( 0.0 == Approx(layer.tracked().min.northing) );
+    //     REQUIRE(32.0 == Approx(layer.tracked().max.easting) );
+    //     REQUIRE(32.0 == Approx(layer.tracked().max.northing) );
 
-//     // TODO: NYI: Implement rolling state
-//     ASSERT_TRUE(false);
-    
-//     // DEBUG
-//     cerr << g.to_string() << endl;
+    //     const auto view0 = layer.visible();
+    //     REQUIRE( 10.0 == Approx(view0.min.easting) );
+    //     REQUIRE( 10.0 == Approx(view0.min.northing) );
+    //     REQUIRE( 22.0 == Approx(view0.max.easting) );
+    //     REQUIRE( 22.0 == Approx(view0.max.northing) );
+
+    //     // layer.scroll( 2, 0 );
+    //     // std::cout << layer.print_contents() << std::endl;
+    //     // layer.scroll( -2, 0 );
+
+    //     // layer.scroll( 0, 4 );
+    //     // // std::cout << layer.print_contents() << std::endl;
+    //     // layer.scroll( 0, -4 );
+
+    //     // // layer.scroll_right();
+    //     // // layer.scroll_lateral(false);  // roll left
+    //     // std::cerr << "=========================\n";
+
+    //     // std::cout << layer.print_contents() << std::endl;
+
+    //     // roll_vertical(true); // roll up one row // verified
+    //     //     REQUIRE( 0 == Approx(layer.anchor().row) );
+    //     // roll_vertical(true); // roll up one row // verified
+    //     //     REQUIRE( 1 == Approx(layer.anchor().row) );
+    //     // roll_vertical(true); // roll up one row // verified
+    //     //     REQUIRE( 2 == Approx(layer.anchor().row) );
+    //     // roll_vertical(true); // roll up one row // verified
+    //     //     REQUIRE( 0 == Approx(layer.anchor().row) );
+        
+    //     // {
+    //     //     layer.focus( {{0,5}, {20,16}} );
+
+    //     //     const auto result_view= layer.visible();
+    //     //     REQUIRE(  0.0 == Approx(result_view.min.easting) );
+    //     //     REQUIRE(  4.0 == Approx(result_view.min.northing) );
+    //     //     REQUIRE( 12.0 == Approx(result_view.max.easting) );
+    //     //     REQUIRE( 16.0 == Approx(result_view.max.northing) );
+    //     // }
+
+    // }
 
 //     auto& b1 = g.bounds();
 //     EXPECT_DOUBLE_EQ( b1.min().x(), -16.);

@@ -2,6 +2,7 @@
 # ============= Chart Base Library =================
 SET(LIB_NAME rollinggridlayer )
 SET(LIB_HEADERS 
+                rolling-grid-index.hpp
                 rolling-grid-layer.hpp
                 )
 SET(LIB_SOURCES 
