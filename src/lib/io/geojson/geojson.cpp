@@ -128,10 +128,10 @@ bool load_boundary_layer( const std::filesystem::path& from_path, FrameMapping& 
 
             const auto polygon = load_polygon( points, mapping );
 
-            to_layer.fill( polygon, to_layer.clear_cell_value );
+            to_layer.fill( polygon, chartbox::layer::clear_cell_value );
 
         }else{
-            to_layer.fill( mapping.local_bounds(), to_layer.clear_cell_value );
+            to_layer.fill( mapping.local_bounds(), chartbox::layer::clear_cell_value );
         }
 
         return true;
@@ -214,8 +214,10 @@ bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping&
     return false;
 }
 
+// template<>
+// bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& /*mapping*/, RollingGridLayer& /*to_layer*/ ){
 template<>
-bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& /*mapping*/, RollingGridLayer& /*to_layer*/ ){
+bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& /*mapping*/, chartbox::layer::RollingGridLayer<64u,8u>& /*to_layer*/ ){
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path: '{}' !!\n", from_path.string() );
         return false;
@@ -248,7 +250,7 @@ bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& m
         const CPLJSONArray& features = root.GetArray("features");
         fmt::print( stderr, "        ::Contains {} features\n", features.Size() );
 
-        to_layer.fill( to_layer.unknown_cell_value );
+        to_layer.fill( chartbox::layer::unknown_cell_value );
 
         for( int feature_index = 0; feature_index < features.Size(); ++feature_index ){
             const CPLJSONObject& each_properties = features[feature_index].GetObj("properties");
@@ -262,12 +264,12 @@ bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& m
             
             if( inside ){
                 // fmt::print( stderr, "            [{: >3d}]: inside >> fill blocked \n", id );
-                if( load_contour_feature( polygon_list, mapping, to_layer.block_cell_value, to_layer.clear_cell_value, to_layer ) ){
+                if( load_contour_feature( polygon_list, mapping, chartbox::layer::block_cell_value, chartbox::layer::clear_cell_value, to_layer ) ){
                     // fmt::print( stderr, "                <<< Loaded.\n" );
                 }
             }else{
                 // fmt::print( stderr, "            [{: >3d}]: outside >> fill clear. \n", id );
-                if( load_contour_feature( polygon_list, mapping, to_layer.clear_cell_value, to_layer.block_cell_value, to_layer ) ){
+                if( load_contour_feature( polygon_list, mapping, chartbox::layer::clear_cell_value, chartbox::layer::block_cell_value, to_layer ) ){
                     // fmt::print( stderr, "                <<< Loaded.\n" );
                 }
             }

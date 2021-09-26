@@ -60,7 +60,8 @@ TEST_CASE( "RollingGridIndex calculates storage offset "){
 TEST_CASE( "RollingGridIndex wraps correctly in both directions "){
     const CellInViewIndex<2,3> viewIndex(2,3);
 
-    //                           vvv Anchor vvv
+    //                                          Anchor
+    //                                          vvvvv
     REQUIRE( Index2u32(1,1) == viewIndex.divide({0,0}).data() );
     REQUIRE( Index2u32(2,2) == viewIndex.divide({1,1}).data() );
     REQUIRE( Index2u32(0,0) == viewIndex.divide({2,2}).data() );
@@ -105,17 +106,10 @@ TEST_CASE( "RollingGridSector populates and look-ups correctly "){
         }
     }
 
-    CHECK( sector.contains({0,0}) );
-    CHECK( 0 == sector.get({0,0}) );
-
-    CHECK( sector.contains({1,1}) );
-    CHECK( 5 == sector.get({1,1}) );
-
-    CHECK( sector.contains({3,1}) );
-    CHECK( 7 == sector.get({3,1}) );
-
-    CHECK(  sector.contains({0,3}) );
-    CHECK( 12 == sector.get({0,3}) );
+    CHECK( sector.contains({0,0}) );    CHECK( 0 == sector.get({0,0}) );
+    CHECK( sector.contains({1,1}) );    CHECK( 5 == sector.get({1,1}) );
+    CHECK( sector.contains({3,1}) );    CHECK( 7 == sector.get({3,1}) );
+    CHECK( sector.contains({0,3}) );    CHECK( 12 == sector.get({0,3}) );
 }
 
 TEST_CASE( "RollingGridSector sets & gets correctly "){
@@ -173,7 +167,7 @@ void populate_markers_per_sector( T& layer ) {
 TEST_CASE( "Verify Layer Initialization Bounds"){
     // tracks the interval [ 0.0, 12.0 ]
     const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
-    RollingGridLayer layer( utm_bounds );
+    RollingGridLayer<4,3> layer( utm_bounds );
 
     // it's a constexpr variable.  So it _BETTER_ be.)
     REQUIRE( 1.0 == Approx(layer.precision) );
@@ -203,7 +197,7 @@ TEST_CASE( "Verify Layer Initialization Bounds"){
 TEST_CASE( "Verify Layer Stores Values"){
     // tracks the interval [ 0.0, 12.0 ]
     const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
-    RollingGridLayer layer( utm_bounds );
+    RollingGridLayer<4,3> layer( utm_bounds );
 
     // documentation / expected steps:
     REQUIRE( 1.0 == Approx(layer.precision) );
@@ -252,7 +246,7 @@ TEST_CASE( "Verify Layer Can Scroll"){
 
     SECTION( "Verify RollingGrid Can Scroll East" ){
         const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer layer( utm_bounds );
+        RollingGridLayer<4,3> layer( utm_bounds );
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -293,7 +287,7 @@ TEST_CASE( "Verify Layer Can Scroll"){
 
     SECTION( "Verify RollingGrid Can Scroll North" ){
         const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer layer( utm_bounds );
+        RollingGridLayer<4,3> layer( utm_bounds );
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -334,7 +328,7 @@ TEST_CASE( "Verify Layer Can Scroll"){
 
     SECTION( "Verify RollingGrid Can Scroll South" ){
         const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer layer( utm_bounds );
+        RollingGridLayer<4,3> layer( utm_bounds );
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -375,7 +369,7 @@ TEST_CASE( "Verify Layer Can Scroll"){
 
     SECTION( "Verify RollingGrid Can Scroll West" ){
         const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer layer( utm_bounds );
+        RollingGridLayer<4,3> layer( utm_bounds );
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );

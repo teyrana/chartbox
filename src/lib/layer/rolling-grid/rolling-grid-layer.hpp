@@ -17,20 +17,28 @@
 
 namespace chartbox::layer {
 
-//  chart => layer => sector => cell
-//            ^^^ you are here
-class RollingGridLayer : public ChartLayerInterface< RollingGridLayer > {
+/// \brief represents an entire layer of scrolling data
+/// 
+/// This layer offers two important features:
+///   1. the coordinates (and corresponding data) may be scrolled without undue slowdown 
+///   2. Data may be cached in and out of relevance
+/// 
+///  chart => layer => sector => cell
+///            ^^^ you are here
+///
+/// \param cells_across_sector cell count across a single dimension of each sector
+/// \param sectors_across_view sector count across a single dimension of the view
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+class RollingGridLayer : public ChartLayerInterface< RollingGridLayer<cells_across_sector,sectors_across_view> > {
 public:
 
     // `*_across_*` variables count the numbe in each dimension of a square grid
     // `*_per_*` variables count the total number in the entire grid
 
-    constexpr static size_t cells_across_sector = 4;
     // constexpr static size_t cells_per_sector = cells_across_sector * cells_across_sector;  ///< not yet needed
     constexpr static double meters_across_cell = 1.0;   //aka precision
     // constexpr static double area_per_cell = meters_across_cell * meters_across_cell;
 
-    constexpr static size_t sectors_across_view = 3;
     // constexpr static size_t sectors_per_view = sectors_across_view * sectors_across_view;
     constexpr static double meters_across_sector = meters_across_cell * cells_across_sector; 
     // constexpr static double area_per_sector = area_per_cell * cells_per_sector;
@@ -72,7 +80,8 @@ public:
 
     uint8_t get(const LocalLocation& p) const;
 
-    uint8_t get( double easting, double northing ) const;
+    inline uint8_t get( double easting, double northing ) const {
+            return get({easting, northing});  }
 
     // size_t lookup( const LocalLocation& p ) const;
 
@@ -87,12 +96,12 @@ public:
     bool store(const LocalLocation& p, uint8_t new_value);
 
     /// \brief Get the bounds of the tracked (overall) area
-    const BoundBox<LocalLocation>& tracked() const;
-    bool tracked(const LocalLocation& p) const;
+    inline const BoundBox<LocalLocation>& tracked() const { return track_bounds_; }
+    inline bool tracked(const LocalLocation& p) const { return track_bounds_.contains(p); }
 
     /// \brief Get the currently visible (active) bounds of this layer
-    const BoundBox<LocalLocation>& visible() const;
-    bool visible(const LocalLocation& p) const;
+    inline const BoundBox<LocalLocation>& visible() const { return view_bounds_; }
+    inline bool visible(const LocalLocation& p) const { return view_bounds_.contains(p); }
 
     bool save( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
 
@@ -125,12 +134,12 @@ public:
 
 private:
 
-    ChartLayerInterface<RollingGridLayer>& super() {
-        return *static_cast< ChartLayerInterface<RollingGridLayer>* >(this);
+    ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>& super() {
+        return *static_cast< ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>* >(this);
     }
 
-    const ChartLayerInterface<RollingGridLayer>& super() const {
-        return *static_cast< const ChartLayerInterface<RollingGridLayer>* >(this);
+    const ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>& super() const {
+        return *static_cast< const ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>* >(this);
     }
 };
 

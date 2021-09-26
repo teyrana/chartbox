@@ -105,14 +105,19 @@ int main( void ){
         if ( ! contour_input_path.empty() ) {
             auto& layer = box.get_contour_layer();
             auto& mapping = box.mapping();
-            fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
-            if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-                geojson::load_contour_layer( contour_input_path, mapping, layer );
+            
+            // DEBUG
+            fmt::print( "XXX Loading layer disabled. NYI!!\n");
+            
+            // DEV: temporarily disable in this feature breanch
+            // fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
+            // if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
+            //     geojson::load_contour_layer( contour_input_path, mapping, layer );
 
             // DEV: temporarily disable in this feature breanch
             // }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
             //     flatbuffer::load( contour_input_path, layer );
-            }
+            //}
         }
 
         const auto finish_load = std::chrono::high_resolution_clock::now(); 

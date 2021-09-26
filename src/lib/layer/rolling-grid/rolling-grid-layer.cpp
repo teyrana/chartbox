@@ -1,6 +1,6 @@
-// GPL v3 (c) 2020, Daniel Williams 
+// GPL v3 (c) 2021, Daniel Williams 
 
-#include <cmath>
+// #include <cmath>
 
 #include <Eigen/Geometry>
 
@@ -16,13 +16,8 @@ using chartbox::geometry::Polygon;
 
 namespace chartbox::layer {
 
-// /// \brief calculate index within a 2d grid, with rows of length `across` 
-// template<uint32_t across>
-// size_t lookup( uint32_t column, uint32_t row ) {
-//     return column + row*across;
-// }
-
-RollingGridLayer::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+RollingGridLayer<cells_across_sector,sectors_across_view>::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
     : ChartLayerInterface<RollingGridLayer>(_bounds)
 {
 
@@ -46,18 +41,17 @@ RollingGridLayer::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
     }
 }
 
-bool RollingGridLayer::fill(const uint8_t value){
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::fill(const uint8_t value){
     for( auto& each_sector : sectors){
         each_sector.fill(value);
     }
     return true;
 }
 
-uint8_t RollingGridLayer::get( double easting, double northing ) const {
-    return get( {easting, northing} );
-}
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+uint8_t RollingGridLayer<cells_across_sector,sectors_across_view>::get(const LocalLocation& layer_location ) const {
 
-uint8_t RollingGridLayer::get(const LocalLocation& layer_location ) const {
     if( visible(layer_location) ){
         
         const LocalLocation view_location = layer_location - view_bounds_.min;
@@ -77,9 +71,6 @@ uint8_t RollingGridLayer::get(const LocalLocation& layer_location ) const {
         uint8_t current_cell_value = sectors[ sector_offset ][ cell_offset ];
 
         // {
-        // const SectorIndex sector_in_view_index = (anchor + view_index.divide<SectorIndex>(cells_across_sector));
-        // const CellIndex cell_in_sector_index = view_index.zoom<CellIndex>(cells_across_sector);
-
         // fmt::print( stderr, ">> get: location:     {:12.4f}, {:12.4f} ):\n", layer_location.easting, layer_location.northing );
         // fmt::print( stderr, "      cell-in-view-index:      {:2d}, {:2d} ({} sectors)({} cells)\n", view_index.column , view_index.row, sectors_across_view, cells_across_sector );
         // fmt::print( stderr, "      sector-in-view-index:    {:2d}, {:2d} => {:2d} \n", sector_in_view_index.column, sector_in_view_index.row, sector_offset );
@@ -92,7 +83,8 @@ uint8_t RollingGridLayer::get(const LocalLocation& layer_location ) const {
     return default_cell_value;
 }
 
-bool RollingGridLayer::focus( const BoundBox<LocalLocation>& request_bounds ) {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::focus( const BoundBox<LocalLocation>& request_bounds ) {
     // if the requested bounds don't even ovelap the 
     if( not track_bounds_.overlaps(request_bounds) ){
         return false;
@@ -158,7 +150,6 @@ bool RollingGridLayer::focus( const BoundBox<LocalLocation>& request_bounds ) {
         fmt::print( "    :: tracked:\n{}", track_bounds_.dump("    ") );
 
         const LocalLocation delta_bounds = next_bounds.min - view_bounds_.min;
-        // const SectorIndex delta_index = delta_bounds.to_sector_index( meters_across_sector );
         const int32_t column_delta = delta_bounds.easting * meters_across_sector;
         const int32_t row_delta = delta_bounds.northing * meters_across_sector;
 
@@ -194,14 +185,16 @@ bool RollingGridLayer::focus( const BoundBox<LocalLocation>& request_bounds ) {
     return true;
 }
 
-bool RollingGridLayer::load( const SectorIndex& index, const LocalLocation& /*location*/ ){
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::load( const SectorIndex& index, const LocalLocation& /*location*/ ){
     // placeholder -- just reset sector
     sectors[ index.offset() ].fill(default_cell_value);
 
-    return false;
+    return true;
 }
 
-std::string RollingGridLayer::print_contents() const {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+std::string RollingGridLayer<cells_across_sector,sectors_across_view>::print_contents() const {
     std::ostringstream buf;
 
     // print raw contents
@@ -260,13 +253,15 @@ std::string RollingGridLayer::print_contents() const {
     return buf.str();
 }
 
-bool RollingGridLayer::save( const SectorIndex& /*index*/, const LocalLocation& /*location*/ ){ 
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::save( const SectorIndex& /*index*/, const LocalLocation& /*location*/ ){ 
     // placeholder
     // NYI
     return false; 
 }
 
-bool RollingGridLayer::scroll_east() {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::scroll_east() {
  const auto& last_bounds = view_bounds_;
     const LocalLocation delta( meters_across_sector, 0.0 );
     const auto next_bounds = last_bounds.move( delta );
@@ -300,7 +295,8 @@ bool RollingGridLayer::scroll_east() {
     return true;
 }
 
-bool RollingGridLayer::scroll_north() {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::scroll_north() {
     const auto& last_bounds = view_bounds_;
     const LocalLocation delta( 0.0, meters_across_sector);
     const auto next_bounds = last_bounds.move( delta );
@@ -326,7 +322,8 @@ bool RollingGridLayer::scroll_north() {
     return true;
 }
 
-bool RollingGridLayer::scroll_south() {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::scroll_south() {
     const auto& last_bounds = view_bounds_;
     const LocalLocation delta( 0.0, -meters_across_sector);
     const auto next_bounds = last_bounds.move( delta );
@@ -362,7 +359,8 @@ bool RollingGridLayer::scroll_south() {
     return true;
 }
 
-bool RollingGridLayer::scroll_west() {
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::scroll_west() {
     const auto& last_bounds = view_bounds_;
     const LocalLocation delta( -meters_across_sector, 0.0 );
     const auto next_bounds = last_bounds.move( delta );
@@ -397,13 +395,13 @@ bool RollingGridLayer::scroll_west() {
     return true;
 }
 
-bool RollingGridLayer::store(const LocalLocation& layer_location, uint8_t new_value) {
-    if( visible(layer_location) ){   
-        
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::store(const LocalLocation& layer_location, uint8_t new_value) {
+    if( visible(layer_location) ){
         const LocalLocation view_location = layer_location - view_bounds_.min;
 
-        const ViewIndex view_index = { static_cast<uint32_t>(view_location.easting / meters_across_cell),
-                                         static_cast<uint32_t>(view_location.northing / meters_across_cell) };
+        const ViewIndex view_index = {  static_cast<uint32_t>(view_location.easting / meters_across_cell),
+                                        static_cast<uint32_t>(view_location.northing / meters_across_cell) };
 
         /// index of the sector to lookup in
         const size_t sector_offset = view_index.divide(anchor).offset();
@@ -425,22 +423,13 @@ bool RollingGridLayer::store(const LocalLocation& layer_location, uint8_t new_va
     return false;
 }
 
-const BoundBox<LocalLocation>& RollingGridLayer::tracked() const {
-    return track_bounds_;
-}
+// used for tests
+template class RollingGridLayer<4,3>;
 
+// currently used for development:
+template class RollingGridLayer<64,5>;
 
-bool RollingGridLayer::tracked( const LocalLocation& p ) const {
-    return track_bounds_.contains(p);
-}
-
-const BoundBox<LocalLocation>& RollingGridLayer::visible() const {
-    return view_bounds_;
-}
-
-bool RollingGridLayer::visible( const LocalLocation& p ) const {
-    return view_bounds_.contains(p);
-}
-
+// used for production? in future?
+template class RollingGridLayer<1024,7>;
 
 }  // namespace

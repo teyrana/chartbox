@@ -22,7 +22,6 @@ public:
     typedef CellInSectorIndex<cells_across_sector> CellIndex;
 
 public:
-    // constexpr static uint8_t ERROR_VALUE = 0xFF;
 
     RollingGridSector() = default;
     RollingGridSector( uint8_t default_value ){ 

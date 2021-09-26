@@ -27,9 +27,9 @@ target_link_libraries(${LIB_NAME} PUBLIC CONAN_PKG::gdal )
 # ============= Chart Base Library =================
 # These tests can use the Catch2-provided main
 add_executable( rolling-grid-tests
-                    ${LIB_SOURCES}
                     rolling-grid.test.cpp
                 )
 
+target_link_libraries(rolling-grid-tests PRIVATE ${LIB_NAME})
 target_link_libraries(rolling-grid-tests PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(rolling-grid-tests PRIVATE CONAN_PKG::fmt)

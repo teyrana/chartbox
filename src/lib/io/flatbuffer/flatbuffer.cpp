@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "layer/static-grid/static-grid.hpp"
+#include "layer/rolling-grid/rolling-grid-layer.hpp"
 #include "chart-box/geometry/local-location.hpp"
 
 #include "flatbuffer.hpp"
@@ -59,7 +60,7 @@ bool load( const std::filesystem::path& from_path, StaticGridLayer& to_layer ){
 
     to_layer.fill( cell->data()->data(), cell->data()->size() );
 
-    fmt::print( "    <<< Successfuly Loaded.\n" );
+    fmt::print( "    <<< Successfully Loaded.\n" );
 
     return true;
 }

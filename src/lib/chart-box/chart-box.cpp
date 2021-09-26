@@ -20,10 +20,10 @@ ChartBox::ChartBox()
     , contour_layer_(mapping_.utm_bounds())
 {
 
-    boundary_layer_.fill( boundary_layer_.default_cell_value );
+    boundary_layer_.fill( chartbox::layer::default_cell_value );
     boundary_layer_.name("BoundaryLayerGrid");
     
-    contour_layer_.fill( boundary_layer_.default_cell_value );
+    contour_layer_.fill( chartbox::layer::default_cell_value );
     contour_layer_.name("ContourLayerGrid");
 }
 

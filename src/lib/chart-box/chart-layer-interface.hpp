@@ -29,6 +29,12 @@ typedef enum {
        VIEW
 } role_t;
 
+
+constexpr uint8_t block_cell_value = 0xFF;
+constexpr uint8_t clear_cell_value = 0;
+constexpr uint8_t unknown_cell_value = 128u;
+constexpr uint8_t default_cell_value = unknown_cell_value;
+
 // base class of a CRTP pattern, as described here:
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
 // https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
@@ -39,15 +45,6 @@ protected:
 
     ChartLayerInterface( const BoundBox<UTMLocation>& bounds );
 
-public:
-
-    /// \brief how wide each cell is, in real-world navigation units
-    constexpr static uint8_t block_cell_value = 0xFF;
-    constexpr static uint8_t clear_cell_value = 0;
-    constexpr static uint8_t unknown_cell_value = 128u;
-    
-    constexpr static uint8_t default_cell_value = unknown_cell_value;
-    
 public:
 
     /// \brief Fetch the bounds of the given layer

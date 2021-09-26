@@ -22,7 +22,9 @@ using chartbox::geometry::LocalLocation;
 class ChartBox {
 public:
     typedef chartbox::layer::StaticGridLayer boundary_layer_t;
-    typedef chartbox::layer::RollingGridLayer contour_layer_t;
+
+    // note: this template must be explicitly instantiated at the bottom of `rolling-grid-layer.cpp`
+    typedef chartbox::layer::RollingGridLayer<64,5> contour_layer_t;
 
 public:
     ChartBox();

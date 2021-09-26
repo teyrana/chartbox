@@ -68,7 +68,7 @@ public:
     void print_contents() const;
 
     inline void reset(){ 
-        fill( super().default_cell_value );  }
+        fill( default_cell_value );  }
 
 
     /// \brief Access the value at an (x, y) Eigen::Vector2d
