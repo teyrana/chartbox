@@ -1,8 +1,12 @@
 
 # ============= Chart Flatbuffer I/O Library =================
 SET(LIB_NAME chart-flatbuffer-io)
+
+SET(GENERATED_HEADERS  "tile-cache-generated.hpp" )
+                
 SET(LIB_HEADERS 
                 flatbuffer.hpp
+                ${GENERATED_HEADERS}
                 )
 SET(LIB_SOURCES 
                 flatbuffer.cpp

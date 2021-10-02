@@ -65,10 +65,6 @@ int main( void ){
 
     // Contour Layer
     // ==============
-    if( (not contour_input_arg.empty()) && ( not std::filesystem::is_regular_file(contour_input_arg)) ){
-        fmt::print(stderr, "!! Could not find contour input path!! : {}\n", contour_input_arg);
-        return EXIT_FAILURE;
-    }
     std::filesystem::path contour_input_path( contour_input_arg );
 
     std::filesystem::path contour_output_path( contour_output_arg );
@@ -114,10 +110,10 @@ int main( void ){
             // if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
             //     geojson::load_contour_layer( contour_input_path, mapping, layer );
 
-            // DEV: temporarily disable in this feature breanch
-            // }else if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
-            //     flatbuffer::load( contour_input_path, layer );
-            //}
+            //}else 
+            // if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
+            //      flatbuffer::load( contour_input_path, layer );
+            // }
         }
 
         const auto finish_load = std::chrono::high_resolution_clock::now(); 

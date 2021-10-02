@@ -1,0 +1,28 @@
+// IDL file for local-disk storage of grid cells
+
+namespace chartbox.io.flatbuffer;
+
+struct Location { 
+    easting:float32;
+    northing:float32;
+}
+
+table TileCache {
+
+    // Location of the lower-left / southwestern corner -- in meters from an arbitrary origin
+    origin:Location;
+
+    // assert-check 0: cell-to-cell-precision; meters
+    precision:float32;
+
+    // assert-check 1: cells-across-tile
+    dimension:uint32;
+
+    // Actual contents of each cell within this tile
+    // the data size can be called from code:
+    //     see: https://stackoverflow.com/a/54280603
+    data:[ubyte];
+
+}
+
+root_type TileCache;
