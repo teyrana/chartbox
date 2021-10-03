@@ -1,8 +1,10 @@
 build/*
+cache/*.fb
 
-*.fb
 *.png
 
 TODO.md
 TODO.txt
+
+
 

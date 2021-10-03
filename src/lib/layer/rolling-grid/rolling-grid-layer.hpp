@@ -65,14 +65,17 @@ public:
 
 public:
     /// \brief Constructs a new 2d square grid
-    RollingGridLayer() = delete;
-    
-    /// \brief Constructs a new 2d square grid
-    // RollingGridLayer(const geometry::BoundBox<UTMLocation>& _bounds);
-
-    RollingGridLayer(const geometry::BoundBox<UTMLocation>& _bounds);
+    RollingGridLayer();
 
     ~RollingGridLayer(){};
+
+    // Center in the middle of the tracked bounds:
+    // ( Assume tracked-bounds are already set )
+    bool center();
+    bool track( const BoundBox<LocalLocation>& bounds );
+    bool track( const BoundBox<UTMLocation>& bounds );
+
+    bool enable_cache( std::filesystem::path cache_path );
 
     bool fill( const uint8_t value );
 
@@ -111,22 +114,23 @@ public:
     bool scroll_north();
     bool scroll_south();
     bool scroll_west();
-    
-private:
 
-    std::filesystem::path cache_path;
+private:
+    std::filesystem::path generate_tilecache_filename( const std::filesystem::path& path, const LocalLocation& origin ) const;
 
     // this tracks the outer bounds (that the whole chart is tracking)
     geometry::BoundBox<LocalLocation> track_bounds_;
     geometry::BoundBox<LocalLocation> view_bounds_;
 
+private:
     //  chart => layer => sector => cell
-    //                 ^^ you are here
+    //                 ^^ you are here -- this structure maps from the layer to the sectors 
     std::array<RollingGridSector<cells_across_sector>, sectors_across_view * sectors_across_view > sectors;
 
     // Just wrap the indexes around the grid, starting from the anchor:
     SectorIndex anchor;
 
+    std::filesystem::path cache_path_;
 
 private:
 

@@ -31,6 +31,8 @@ int main( void ){
     // bool enable_input_lidar = false;
     // std::string input_path_terrain;
 
+    const std::filesystem::path cache_path = "cache/";
+
     // std::string boundary_input_arg("data/block-island/boundary.simple.geojson");
     std::string boundary_input_arg("data/block-island/boundary.polygon.geojson");
     // std::string boundary_input_arg("data/massachusetts/navigation_area_100k.shp");
@@ -38,7 +40,7 @@ int main( void ){
     std::string contour_input_arg("");
                 contour_input_arg = "data/block-island/coastline.geojson";
                 // contour_input_arg = "contour.cache.fb";
-
+    
     std::string boundary_output_arg("");
                 // boundary_output_arg = "boundary.png";
                 // boundary_output_arg = "boundary.cache.fb";
@@ -97,22 +99,21 @@ int main( void ){
         }
 
         if ( ! contour_input_path.empty() ) {
+            auto& layer = box.get_contour_layer();
+            auto& mapping = box.mapping();
 
-            // DEBUG
-            fmt::print( "XXX Loading layer disabled. NYI!!\n");
+            // updates track-bounds and view-bounds
+            layer.track( mapping.local_bounds() );
 
-            // auto& layer = box.get_contour_layer();
-            // auto& mapping = box.mapping();
-            
+            layer.enable_cache( cache_path );
+    
             // DEV: temporarily disable in this feature breanch
+            // auto& mapping = box.mapping();
+            //
             // fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
             // if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
             //     geojson::load_contour_layer( contour_input_path, mapping, layer );
-
-            //}else 
-            // if( contour_input_path.extension() == chartbox::io::flatbuffer::extension ){
-            //      flatbuffer::load( contour_input_path, layer );
-            // }
+            //}
         }
 
         const auto finish_load = std::chrono::high_resolution_clock::now(); 

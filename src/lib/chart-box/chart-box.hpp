@@ -10,7 +10,7 @@
 
 #include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
-#include "layer/static-grid/static-grid.hpp"
+#include "layer/static-grid/static-grid-layer.hpp"
 #include "layer/rolling-grid/rolling-grid-layer.hpp"
 
 namespace chartbox {

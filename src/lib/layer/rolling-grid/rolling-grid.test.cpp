@@ -163,11 +163,10 @@ void populate_markers_per_sector( T& layer ) {
         }
     }
 }
- 
-TEST_CASE( "Verify Layer Initialization Bounds"){
-    // tracks the interval [ 0.0, 12.0 ]
-    const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
-    RollingGridLayer<4,3> layer( utm_bounds );
+
+TEST_CASE( "Verify Layer Set Bounds"){
+    RollingGridLayer<4,3> layer;
+    layer.track( BoundBox<LocalLocation>( {0,0}, {12,12}) );
 
     // it's a constexpr variable.  So it _BETTER_ be.)
     REQUIRE( 1.0 == Approx(layer.precision) );
@@ -194,10 +193,35 @@ TEST_CASE( "Verify Layer Initialization Bounds"){
     }
 } // TEST_CASE
 
+TEST_CASE( "Verify Layer Set Offset Bounds"){
+    RollingGridLayer<4,3> layer;
+    layer.track( BoundBox<UTMLocation>({ 276550.31, 4553825.85},
+                                       { 276612.0, 4553888.0}));
+
+    // it's a constexpr variable.  So it _BETTER_ be.)
+    REQUIRE( 1.0 == Approx(layer.precision) );
+
+    // the UTM bounds are incidentally set, not in a realistic way
+    // (i.e. not like they'd be set in a actual production use)
+
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
+    REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
+    REQUIRE( LocalLocation( 24.0, 24.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 36.0, 36.0) == layer.visible().max );
+    
+    {   const LocalLocation loc( 10.0, 10.0 );  CHECK( layer.tracked(loc) );  CHECK( not layer.visible(loc) );
+    }{  const LocalLocation loc( 20.0, 20.0 );  CHECK( layer.tracked(loc) );  CHECK( not layer.visible(loc) );
+    }{  const LocalLocation loc( 30.0, 30.0 );  CHECK( layer.tracked(loc) );  CHECK(     layer.visible(loc) );
+    }{  const LocalLocation loc( 40.0, 40.0 );  CHECK( layer.tracked(loc) );  CHECK( not layer.visible(loc) );
+    }{  const LocalLocation loc( 50.0, 50.0 );  CHECK( layer.tracked(loc) );  CHECK( not layer.visible(loc) );
+    }{  const LocalLocation loc( 60.0, 60.0 );  CHECK( layer.tracked(loc) );  CHECK( not layer.visible(loc) );
+    }
+} // TEST_CASE
+
 TEST_CASE( "Verify Layer Stores Values"){
-    // tracks the interval [ 0.0, 12.0 ]
-    const BoundBox<UTMLocation> utm_bounds( {0,0}, {12,12} );
-    RollingGridLayer<4,3> layer( utm_bounds );
+    RollingGridLayer<4,3> layer;
+    layer.track( BoundBox<LocalLocation>( {0,0}, {12,12}) );
+
 
     // documentation / expected steps:
     REQUIRE( 1.0 == Approx(layer.precision) );
@@ -245,8 +269,8 @@ TEST_CASE( "Verify Layer Stores Values"){
 TEST_CASE( "Verify Layer Can Scroll"){
 
     SECTION( "Verify RollingGrid Can Scroll East" ){
-        const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer<4,3> layer( utm_bounds );
+        RollingGridLayer<4,3> layer;
+        layer.track( BoundBox<LocalLocation>( {0,0}, {64,64} ));
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -286,8 +310,8 @@ TEST_CASE( "Verify Layer Can Scroll"){
     }
 
     SECTION( "Verify RollingGrid Can Scroll North" ){
-        const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer<4,3> layer( utm_bounds );
+        RollingGridLayer<4,3> layer;
+        layer.track( BoundBox<LocalLocation>( {0,0}, {64,64} ));
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -327,8 +351,8 @@ TEST_CASE( "Verify Layer Can Scroll"){
     }
 
     SECTION( "Verify RollingGrid Can Scroll South" ){
-        const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer<4,3> layer( utm_bounds );
+        RollingGridLayer<4,3> layer;
+        layer.track( BoundBox<LocalLocation>( {0,0}, {64,64} ));
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );
@@ -368,8 +392,8 @@ TEST_CASE( "Verify Layer Can Scroll"){
     }
 
     SECTION( "Verify RollingGrid Can Scroll West" ){
-        const BoundBox<UTMLocation> utm_bounds( {0,0}, {64,64} );
-        RollingGridLayer<4,3> layer( utm_bounds );
+        RollingGridLayer<4,3> layer;
+        layer.track( BoundBox<LocalLocation>( {0,0}, {64,64} ));
 
         REQUIRE( LocalLocation(  0.0,  0.0) == layer.tracked().min );
         REQUIRE( LocalLocation( 64.0, 64.0) == layer.tracked().max );

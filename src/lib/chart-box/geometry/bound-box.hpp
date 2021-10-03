@@ -27,6 +27,11 @@ struct BoundBox {
         : min(_min), max(_max)
     {}
 
+    template<typename new_vector_t>
+    inline BoundBox<new_vector_t> as() const {
+        return { {min[0], min[1]}, {max[0],max[1]}};
+    }
+
     inline void clear(){
         min = { std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
         max = { -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max() };
@@ -111,6 +116,10 @@ struct BoundBox {
             return false;
         }
         return true;
+    }
+
+    inline BoundBox<frame_vector_t> relative() const {
+        return BoundBox<frame_vector_t>( {0,0}, {max.easting - min.easting, max.northing - min.northing});
     }
 
     inline BoundBox<frame_vector_t> snap( double interval, double new_size  ) const {

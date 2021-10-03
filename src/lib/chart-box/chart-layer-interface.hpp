@@ -43,15 +43,7 @@ class ChartLayerInterface {
 protected:
     ChartLayerInterface() = default;
 
-    ChartLayerInterface( const BoundBox<UTMLocation>& bounds );
-
 public:
-
-    /// \brief Fetch the bounds of the given layer
-    ///
-    /// \return reference to the cell value
-    const BoundBox<UTMLocation>& bounds() const {
-        return layer().bounds_; }
 
     // /// \brief Test if this data structer contains this index-point
     // /// \param The 2d-index to test
@@ -74,7 +66,7 @@ public:
     /// 
     /// \param source - polygon defining the fill araea. Assumed to be in local coordinates, closed, CCW, and non-intersectings
     /// \param fill_value - fill value for polygon interior
-    bool fill( const Polygon<LocalLocation>& source, uint8_t value );
+    bool fill( const Polygon<LocalLocation>& source, const BoundBox<LocalLocation>& box, uint8_t value );
 
     /// \brief Access the value at an (x, y) Eigen::Vector2d
     ///!
@@ -112,9 +104,6 @@ public:
     std::string type() const { 
         return layer().type_name_; }
 
-    void update_precision(){ 
-        layer().update_precision(); }
-
 protected:
 
     layer_t& layer() {
@@ -128,9 +117,6 @@ protected:
     ~ChartLayerInterface() = default;
 
 protected:
-
-    /// \brief the data layout this grid represents
-    const BoundBox<UTMLocation>& bounds_;
 
     /// \brief descriptive for this layer's purpose
     std::string name_;

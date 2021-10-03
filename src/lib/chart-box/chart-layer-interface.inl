@@ -15,10 +15,6 @@
 
 using chartbox::layer::ChartLayerInterface;
 
-template< typename layer_t>
-ChartLayerInterface<layer_t>::ChartLayerInterface( const BoundBox<UTMLocation>& _bounds )
-    : bounds_(_bounds)
-{}
 
 template< typename layer_t>
 bool ChartLayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uint8_t value) {
@@ -38,17 +34,17 @@ bool ChartLayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, cons
 }
 
 template< typename layer_t>
-bool ChartLayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, uint8_t value ){
+bool ChartLayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bounds, uint8_t value ){
     // adapted from:
     //  Public-domain code by Darel Rex Finley, 2007:  "Efficient Polygon Fill Algorithm With C Code Sample"
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07
 
     const size_t vertex_count = poly.size();
-    const double x_max = layer().bounds_.width();
-    const double x_min = 0;
+    const double x_max = bounds.max[0];
+    const double x_min = bounds.min[0];
     const double x_incr = layer().precision();  // == y_incr.  This is a square grid.
-    const double y_max = layer().bounds_.height();
-    const double y_min = 0;
+    const double y_max = bounds.max[1];
+    const double y_min = bounds.min[1];
     const double y_incr = layer().precision();  // == x_incr.  This is a square grid.
 
     // Loop through the rows of the image.

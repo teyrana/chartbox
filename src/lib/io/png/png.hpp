@@ -6,7 +6,7 @@
 #include <string>
 
 #include "chart-box/chart-box.hpp"
-#include "layer/static-grid/static-grid.hpp"
+#include "layer/static-grid/static-grid-layer.hpp"
 
 namespace chartbox::io::png {
 

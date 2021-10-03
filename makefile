@@ -62,6 +62,9 @@ test-rolling: debug
 test-qtree: debug
 	build/bin/quad-tree-tests
 
+test-static: debug
+	build/bin/static-grid-tests
+
 test-search: debug
 	build/bin/search-tests
 

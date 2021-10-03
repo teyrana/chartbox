@@ -12,28 +12,10 @@
 
 #include <fmt/core.h>
 
-#include "static-grid.hpp"
+#include "static-grid-layer.hpp"
 
 using chartbox::layer::ChartLayerInterface;
 using chartbox::layer::StaticGridLayer;
-
-
-StaticGridLayer::StaticGridLayer( const BoundBox<UTMLocation>& _bounds )
-    : ChartLayerInterface<StaticGridLayer>(_bounds)
-{
-    if( (dimension != static_cast<size_t>(_bounds.width()/precision())) || ( dimension != static_cast<size_t>(_bounds.width()/precision())) ){
-        // yes, this is limiting.  This class is limiting -- it is only intended to be a fast / cheap / easy medium for testing other parts of the code
-        // if you run up against this limitation, don't change it here: use a class which better fits your use case.
-
-        fmt::print( "======== ======== StaticGridLayer CTOR:  ======== ======== \n" );
-        fmt::print( "Bounds:\n");
-        fmt::print( "      min:      {:12.6f}, {:12.6f} \n", _bounds.min.easting, _bounds.min.northing );
-        fmt::print( "      max:      {:12.6f}, {:12.6f} \n", _bounds.max.easting, _bounds.max.northing );
-        fmt::print( "      Width:    {:12.6f}, {:12.6f} \n", _bounds.width(), _bounds.width() );
-        fmt::print( "Grid:\n");
-        fmt::print( "      dimension:    {:12lu} x {:%12lu} \n", dimension, dimension );
-    }
-}
 
 bool StaticGridLayer::contains(const LocalLocation& p ) const {
     if( 0 > p.easting || 0 > p.northing ){
@@ -78,12 +60,8 @@ size_t StaticGridLayer::lookup( const uint32_t i, const uint32_t j ) const {
 }
 
 size_t StaticGridLayer::lookup( const LocalLocation& p ) const {
-    return lookup( static_cast<uint32_t>(p.easting/precision()),
-                   static_cast<uint32_t>(p.northing/precision()) );
-}
-
-double StaticGridLayer::precision() const {
-    return this->bounds_.width() / dimension;
+    return lookup( static_cast<uint32_t>(p.easting/precision_),
+                   static_cast<uint32_t>(p.northing/precision_) );
 }
 
 void StaticGridLayer::print_contents() const {

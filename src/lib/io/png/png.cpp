@@ -11,7 +11,7 @@
 #include "gdal_priv.h"
 
 #include "chart-box/chart-box.hpp"
-#include "layer/static-grid/static-grid.hpp"
+#include "layer/static-grid/static-grid-layer.hpp"
 
 #include "png.hpp"
 

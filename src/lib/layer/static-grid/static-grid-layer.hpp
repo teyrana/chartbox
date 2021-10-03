@@ -12,6 +12,7 @@
 
 namespace chartbox::layer {
 
+// template<uint32_t dimension>
 class StaticGridLayer : public ChartLayerInterface<StaticGridLayer> {
 public:
 
@@ -23,7 +24,7 @@ public:
 
 public:
 
-    StaticGridLayer() = delete;
+    StaticGridLayer() = default;
     
     StaticGridLayer( const BoundBox<UTMLocation>& _bounds );
 
@@ -45,8 +46,8 @@ public:
     bool fill( const BoundBox<LocalLocation>& box, const uint8_t value ){
         return super().fill( box, value ); }
 
-    bool fill( const Polygon<LocalLocation>& poly, uint8_t value ){
-        return super().fill( poly, value ); }
+    bool fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bound, uint8_t value ){
+        return super().fill( poly, bound, value ); }
 
     /// \brief Fill the entire grid with values from the buffer
     /// 
@@ -62,7 +63,8 @@ public:
 
     size_t lookup( const LocalLocation& p ) const;
 
-    double precision() const;
+    inline double precision() const {
+        return precision_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
     void print_contents() const;
@@ -81,6 +83,9 @@ public:
 
 
 protected:
+
+    /// \brief width of each cell, in meters
+    constexpr static double precision_ = 16.0;
 
     /// \brief contains the data for this tile
     // raw array:  2D addressing is performed through the index, below

@@ -109,7 +109,7 @@ bool load_boundary_box( const std::filesystem::path& from_path, FrameMapping& ma
 }
 
 template<>
-bool load_boundary_layer( const std::filesystem::path& from_path, const  FrameMapping& mapping, StaticGridLayer& to_layer ){
+bool load_boundary_layer( const std::filesystem::path& from_path, const FrameMapping& mapping, StaticGridLayer& to_layer ){
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path !!: {}\n", from_path.string() );
         return false;
@@ -140,7 +140,7 @@ bool load_boundary_layer( const std::filesystem::path& from_path, const  FrameMa
 
             const auto polygon = load_polygon( points, mapping );
 
-            to_layer.fill( polygon, chartbox::layer::clear_cell_value );
+            to_layer.fill( polygon, mapping.local_bounds(), chartbox::layer::clear_cell_value );
 
         }else{
             to_layer.fill( mapping.local_bounds(), chartbox::layer::clear_cell_value );
@@ -209,13 +209,13 @@ bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping&
 
         if( outer_polygon.bounds().overlaps( chart_local_bounds ) ){
             // fmt::print( stderr, "                >>> feature overlaps. Filling outer border.\n" );
-            to_layer.fill( outer_polygon, fill_value );
+            to_layer.fill( outer_polygon, mapping.local_bounds(), fill_value );
 
             if( chartbox::io::geojson::fill_interior_holes ){
                 for( int hole_index = 1; hole_index < from_feature.Size(); ++hole_index ){
                     // fmt::print( stderr, "                    >> Hole[{:>2d}]...\n", hole_index );
                     const Polygon<LocalLocation> hole_polygon = load_polygon( from_feature[0].ToArray(), mapping );
-                    to_layer.fill( hole_polygon, except_value );
+                    to_layer.fill( hole_polygon, mapping.local_bounds(), except_value );
                 }
             }
 

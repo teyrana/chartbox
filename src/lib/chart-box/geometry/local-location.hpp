@@ -75,4 +75,9 @@ struct LocalLocation {
 
 };
 
+inline std::ostream& operator<< (std::ostream& os, const LocalLocation& ll) {
+    os << "{ " << ll[0] << ", " << ll[1] << " }";
+    return os;
+}
+
 } // namespace chart::geometry

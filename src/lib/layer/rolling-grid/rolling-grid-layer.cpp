@@ -17,28 +17,117 @@ using chartbox::geometry::Polygon;
 namespace chartbox::layer {
 
 template<uint32_t cells_across_sector, uint32_t sectors_across_view>
-RollingGridLayer<cells_across_sector,sectors_across_view>::RollingGridLayer( const BoundBox<UTMLocation>& _bounds )
-    : ChartLayerInterface<RollingGridLayer>(_bounds)
-{
+RollingGridLayer<cells_across_sector,sectors_across_view>::RollingGridLayer(){
+    // simple initialization
+    track( BoundBox<LocalLocation>( {0,0}, {meters_across_view,meters_across_view} ));
 
-    // temporary / placeholder version:
-    track_bounds_.min = {0,0};
-    track_bounds_.max = {_bounds.width(), _bounds.height()};
+    for( auto& each_sector : sectors){
+        each_sector.fill(chartbox::layer::default_cell_value);
+    }
+}
 
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::center() {
     const auto center = track_bounds_.center();
     view_bounds_.min = { center.easting - meters_across_view/2, center.northing - meters_across_view/2 };
     view_bounds_.max = { center.easting + meters_across_view/2, center.northing + meters_across_view/2 };
     view_bounds_ = view_bounds_.snap( meters_across_sector, meters_across_view );
+    return true;
+}
 
-    anchor = {0,0};
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::enable_cache( std::filesystem::path new_path ){
+    if( new_path.empty() ){
+        fmt::print(stderr, "<<!! No path given !! : {}\n", new_path.string() );
+        return false;
+    }else if( not std::filesystem::is_directory(new_path) ){
+        fmt::print(stderr, "    !! Could contour input path is not a directory!!: {}\n", new_path.string());
+        return false;
+    }
 
-    // iteration progress West => East, South => North;  Cell 0,0 and Sector 0,0 both start in the Southwest Corner.
-    for( uint32_t sector_row=0; sector_row < sectors_across_view; ++sector_row ){
-        for( uint32_t sector_column=0; sector_column < sectors_across_view; ++sector_column ){
-            const uint32_t sector_index = sector_column + (sector_row * sectors_across_view);
-            sectors[sector_index].fill(default_cell_value);
+    cache_path_ = new_path;
+
+    fmt::print( "    >>> Loading sectors from cache directory: {}\n", cache_path_.string() );
+    fmt::print( "        :: Cells-across-Sector:  {} x {}\n", cells_across_sector,cells_across_sector );
+    fmt::print( "        :: Sectors-across-View:  {} x {}\n", sectors_across_view, sectors_across_view );
+    fmt::print( "        :: Track Origin:  @  {},{}  <  {},{}\n", track_bounds_.min.easting, track_bounds_.min.northing, track_bounds_.max.easting, track_bounds_.max.northing );
+    fmt::print( "        :: View Origin:   @  {},{}  <  {},{}\n", view_bounds_.min.easting, view_bounds_.min.northing, view_bounds_.max.easting, view_bounds_.max.northing );
+
+    for( uint32_t at_row = 0; at_row < sectors_across_view; ++at_row ){
+        for( uint32_t at_column = 0; at_column < sectors_across_view; ++at_column ){
+
+            const SectorIndex index(at_column, at_row);
+            const LocalLocation sector_offset { at_column*meters_across_sector, at_row*meters_across_sector };
+            const LocalLocation sector_origin = view_bounds_.min + sector_offset ;
+
+            const auto& each_path = generate_tilecache_filename( cache_path_, sector_origin );
+
+            fmt::print( "        [{:2d},{:2d}][{:2d}]: Loading sectors from cache directory: {}\n", at_column, at_row, index.offset(), each_path.string() );
+
+            if( std::filesystem::exists(each_path))
+            {
+                // load file into tile
+
+                // auto& sector = sectors[index.offset()];
+
+//             { // Option A:
+//                 //     // write bytes to file:
+//                 //     std::ifstream source( from_path.string(), std::ios::binary );
+//                 //     std::array<uint8_t, getSectorCacheSize()> buffer;
+//                 //     source.read( reinterpret_cast<char*>(buffer.data()), buffer.size() );
+//                 //     source.close();
+
+//                 // raw bytes => structured struct
+//                 // Get a pointer to the root object inside the buffer.
+//                 //     const auto cell = chartbox::io::flatbuffer::GetCell( buffer.data() );
+
+//                 //     fmt::print( "    >>> Loaded file into flatbuffer struct.\n" );
+//                 //     fmt::print( stderr,  "    :: dimensions: {} x {} \n", to_layer.dimension, to_layer.dimension );
+//                 //     fmt::print( stderr,  "    :: origin:     {} x {} \n", to_layer.bounds().min.easting, to_layer.bounds().min.northing );
+
+//                 //     fmt::print( "    >>> Loaded file into flatbuffer struct.\n" );
+//                 //     fmt::print( stderr,  "    :: dimensions: {} x {} \n", cell->width(), cell->height() );
+//                 //     fmt::print( stderr,  "    :: origin:     {} x {} \n", cell->origin()->easting(), cell->origin()->northing() );
+
+
+//                 //     // not a guaranteed property of the layer; not all of them have this...
+//                 //     assert( cell->height() == sector.dimension() );
+//                 //     assert( cell->width() == sector.dimension() );
+
+//                 //     const LocalLocation origin( cell->origin()->easting(), cell->origin()->northing() );
+//                 // assert( sector_origin.easting == cell->origin()->easting() );
+//                 // assert( sector_origin.northing == cell->origin()->northing() );
+
+// //     // current iteration -- eventually, this should be dynamic
+// //     constexpr double tolerance = 1.0;
+// //     assert( tolerance > std::fabs(cell->origin()->easting() - to_layer.bounds().min.easting) );
+// //     assert( tolerance > std::fabs(cell->origin()->northing() - to_layer.bounds().min.northing) );
+
+//                 //     sector.fill( cell->data()->data(), cell->data()->size() );
+
+//             }
+
+                // Option B:
+                // const bool success = load( each_tile_path, each_sector );
+                // sector.fill( path? );
+
+                fmt::print( "    <<< Dev-Return-False\n" );
+                return false;
+            }else{
+                // initialize as unknown
+                sectors[index.offset()].fill(unknown_cell_value);
+            }
         }
     }
+
+    fmt::print( "    <<< Successfully Loaded.\n" );
+    return true;
+}
+
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+std::filesystem::path RollingGridLayer<cells_across_sector,sectors_across_view>::generate_tilecache_filename( const std::filesystem::path& dir, const LocalLocation& origin ) const {
+    const std::string filename = fmt::format("tile_local_{:06}E_{:06}N.fb", origin.easting, origin.northing );
+    return dir / filename;
 }
 
 template<uint32_t cells_across_sector, uint32_t sectors_across_view>
@@ -149,6 +238,38 @@ std::string RollingGridLayer<cells_across_sector,sectors_across_view>::print_con
 
     buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
     return buf.str();
+}
+
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::track( const BoundBox<LocalLocation>& new_bounds ) {
+    constexpr double tolerance = 0.5; 
+
+    // .1. Enforce zero-origin:
+    if( (0 != new_bounds.min[0]) || (0 != new_bounds.min[1]) ){
+        return false;
+    }
+    double width = new_bounds.max[0];
+
+    // .2. Enforce square bounds:
+    if( new_bounds.max[0] != new_bounds.max[1] ){
+        width = std::max( new_bounds.max[0], new_bounds.max[1] );
+    }
+
+    // .3. Enforce width is a multiple of the sector width
+    if( tolerance < std::fmod( width, meters_across_sector ) ){
+        width = std::ceil( width/meters_across_sector) * meters_across_sector;
+    }
+
+    track_bounds_.min = {0,0};
+    track_bounds_.max = {width,width};
+
+    center();
+    return true;
+}
+
+template<uint32_t cells_across_sector, uint32_t sectors_across_view>
+bool RollingGridLayer<cells_across_sector,sectors_across_view>::track( const BoundBox<UTMLocation>& utm_bounds ) {
+    return track( utm_bounds.relative().as<LocalLocation>()  );
 }
 
 template<uint32_t cells_across_sector, uint32_t sectors_across_view>
