@@ -30,21 +30,23 @@ const std::string extension = ".geojson";
 ///   - https://datatracker.ietf.org/doc/html/rfc7946
 ///   - https://gdal.org/drivers/vector/geojson.html
 
-template<typename layer_t>
-bool load_boundary_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping, layer_t& to_layer );
-
-template<>
-bool load_boundary_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
-
+bool load_boundary_box( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping );
 
 template<typename layer_t>
-bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping, layer_t& to_layer );
+bool load_boundary_layer( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, layer_t& to_layer );
 
 template<>
-bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping, chartbox::layer::RollingGridLayer<64u,8u>& to_layer );
+bool load_boundary_layer( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
+
+
+template<typename layer_t>
+bool load_contour_layer( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, layer_t& to_layer );
 
 template<>
-bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
+bool load_contour_layer( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::RollingGridLayer<64u,8u>& to_layer );
+
+template<>
+bool load_contour_layer( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::StaticGridLayer& to_layer );
 
 // internal options:
 constexpr static bool fill_interior_holes = false;

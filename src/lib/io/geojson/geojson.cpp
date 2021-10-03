@@ -60,38 +60,7 @@ bool load_boundary_polygon( const CPLJSONObject& root, const chartbox::geometry:
 bool load_contour_feature( const CPLJSONArray& from_feature, const chartbox::geometry::FrameMapping& mapping, uint8_t fill_value, uint8_t except_value, chartbox::layer::StaticGridLayer& to_layer );
 
 // ====== Function Definitions ====== 
-bool load_boundary_box( const CPLJSONObject& root, FrameMapping& mapping ){
-
-    auto bound_box_elem = root.GetArray("bbox");
-    if( ! bound_box_elem.IsValid()){
-        fmt::print( stderr, "'bbox' element is not valid!?\n" );
-        return false;
-    }else if(4 != bound_box_elem.Size()) {
-        fmt::print( stderr, "bbox element did not have 4 elements!?\n" );
-        return false;
-    }
-
-    const double west_longitude = bound_box_elem[0].ToDouble(NAN);
-    const double south_latitude = bound_box_elem[1].ToDouble(NAN);
-    const double east_longitude = bound_box_elem[2].ToDouble(NAN);
-    const double north_latitude = bound_box_elem[3].ToDouble(NAN);
-
-    using std::isnan;
-    if( isnan(west_longitude) || isnan(south_latitude) || isnan(east_longitude) || isnan(north_latitude) ){
-        fmt::print( stderr, "found NAN for a bounding-box limit!?\n" );
-        return false;
-    }
-
-    const BoundBox<GlobalLocation> bounds_lat_lon( GlobalLocation( south_latitude, west_longitude ),
-                                                   GlobalLocation( north_latitude, east_longitude ) );
-
-    const bool move_success = mapping.move_to_corners( bounds_lat_lon );
-
-    return move_success;
-}
-
-template<>
-bool load_boundary_layer( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer& to_layer ){
+bool load_boundary_box( const std::filesystem::path& from_path, FrameMapping& mapping ){
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path !!: {}\n", from_path.string() );
         return false;
@@ -100,18 +69,61 @@ bool load_boundary_layer( const std::filesystem::path& from_path, FrameMapping& 
     CPLJSONDocument doc;
     if( doc.Load( from_path.string()) ){
         const CPLJSONObject& root = doc.GetRoot();
-        const bool has_bound_box = ( root["bbox"].IsValid() );
+
+        if( not root["bbox"].IsValid() ){
+            fmt::print( stderr, "!! JSON Document does not contain a 'bbox' object?!\n");
+            fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
+            return false;
+        }
+        
+        auto bound_box_elem = root.GetArray("bbox");
+        if( ! bound_box_elem.IsValid()){
+            fmt::print( stderr, "'bbox' element is not valid!?\n" );
+            return false;
+        }else if(4 != bound_box_elem.Size()) {
+            fmt::print( stderr, "bbox element did not have 4 elements!?\n" );
+            return false;
+        }
+
+        const double west_longitude = bound_box_elem[0].ToDouble(NAN);
+        const double south_latitude = bound_box_elem[1].ToDouble(NAN);
+        const double east_longitude = bound_box_elem[2].ToDouble(NAN);
+        const double north_latitude = bound_box_elem[3].ToDouble(NAN);
+
+        using std::isnan;
+        if( isnan(west_longitude) || isnan(south_latitude) || isnan(east_longitude) || isnan(north_latitude) ){
+            fmt::print( stderr, "found NAN for a bounding-box limit!?\n" );
+            return false;
+        }
+
+        const BoundBox<GlobalLocation> bounds_lat_lon( GlobalLocation( south_latitude, west_longitude ),
+                                                    GlobalLocation( north_latitude, east_longitude ) );
+
+        const bool move_success = mapping.move_to_corners( bounds_lat_lon );
+
+        return move_success;
+    }
+
+    fmt::print( stderr, "!! Could not load GeoJSON File from path: {} !!\n", from_path.string() );
+    return false;
+}
+
+template<>
+bool load_boundary_layer( const std::filesystem::path& from_path, const  FrameMapping& mapping, StaticGridLayer& to_layer ){
+    if( not std::filesystem::exists(from_path) ) {
+        fmt::print( stderr, "!! Could not find input path !!: {}\n", from_path.string() );
+        return false;
+    }
+
+    CPLJSONDocument doc;
+    if( doc.Load( from_path.string()) ){
+        const CPLJSONObject& root = doc.GetRoot();
+
         const bool has_polygon = ( root["features"].IsValid() 
                                 && root.GetArray("features")[0].IsValid() 
                                 && root.GetArray("features")[0]["geometry"].IsValid()
                                 && root.GetArray("features")[0]["geometry"]["type"].IsValid()
                                 && root.GetArray("features")[0]["geometry"].GetString("type") == "Polygon" );
-
-        if( has_bound_box && ( not load_boundary_box(root, mapping) )){
-            fmt::print( stderr, "!! Could not load GeoJSON bounding box: !!!\n");
-            fmt::print( stderr, "{}\n", root.Format(CPLJSONObject::PrettyFormat::Pretty) );
-            return false;
-        }
 
         if( has_polygon ){
             CPLJSONObject geom = root.GetArray("features")[0]["geometry"];
@@ -141,22 +153,22 @@ bool load_boundary_layer( const std::filesystem::path& from_path, FrameMapping& 
     }
 }
 
-bool load_boundary_polygon( const CPLJSONObject& root, const FrameMapping& /*mapping*/, StaticGridLayer& /*to_layer*/ ){
-    if( root["features"].IsValid() ){
-        CPLJSONObject feature0 = root.GetArray("features")[0];
-        if( feature0["geometry"].IsValid() ){
-            CPLJSONObject geom_obj = feature0["geometry"];
+// bool load_boundary_polygon( const CPLJSONObject& root, const FrameMapping& /*mapping*/, StaticGridLayer& /*to_layer*/ ){
+//     if( root["features"].IsValid() ){
+//         CPLJSONObject feature0 = root.GetArray("features")[0];
+//         if( feature0["geometry"].IsValid() ){
+//             CPLJSONObject geom_obj = feature0["geometry"];
 
-            fmt::print( stderr, "    << load boundary polygon ... NYI\n");
+//             fmt::print( stderr, "    << load boundary polygon ... NYI\n");
 
-            // Polygon<LocalLocation> local_frame_polygon = load_polygon( world, mapping );
+//             // Polygon<LocalLocation> local_frame_polygon = load_polygon( world, mapping );
 
-            // return to_layer.fill( local_frame_polygon, layer_.clear_value );
-        }
-    }
-    fmt::print( stderr, "    << no boundary polygon found -- defaulting to boundary box.\n" );
-    return false;
-}
+//             // return to_layer.fill( local_frame_polygon, layer_.clear_value );
+//         }
+//     }
+//     fmt::print( stderr, "    << no boundary polygon found -- defaulting to boundary box.\n" );
+//     return false;
+// }
 
 Polygon<LocalLocation> load_polygon( const CPLJSONArray& source, const FrameMapping& mapping ){
     if( 4 > source.Size() ){
@@ -217,7 +229,7 @@ bool load_contour_feature( const CPLJSONArray& from_feature, const FrameMapping&
 // template<>
 // bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& /*mapping*/, RollingGridLayer& /*to_layer*/ ){
 template<>
-bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geometry::FrameMapping& /*mapping*/, chartbox::layer::RollingGridLayer<64u,8u>& /*to_layer*/ ){
+bool load_contour_layer( const std::filesystem::path& from_path, const FrameMapping& /*mapping*/, chartbox::layer::RollingGridLayer<64u,8u>& /*to_layer*/ ){
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path: '{}' !!\n", from_path.string() );
         return false;
@@ -229,7 +241,7 @@ bool load_contour_layer( const std::filesystem::path& from_path, chartbox::geome
 }
 
 template<>
-bool load_contour_layer( const std::filesystem::path& from_path, FrameMapping& mapping, StaticGridLayer& to_layer ){
+bool load_contour_layer( const std::filesystem::path& from_path, const FrameMapping& mapping, StaticGridLayer& to_layer ){
     if( not std::filesystem::exists(from_path) ) {
         fmt::print( stderr, "!! Could not find input path: '{}' !!\n", from_path.string() );
         return false;

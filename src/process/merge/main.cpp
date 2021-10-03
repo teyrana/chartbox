@@ -91,6 +91,7 @@ int main( void ){
             auto& mapping = box.mapping();
             fmt::print( ">>> Load Layer: {}  to: {}\n", layer.name(), boundary_input_path.string() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
+                geojson::load_boundary_box( boundary_input_path, mapping );
                 geojson::load_boundary_layer( boundary_input_path, mapping, layer );
             // NYI
             // }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
