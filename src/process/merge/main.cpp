@@ -93,18 +93,16 @@ int main( void ){
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 geojson::load_boundary_box( boundary_input_path, mapping );
                 geojson::load_boundary_layer( boundary_input_path, mapping, layer );
-            // NYI
-            // }else if( boundary_input_path.extension() == chartbox::io::flatbuffer::extension ){
-            //     flatbuffer::load( boundary_input_path, layer );
             }
         }
 
         if ( ! contour_input_path.empty() ) {
-            auto& layer = box.get_contour_layer();
-            auto& mapping = box.mapping();
-            
+
             // DEBUG
             fmt::print( "XXX Loading layer disabled. NYI!!\n");
+
+            // auto& layer = box.get_contour_layer();
+            // auto& mapping = box.mapping();
             
             // DEV: temporarily disable in this feature breanch
             // fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
@@ -154,10 +152,6 @@ int main( void ){
             fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), boundary_output_path.string() );
             if( boundary_output_path.extension() == chartbox::io::png::extension ){
                 png::save( layer, boundary_output_path );
-
-            // NYI
-            // }else if( boundary_output_path.extension() == chartbox::io::flatbuffer::extension ){
-            //     flatbuffer::save( layer, boundary_output_path);
             }
         }
 
