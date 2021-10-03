@@ -76,7 +76,6 @@ public:
 
     bool fill( const uint8_t value );
 
-    bool focus( const BoundBox<LocalLocation>& new_bounds );
 
     uint8_t get(const LocalLocation& p) const;
 
@@ -107,16 +106,13 @@ public:
 
     bool load( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
 
-// // private: 
-//     ///     => old terrain is no longer visible, and is disposed of, then recycled
-//     /// \param columns_right == >0: columns to scroll right,   <0: columns to scroll left
-//     /// \param rows_up == >0: rows to scroll upward,   <0: rows to scroll downward
-//     void scroll( int32_t columns_right, int32_t rows_up );
 
     bool scroll_east();
     bool scroll_north();
     bool scroll_south();
     bool scroll_west();
+    
+private:
 
     std::filesystem::path cache_path;
 
