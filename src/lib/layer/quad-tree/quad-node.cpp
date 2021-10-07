@@ -1,48 +1,44 @@
 // GPL v3 (c) 2020, Daniel Williams 
 
+#include <cassert>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
 
-#include <Eigen/Geometry>
-using Eigen::Vector2d;
+#include "chart-box/geometry/local-location.hpp"
 
-#include <nlohmann/json.hpp>
-using nlohmann::json;
+#include "quad-node.hpp"
 
-#include "geometry/cell_value.hpp"
-#include "node/quad-node.hpp"
+using chartbox::geometry::LocalLocation;
 
-using std::addressof;
-using std::cerr;
-using std::endl;
-using std::make_unique;
-using std::ostream;
-using std::string;
-using std::unique_ptr;
+using chartbox::layer::QuadNode;
 
-using yggdrasil::geometry::cell_value_t;
-using yggdrasil::node::QuadNode;
+QuadNode::QuadNode() 
+    : QuadNode(0)
+{}
 
-QuadNode::QuadNode() : QuadNode(0) {}
+QuadNode::QuadNode(const uint8_t _value)
+    : northeast(nullptr), northwest(nullptr), southwest(nullptr), southeast(nullptr)
+    , value_(_value)
+{}
 
-QuadNode::QuadNode(const cell_value_t _value)
-    : northeast(nullptr), northwest(nullptr), southwest(nullptr),
-      southeast(nullptr), value(_value) {}
-
-void QuadNode::draw(std::ostream& sink, const string& prefix, const string& as,
-                    const bool show_pointers) const {
+void QuadNode::draw(std::ostream& sink, 
+                    const std::string& prefix, 
+                    const std::string& as,
+                    const bool show_pointers) const 
+{
 
     sink << prefix << "[" << as << "]: ";
     if (is_leaf()) {
-        sink << static_cast<int>(get_value());
+        sink << static_cast<int>(get());
     }
     // sink << ' ' << bounds.str();
     if (show_pointers) {
-        sink << "   @:" << this << endl;
+        sink << "   @:" << this << std::endl;
     }
-    sink << endl;
+    sink << std::endl;
 
     if (!is_leaf()) {
         auto next_prefix = prefix + "    ";
@@ -53,9 +49,9 @@ void QuadNode::draw(std::ostream& sink, const string& prefix, const string& as,
     }
 }
 
-void QuadNode::fill(const cell_value_t fill_value) {
+void QuadNode::fill(const uint8_t fill_value) {
     if (is_leaf()) {
-        set_value(fill_value);
+        set(fill_value);
     } else {
         northeast->fill(fill_value);
         northwest->fill(fill_value);
@@ -64,27 +60,27 @@ void QuadNode::fill(const cell_value_t fill_value) {
     }
 }
 
-size_t QuadNode::get_count() const {
+size_t QuadNode::count() const {
     if (is_leaf()) {
         return 1;
     } else {
         size_t count = 0;
-        count += northeast->get_count();
-        count += northwest->get_count();
-        count += southeast->get_count();
-        count += southwest->get_count();
+        count += northeast->count();
+        count += northwest->count();
+        count += southeast->count();
+        count += southwest->count();
         return count + 1;
     }
 }
 
-size_t QuadNode::get_height() const {
+size_t QuadNode::height() const {
     if (is_leaf()) {
         return 1;
     } else {
-        const size_t ne_height = northeast->get_height();
-        const size_t nw_height = northwest->get_height();
-        const size_t se_height = southeast->get_height();
-        const size_t sw_height = southwest->get_height();
+        const size_t ne_height = northeast->height();
+        const size_t nw_height = northwest->height();
+        const size_t se_height = southeast->height();
+        const size_t sw_height = southwest->height();
 
         const size_t max_height = std::max(
             ne_height, std::max(nw_height, std::max(se_height, sw_height)));
@@ -92,38 +88,37 @@ size_t QuadNode::get_height() const {
     }
 }
 
-QuadNode* QuadNode::get_northeast() const { return northeast.get(); }
+bool QuadNode::is_leaf() const { 
+    return (nullptr == northeast);
+}
 
-QuadNode* QuadNode::get_northwest() const { return northwest.get(); }
 
-QuadNode* QuadNode::get_southeast() const { return southeast.get(); }
+uint8_t QuadNode::get() const { 
+    return value_;
+}
 
-QuadNode* QuadNode::get_southwest() const { return southwest.get(); }
+void QuadNode::join() {
+    if( is_leaf() ){
+        return;
+    }
 
-bool QuadNode::is_leaf() const { return !northeast; }
+    if( northeast ){
+        northeast->join();
+        northeast.release();
 
-cell_value_t& QuadNode::get_value() { return this->value; }
+        northwest->join();
+        northwest.release();
 
-cell_value_t QuadNode::get_value() const { return this->value; }
+        southeast->join();
+        southeast.release();
 
-bool QuadNode::load(const nlohmann::json& doc) {
-    reset();
-    if (doc.is_object()) {
-        this->split();
-        get_northeast()->load(doc["NE"]);
-        get_northwest()->load(doc["NW"]);
-        get_southeast()->load(doc["SE"]);
-        get_southwest()->load(doc["SW"]);
-        return true;
-    } else {
-        assert(is_leaf());
-        this->set_value(doc.get<double>());
-        return true;
+        southwest->join();
+        southwest.release();
     }
 }
 
 bool QuadNode::operator==(const QuadNode& other) const {
-    return static_cast<const void*>(this) == static_cast<const void*>(&other);
+    return (value_ == other.value_);
 }
 
 void QuadNode::prune() {
@@ -136,86 +131,56 @@ void QuadNode::prune() {
     southeast->prune();
     southwest->prune();
 
-    bool has_only_leaves =
-        get_northeast()->is_leaf() && get_northwest()->is_leaf() &&
-        get_southeast()->is_leaf() && get_southwest()->is_leaf();
+    const bool has_only_leaves = northeast->is_leaf()
+                                && northwest->is_leaf()
+                                && southeast->is_leaf()
+                                && southwest->is_leaf();
 
     if (has_only_leaves) {
-        auto nev = get_northeast()->get_value();
-        auto nwv = get_northwest()->get_value();
-        auto sev = get_southeast()->get_value();
-        auto swv = get_southwest()->get_value();
+        auto nev = northeast->get();
+        auto nwv = northwest->get();
+        auto sev = southeast->get();
+        auto swv = southwest->get();
 
         if ((nev == nwv) && (nwv == sev) && (sev == swv)) {
-            reset();
-            set_value(nev);
+            set(nev);
+            join();
         }
     }
 }
 
-void QuadNode::set_value(cell_value_t new_value) { this->value = new_value; }
-
-void QuadNode::reset() {
-    if (northeast != nullptr)
-        this->northeast.release();
-    if (northwest != nullptr)
-        this->northwest.release();
-    if (southeast != nullptr)
-        this->southeast.release();
-    if (southwest != nullptr)
-        this->southwest.release();
+void QuadNode::set(uint8_t new_value) {
+    value_ = new_value;
 }
 
 void QuadNode::split() {
     if (is_leaf()) {
-        value = NAN;
-
-        this->northeast = make_unique<QuadNode>(value);
-        this->northwest = make_unique<QuadNode>(value);
-        this->southeast = make_unique<QuadNode>(value);
-        this->southwest = make_unique<QuadNode>(value);
+        this->northeast = std::make_unique<QuadNode>(value_);
+        this->northwest = std::make_unique<QuadNode>(value_);
+        this->southeast = std::make_unique<QuadNode>(value_);
+        this->southwest = std::make_unique<QuadNode>(value_);
     }
 }
 
-void QuadNode::split(const double precision, const double width) {
-    if (precision >= width) {
-        return;
-    }
+std::string QuadNode::to_string() const {
+    std::ostringstream buf;
 
     if (is_leaf()) {
-        split();
-    }
-
-    const double half_width = width / 2;
-
-    this->northeast->split(precision, half_width);
-    this->northwest->split(precision, half_width);
-    this->southeast->split(precision, half_width);
-    this->southwest->split(precision, half_width);
-}
-
-nlohmann::json QuadNode::to_json() const {
-    nlohmann::json doc;
-
-    if (is_leaf()) {
-        doc = json({this->value}, false, json::value_t::number_integer)[0];
+//         doc = json({this->value}, false, json::value_t::number_integer)[0];
     } else {
         assert(northeast);
         assert(northwest);
         assert(southeast);
         assert(southwest);
-        doc["NE"] = northeast->to_json();
-        doc["NW"] = northwest->to_json();
-        doc["SE"] = southeast->to_json();
-        doc["SW"] = southwest->to_json();
+//         doc["NE"] = northeast->to_json();
+//         doc["NW"] = northwest->to_json();
+//         doc["SE"] = southeast->to_json();
+//         doc["SW"] = southwest->to_json();
     }
-    return doc;
-}
 
-std::string QuadNode::to_string() const {
-    std::ostringstream buf;
-    buf << this->to_json();
     return buf.str();
 }
 
-QuadNode::~QuadNode() { reset(); }
+QuadNode::~QuadNode() { 
+    join();
+}

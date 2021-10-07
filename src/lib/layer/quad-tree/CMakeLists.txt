@@ -1,11 +1,12 @@
-# ============= Chart Base Library =================
-# # this is a header-only library ???
-SET(LIB_NAME rollinggrid)
-SET(LIB_HEADERS fixed-grid.hpp fixed-grid.cpp
-                # rolling-grid.hpp rolling-grid.cpp
-    )
-SET(LIB_SOURCES fixed-grid.cpp
-                # rolling-grid.cpp
+# ============= Quad-Tree Layer Library =================
+SET(LIB_NAME quadtreelayer )
+SET(LIB_HEADERS quad-node.hpp
+                leaf-node.hpp
+                quad-tree-layer.hpp
+                )
+SET(LIB_SOURCES quad-node.cpp
+                leaf-node.cpp
+                quad-tree-layer.cpp
                 )
 
 MESSAGE( STATUS "Generating GridChart Library: ${LIB_NAME}")
@@ -15,8 +16,20 @@ MESSAGE( STATUS "    with sources: ${LIB_SOURCES}")
 # internal library dependency
 target_link_libraries(chartbox)
 
-# Generate the static library from the sources
+# header + source static library
 add_library(${LIB_NAME} STATIC ${LIB_HEADERS} ${LIB_SOURCES})
-TARGET_LINK_LIBRARIES(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
+target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
+target_link_libraries(${LIB_NAME} PRIVATE chartbox )
+target_link_libraries(${LIB_NAME} PRIVATE CONAN_PKG::gdal )
 
-INCLUDE_DIRECTORIES(${CMAKE_SRC_DIRECTORY}/src/lib/grid)
+# ============= Quad-Tree Tests =================
+# These tests can use the Catch2-provided main
+add_executable( quad-tree-tests
+                leaf-node.test.cpp
+                quad-node.test.cpp
+                quad-tree-layer.test.cpp
+                )
+
+target_link_libraries( quad-tree-tests PRIVATE ${LIB_NAME})
+target_link_libraries( quad-tree-tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries( quad-tree-tests PRIVATE CONAN_PKG::fmt)

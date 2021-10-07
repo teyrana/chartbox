@@ -81,7 +81,10 @@ SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} staticgridlayer )
 
 ADD_SUBDIRECTORY(src/lib/layer/rolling-grid)
 SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} rollinggridlayer )
+
 # ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
+# SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} quadtreelayer )
+
 # ADD_SUBDIRECTORY(src/lib/layer/view)
 
 # ADD_SUBDIRECTORY(src/process/profile)
