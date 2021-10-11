@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Eigen/Geometry>
-
 namespace chartbox::geometry {
 
 /// \brief Represents an Egocentric-Frame vector
@@ -24,11 +22,6 @@ struct EgoLocation {
         : x(_x), y(_y), z(_z)
     {}
 
-    EgoLocation( Eigen::vector3d vec )
-        : x(vec.x()), y(vec.y()), z(vec.z())
-    {}
-
-    Eigen::Vector3d to_vector() const { return {x,y,z}; }
 
 };
 

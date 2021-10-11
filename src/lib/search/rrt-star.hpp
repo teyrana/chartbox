@@ -9,10 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Geometry>
-
-#include "nlohmann/json.hpp"
-
 #include "geometry/path.hpp"
 #include "geometry/bounds.hpp"
 #include "geometry/polygon.hpp"
@@ -43,7 +39,7 @@ public:
     ///
     /// \param start - location to start searching from
     /// \param end  - location to searching to
-    chart::geometry::Path compute( const Eigen::Vector2d& start, const Eigen::Vector2d& end );
+    chart::geometry::Path compute( const LocalLocation& start, const LocalLocation& end );
 
 private:
 

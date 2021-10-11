@@ -5,13 +5,13 @@
 
 #include <cmath>
 
-#include <Eigen/Geometry>
+#include "local-location.hpp"
 
 namespace chart::geometry {
 
 template <typename cell_value_t> struct Sample {
   public:
-    const Eigen::Vector2d at;
+    const LocalLocation at;
     const cell_value_t is;
 };
 

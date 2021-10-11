@@ -3,7 +3,7 @@
 namespace chart::geometry {
 
 template <typename T>
-T interpolate_linear(const Eigen::Vector2d& to, const Sample<T>& s1,
+T interpolate_linear(const LocalLocation& to, const Sample<T>& s1,
                      const Sample<T>& s2) {
     if (s1.at.isApprox(s2.at)) {
         return s1.is;
@@ -36,7 +36,7 @@ T interpolate_linear(const Eigen::Vector2d& to, const Sample<T>& s1,
 }
 
 template <typename T>
-T interpolate_bilinear(const Eigen::Vector2d& to, const Sample<T>& ne,
+T interpolate_bilinear(const LocalLocation& to, const Sample<T>& ne,
                        const Sample<T>& nw, const Sample<T>& sw,
                        const Sample<T>& se) {
     // cerr << "    ==>>  to:    @" << to[0] << ", " << to[1] << endl;
@@ -57,11 +57,11 @@ T interpolate_bilinear(const Eigen::Vector2d& to, const Sample<T>& ne,
     // }
 
     // calculate full bilinear interpolation:
-    const Eigen::Vector2d upper_point = {to[0], (nw.at[1] + ne.at[1]) / 2};
+    const LocalLocation upper_point = {to[0], (nw.at[1] + ne.at[1]) / 2};
     const Sample<T> upper_sample = {upper_point,
                                     interpolate_linear(upper_point, nw, ne)};
 
-    const Eigen::Vector2d lower_point = {to[0], (sw.at[1] + se.at[1]) / 2};
+    const LocalLocation lower_point = {to[0], (sw.at[1] + se.at[1]) / 2};
     const Sample<T> lower_sample = {lower_point,
                                     interpolate_linear(lower_point, sw, se)};
 

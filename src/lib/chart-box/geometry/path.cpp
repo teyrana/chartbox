@@ -5,8 +5,6 @@
 #include <iterator>
 #include <vector>
 
-#include <Eigen/Geometry>
-
 #include "path.hpp"
 
 using std::cerr;
@@ -16,8 +14,6 @@ using std::min;
 using std::ostream;
 using std::string;
 
-using Eigen::Vector2d;
-
 using chart::geometry::Path;
 
 
@@ -26,12 +22,12 @@ Path::Path()
     : length_(0)
 {}
 
-Path::Path(std::vector<Vector2d>& init) 
+Path::Path(std::vector<LocalLocation>& init) 
     : points(init)
     , length_(calculate_length())
 {}
 
-Path::Path(std::initializer_list<Vector2d> init_list) 
+Path::Path(std::initializer_list<LocalLocation> init_list) 
     : points(init_list)
     , length_(calculate_length())
 {}
@@ -70,7 +66,7 @@ auto Path::end() -> decltype(points.end()) {
     return points.end();
 }
 
-Vector2d Path::segment(const size_t index) const {
+LocalLocation Path::segment(const size_t index) const {
     return points[index+1] - points[index];
 }
 
@@ -78,7 +74,7 @@ double Path::length() const {
     return length_;
 }
 
-bool Path::load(std::vector<Vector2d> source) {
+bool Path::load(std::vector<LocalLocation> source) {
     // if the new polygon contains insufficient points, abort and clear.
     if (2 > source.size()) {
         return false;
@@ -89,15 +85,15 @@ bool Path::load(std::vector<Vector2d> source) {
     return true;
 }
 
-Vector2d& Path::operator[](const size_t index) { 
+LocalLocation& Path::operator[](const size_t index) { 
     return points[index];
 }
 
-const Vector2d& Path::operator[](const size_t index) const {
+const LocalLocation& Path::operator[](const size_t index) const {
     return points[index];
 }
 
-void Path::push_back(const Vector2d p) {
+void Path::push_back(const LocalLocation p) {
     if(0 < points.size()){
         length_ += (p - points.back()).norm();
     }else{

@@ -9,8 +9,6 @@
 #include <vector>
 
 // third-party includes
-#include <Eigen/Geometry>
-
 #include <fmt/core.h>
 
 using chartbox::layer::ChartLayerInterface;

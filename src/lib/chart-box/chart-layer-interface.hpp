@@ -68,16 +68,16 @@ public:
     /// \param fill_value - fill value for polygon interior
     bool fill( const Polygon<LocalLocation>& source, const BoundBox<LocalLocation>& box, uint8_t value );
 
-    /// \brief Access the value at an (x, y) Eigen::Vector2d
+    /// \brief Access the value at an (x, y) LocalLocation
     ///!
-    /// \param Eigen::Vector2d - the x,y coordinates to search at:
+    /// \param LocalLocation - the x,y coordinates to search at:
     /// \return reference to the cell value
     uint8_t& get( const LocalLocation& p ){
         return layer().get(p); }
 
-    /// \brief Retrieve the value at an (x, y) Eigen::Vector2d
+    /// \brief Retrieve the value at an (x, y) LocalLocation
     ///
-    /// \param Eigen::Vector2d - the x,y coordinates to search at
+    /// \param LocalLocation - the x,y coordinates to search at
     /// \return the cell value
     uint8_t get(const LocalLocation& p) const { 
         return layer().get(p); }

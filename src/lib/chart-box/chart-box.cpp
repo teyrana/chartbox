@@ -2,9 +2,6 @@
 
 #include <cmath>
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
-
 #include <fmt/core.h>
 
 #include <gdal.h>
@@ -53,12 +50,4 @@ void ChartBox::print_layers() const {
 
     fmt::print( "============ ============ {} layers total ============ ============ \n", layer_index );
 }
-
-// Eigen::Vector2d ChartBox::to_local( const Eigen::Vector2d& /*from*/ ){
-//     return {NAN,NAN};
-// }
-
-// Eigen::Vector2d ChartBox::to_global( const Eigen::Vector2d& /*from*/ ){
-//     return {NAN,NAN};
-// }
 

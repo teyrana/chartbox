@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
 namespace chartbox::geometry {
 
 
@@ -23,11 +21,6 @@ struct UTMLocation {
     UTMLocation( double east, double north ) 
         : easting(east), northing(north) 
     {}
-
-    UTMLocation( const Eigen::Vector2d& vec )
-        : easting(vec.x()), northing(vec.y()) 
-    {}
-
 
     bool nearby( const UTMLocation& other, double tolerance = 0.01 ) const { 
         return ( tolerance > std::fabs( easting - other.easting) 
@@ -51,8 +44,6 @@ struct UTMLocation {
             default: return;
         }
     }
-
-    Eigen::Vector2d to_vector() const { return {easting, northing}; }
 
 };
 

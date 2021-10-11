@@ -3,7 +3,7 @@
 #ifndef _INTERPOLATE_HPP_
 #define _INTERPOLATE_HPP_
 
-#include <Eigen/Geometry>
+#include "local-location.hpp"
 
 #include "sample.hpp"
 
@@ -18,7 +18,7 @@ namespace chart::geometry {
  * @return The resultant value
  */
 template <typename T>
-T interpolate_linear(const Eigen::Vector2d& at, const Sample<T>& s1,
+T interpolate_linear(const LocalLocation& at, const Sample<T>& s1,
                      const Sample<T>& s2);
 
 /**
@@ -36,7 +36,7 @@ T interpolate_linear(const Eigen::Vector2d& at, const Sample<T>& s1,
  * @return resultant value
  */
 template <typename T>
-T interpolate_bilinear(const Eigen::Vector2d& at, const Sample<T>& ne,
+T interpolate_bilinear(const LocalLocation& at, const Sample<T>& ne,
                        const Sample<T>& nw, const Sample<T>& sw,
                        const Sample<T>& se);
 

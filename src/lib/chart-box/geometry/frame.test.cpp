@@ -25,14 +25,6 @@ TEST_CASE( "FrameTests" ){
         CHECK( loc.northing == Approx(3.4) );
         CHECK( loc[0] == Approx(1.2) );
         CHECK( loc[1] == Approx(3.4) );
- 
-        auto vec = loc.to_vector();
-        CHECK( vec.x() == Approx(1.2) );
-        CHECK( vec.y() == Approx(3.4) );
-
-        const UTMLocation loc2( vec );
-        CHECK( loc2.easting == Approx(1.2) );
-        CHECK( loc2.northing == Approx(3.4) );
     }
 
     SECTION( "UTMLocation BoundBox works correctly" ) {
@@ -52,16 +44,11 @@ TEST_CASE( "FrameTests" ){
 
         CHECK( loc.latitude  == Approx( 41.1749).margin(0.0001) );
         CHECK( loc.longitude == Approx(-71.5565).margin(0.0001) );
-        CHECK( loc.latitude  == Approx( 41.1749).margin(0.0001) );
-        CHECK( loc.longitude == Approx(-71.5565).margin(0.0001) );
+        
+        // not that the order switches => longitude, latitude
+        CHECK( loc[0] == Approx(-71.5565).margin(0.0001) );
+        CHECK( loc[1]  == Approx( 41.1749).margin(0.0001) );
 
-        auto vec = loc.to_vector();
-        CHECK( loc.latitude  == Approx( 41.1749).margin(0.0001) );
-        CHECK( loc.longitude == Approx(-71.5565).margin(0.0001) );
- 
-        const GlobalLocation loc2( vec );
-        CHECK( loc2.latitude  == Approx( 41.1749).margin(0.0001) );
-        CHECK( loc2.longitude == Approx(-71.5565).margin(0.0001) );
     }
 
     SECTION( "XYLocation Vectors Store Correctly" ) {
@@ -71,14 +58,6 @@ TEST_CASE( "FrameTests" ){
         CHECK( loc.y == Approx(3.4) );
         CHECK( loc[0] == Approx(1.2) );
         CHECK( loc[1] == Approx(3.4) );
- 
-        auto vec = loc.to_vector();
-        CHECK( vec.x() == Approx(1.2) );
-        CHECK( vec.y() == Approx(3.4) );
-
-        const XYLocation loc2( vec );
-        CHECK( loc2.x == Approx(1.2) );
-        CHECK( loc2.y == Approx(3.4) );
     }
 
     SECTION( "Global to UTM Frame Translation Initializes." ) {

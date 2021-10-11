@@ -8,13 +8,8 @@
 
 #include "geometry/path.hpp"
 
-using std::cerr;
-using std::endl;
-
-using Eigen::Vector2d;
 
 using chart::geometry::Path;
-
 
 TEST(Path, CreateDefault) {
     const Path path;

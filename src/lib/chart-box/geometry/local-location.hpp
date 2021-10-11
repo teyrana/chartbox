@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
 namespace chartbox::geometry {
 
 
@@ -22,11 +20,6 @@ struct LocalLocation {
     LocalLocation( double east, double north ) 
         : easting(east), northing(north) 
     {}
-
-    LocalLocation( const Eigen::Vector2d& vec )
-        : easting(vec.x()), northing(vec.y()) 
-    {}
-
 
     bool nearby( const LocalLocation& other, double tolerance = 0.01 ) const { 
         return ( tolerance > std::fabs( easting - other.easting) 
@@ -67,7 +60,6 @@ struct LocalLocation {
         }
     }
 
-    Eigen::Vector2d to_vector() const { return {easting, northing}; }
 
     inline double x() const { return easting; }
 

@@ -16,11 +16,11 @@ using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
 
 FrameMapping::FrameMapping()
-    : global_bounds_( Eigen::Vector2d(0,0), Eigen::Vector2d(1,1) )
+    : global_bounds_( GlobalLocation(0,0), GlobalLocation(1,1) )
     , global_frame_( nullptr )
     , global_to_utm_transform_(nullptr)
     , utm_to_global_transform_(nullptr)
-    , utm_bounds_( Eigen::Vector2d(0,0), Eigen::Vector2d(32,32) )
+    , utm_bounds_( UTMLocation(0,0), UTMLocation(32,32) )
     , utm_frame_( nullptr ) 
 {
 

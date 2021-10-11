@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
 namespace chartbox::geometry {
 
 /// \brief Represents a generic x-y orthogonal vector
@@ -17,10 +15,6 @@ struct XYLocation {
 
     XYLocation( double _x, double _y )
         : x(_x), y(_y)
-    {}
-
-    XYLocation( Eigen::Vector2d vec )
-        : x(vec.x()), y(vec.y()) 
     {}
 
     bool nearby( const XYLocation& other, double tolerance = 0.01 ) const { 
@@ -46,8 +40,6 @@ struct XYLocation {
             default: return;
         }
     }
-
-    Eigen::Vector2d to_vector() const { return { x, y};}
 
 };
 

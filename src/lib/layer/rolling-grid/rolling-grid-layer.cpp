@@ -1,9 +1,5 @@
 // GPL v3 (c) 2021, Daniel Williams 
 
-// #include <cmath>
-
-#include <Eigen/Geometry>
-
 #include "chart-box/geometry/bound-box.hpp"
 #include "chart-box/geometry/local-location.hpp"
 #include "chart-box/geometry/polygon.hpp"

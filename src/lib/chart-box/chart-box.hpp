@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Geometry>
-
 #include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
 #include "layer/static-grid/static-grid-layer.hpp"

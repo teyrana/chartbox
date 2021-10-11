@@ -10,15 +10,15 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Geometry>
+#include "local-location.hpp"
 
 namespace chart::geometry {
 
 class Path {
 public:
     Path();
-    Path(std::vector<Eigen::Vector2d>& init);
-    Path(std::initializer_list<Eigen::Vector2d> init);
+    Path(std::vector<LocalLocation>& init);
+    Path(std::initializer_list<LocalLocation> init);
 
     // clears the internal point vector
     void clear();
@@ -27,17 +27,17 @@ public:
 
     bool empty() const;
 
-    Eigen::Vector2d segment(const size_t index) const;
+    LocalLocation segment(const size_t index) const;
 
     double length() const;
 
-    bool load(std::vector<Eigen::Vector2d> source);
+    bool load(std::vector<LocalLocation> source);
 
-    Eigen::Vector2d& operator[](const size_t index);
+    LocalLocation& operator[](const size_t index);
 
-    const Eigen::Vector2d& operator[](const size_t index) const;
+    const LocalLocation& operator[](const size_t index) const;
 
-    void push_back(const Eigen::Vector2d p);
+    void push_back(const LocalLocation p);
 
     void resize(size_t capacity);
 
@@ -54,7 +54,7 @@ private:
 // ====== ====== ====== Class Attributes ====== ====== ====== 
 private:
     /// Main data store for this class.
-    std::vector<Eigen::Vector2d> points;
+    std::vector<LocalLocation> points;
 
     double length_;
 

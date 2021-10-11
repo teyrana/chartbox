@@ -4,10 +4,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <gtest/gtest.h>
-
-#include "nlohmann/json.hpp"
-
 #include "geometry/bounds.hpp"
 #include "geometry/path.hpp"
 
@@ -15,9 +11,6 @@
 #include "search/a-star.hpp"
 
 using std::string;
-
-using Eigen::Vector2d;
-using nlohmann::json;
 
 using chart::geometry::Path;
 using chart::grid::FixedGrid1k;

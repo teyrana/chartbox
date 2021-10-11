@@ -73,9 +73,9 @@ public:
         fill( default_cell_value );  }
 
 
-    /// \brief Access the value at an (x, y) Eigen::Vector2d
+    /// \brief Access the value at an (x, y)
     ///!
-    /// \param Eigen::Vector2d - the x,y coordinates to search at:
+    /// \param p - the x,y coordinates to search at:
     /// \return reference to the cell value
     bool store(const LocalLocation& p, const uint8_t new_value);
 

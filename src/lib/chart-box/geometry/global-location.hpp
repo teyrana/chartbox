@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
 namespace chartbox::geometry {
 
 /// \brief repesents a global latitude-longitude location.
@@ -17,10 +15,6 @@ struct GlobalLocation {
 
     GlobalLocation( double _lat, double _lon )
         : longitude(_lon), latitude(_lat) 
-    {}
-
-    GlobalLocation( Eigen::Vector2d vec )
-        : longitude(vec.x()), latitude(vec.y()) 
     {}
 
     bool nearby( const GlobalLocation& other, double tolerance = 0.001 ) const { 
@@ -46,7 +40,6 @@ struct GlobalLocation {
         }
     }
 
-    Eigen::Vector2d to_vector() const { return { longitude, latitude }; }
 
 };
 

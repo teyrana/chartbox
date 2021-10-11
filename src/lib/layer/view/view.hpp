@@ -46,7 +46,7 @@ public:
     // ... calling this function should be treated as a bug
     // uint8_t& get( const LocalLocation& p );
 
-    uint8_t get(const UTMLocation& p) const ;
+    uint8_t get(const geometry::LocalLocation& p) const ;
 
     double precision() const { return NAN; }
 
@@ -57,7 +57,7 @@ public:
     inline void reset(){}
 
     /// \brief read only layer!  this function will not be implemented.
-    bool store(const Eigen::Vector2d& p, const uint8_t new_value){ return false; }
+    bool store(const geometry::LocalLocation& p, const uint8_t new_value){ return false; }
 
     ~ViewLayer() = default;
 

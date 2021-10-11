@@ -90,7 +90,7 @@ public:
     /// \brief Draws a simple debug representation of this grid to stderr
     std::string print_contents() const;
 
-    /// \brief Access the value at an (x, y) Eigen::Vector2d
+    /// \brief Access the value at an (x, y)
     ///
     /// \param p - the x,y coordinates to search at:
     /// \param new_value - the value to stored at the specified location

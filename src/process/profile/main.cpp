@@ -7,11 +7,7 @@
 
 #include <sys/stat.h> // may not be standard
 
-using std::cerr;
-
 #include <cxxopts/cxxopts.hpp>
-
-#include <Eigen/Geometry>
 
 #include <nlohmann/json.hpp>
 using nlohmann::json;

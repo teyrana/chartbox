@@ -47,14 +47,8 @@ main: debug
 .PHONY: test testgrid
 test: test-all
 
-test-bounds: debug
-	build/bin/geometry-tests BoundTests
-
-test-frame: debug
-	build/bin/geometry-tests FrameTests
-
-test-polygon: debug
-	build/bin/geometry-tests PolygonTests
+test-geometry: debug
+	build/bin/geometry-tests
 
 test-rolling: debug
 	build/bin/rolling-grid-tests
@@ -68,9 +62,10 @@ test-static: debug
 test-search: debug
 	build/bin/search-tests
 
-test-all: 
-	clear
+test-all:
 	build/bin/geometry-tests
+#	build/bin/quad-tree-tests
 	build/bin/rolling-grid-tests
+	build/bin/static-grid-tests
 #	build/bin/search-tests
 

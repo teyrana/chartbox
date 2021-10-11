@@ -8,13 +8,12 @@
 
 #include "search/cost.hpp"
 
-using Eigen::Vector2d;
-
-using chart::base::ChartInterface;
-using chart::geometry::Bounds;
-using chart::geometry::Path;
-using chart::index::Index2u;
-using chart::search::AStar;
+using chartbox::ChartInterfaceLayer;
+using chartbox::geometry::LocalLocation;
+using chartbox::geometry::Bounds;
+using chartbox::geometry::Path;
+using chartbox::index::Index2u;
+using chartbox::search::AStar;
 
 using chart::search::euclideanCost;
 

@@ -8,8 +8,6 @@
 
 #include "search/cost.hpp"
 
-using Eigen::Vector2d;
-
 using chart::base::ChartInterface;
 using chart::geometry::Bounds;
 using chart::geometry::Path;
