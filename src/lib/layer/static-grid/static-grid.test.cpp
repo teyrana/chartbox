@@ -23,8 +23,8 @@ using chartbox::layer::StaticGridLayer;
 TEST_CASE( "StaticGrid Simple Initialization" ){
     StaticGridLayer layer;
 
-    REQUIRE( 1024 == layer.dimension );
-    REQUIRE( 16.0 == Approx(layer.precision()) );
+    REQUIRE( 1024 == layer.cells_across_view() );
+    REQUIRE( 16.0 == Approx(layer.meters_across_cell()) );
 } // TEST_CASE
 
 // TEST( StaticGrid, ConstructDefault1k) {

@@ -20,7 +20,7 @@ using chartbox::layer::StaticGridLayer;
 bool StaticGridLayer::contains(const LocalLocation& p ) const {
     if( 0 > p.easting || 0 > p.northing ){
         return false;
-    }else if( dimension < p.easting || dimension < p.northing ){
+    }else if( cells_across_layer_ < p.easting || cells_across_layer_ < p.northing ){
         return false;
     }
     return true;
@@ -56,18 +56,18 @@ uint8_t & StaticGridLayer::get(const LocalLocation& p ) {
 }
 
 size_t StaticGridLayer::lookup( const uint32_t i, const uint32_t j ) const {
-    return i + (j * dimension);
+    return i + (j * cells_across_layer_);
 }
 
 size_t StaticGridLayer::lookup( const LocalLocation& p ) const {
-    return lookup( static_cast<uint32_t>(p.easting/precision_),
-                   static_cast<uint32_t>(p.northing/precision_) );
+    return lookup( static_cast<uint32_t>(p.easting/meters_across_cell_),
+                   static_cast<uint32_t>(p.northing/meters_across_cell_) );
 }
 
 void StaticGridLayer::print_contents() const {
     fmt::print( "============ ============ Fixed-Grid-Layer Contents ============ ============\n" );
-    for (size_t j = dimension - 1; j < dimension; --j) {
-        for (size_t i = 0; i < dimension; ++i) {
+    for (size_t j = cells_across_layer_ - 1; j < cells_across_layer_; --j) {
+        for (size_t i = 0; i < cells_across_layer_; ++i) {
             const auto offset = lookup(i,j);
             const auto value = grid[offset];
             if( 0 == (i%8) ){

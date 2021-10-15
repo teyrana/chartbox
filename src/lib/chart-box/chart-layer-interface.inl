@@ -16,7 +16,7 @@ using chartbox::layer::ChartLayerInterface;
 
 template< typename layer_t>
 bool ChartLayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uint8_t value) {
-    const double incr = layer().precision();
+    const double incr = layer().meters_across_cell();
     const double easting_max = box.max.easting;
     const double easting_min = box.min.easting + incr/2;
     const double northing_max = box.max.northing;
@@ -40,10 +40,10 @@ bool ChartLayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, con
     const size_t vertex_count = poly.size();
     const double x_max = bounds.max[0];
     const double x_min = bounds.min[0];
-    const double x_incr = layer().precision();  // == y_incr.  This is a square grid.
+    const double x_incr = layer().meters_across_cell();  // == y_incr.  This is a square grid.
     const double y_max = bounds.max[1];
     const double y_min = bounds.min[1];
-    const double y_incr = layer().precision();  // == x_incr.  This is a square grid.
+    const double y_incr = layer().meters_across_cell();  // == x_incr.  This is a square grid.
 
     // Loop through the rows of the image.
     for( double y = y_min + y_incr/2; y < y_max; y += y_incr ){

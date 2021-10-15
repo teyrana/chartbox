@@ -15,10 +15,6 @@ namespace chartbox::layer {
 // template<uint32_t dimension>
 class StaticGridLayer : public ChartLayerInterface<StaticGridLayer> {
 public:
-
-    /// \brief number of cells along each dimension of this grid
-    constexpr static size_t dimension = 1024;
-
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "StaticGridLayer";
 
@@ -26,11 +22,12 @@ public:
 
     StaticGridLayer() = default;
     
-    StaticGridLayer( const BoundBox<UTMLocation>& _bounds );
-
 //    const std::array<uint8_t, dimension*dimension> & array() const;
 
     bool contains(const LocalLocation& p ) const;
+
+    /// \brief number of cells along each dimension of this grid
+    constexpr static size_t dimension() { return cells_across_layer_; }
 
     inline uint8_t* data() {
         return grid.data(); }
@@ -63,8 +60,11 @@ public:
 
     size_t lookup( const LocalLocation& p ) const;
 
-    inline double precision() const {
-        return precision_; }
+
+    inline uint32_t cells_across_view() const { return cells_across_layer_; }
+
+    inline double meters_across_cell() const { return meters_across_cell_; }
+    inline double meters_across_view() const { return meters_across_layer_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
     void print_contents() const;
@@ -84,12 +84,18 @@ public:
 
 protected:
 
+    /// \brief number of cells along each dimension of this grid
+    constexpr static size_t cells_across_layer_ = 1024;
+
     /// \brief width of each cell, in meters
-    constexpr static double precision_ = 16.0;
+    constexpr static double meters_across_cell_ = 16.0;
+
+    /// \brief width of each cell, in meters
+    constexpr static double meters_across_layer_ = meters_across_cell_ * cells_across_layer_;
 
     /// \brief contains the data for this tile
     // raw array:  2D addressing is performed through the index, below
-    std::array<uint8_t, dimension*dimension> grid;
+    std::array<uint8_t, cells_across_layer_*cells_across_layer_> grid;
 
 private:
 

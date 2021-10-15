@@ -1,9 +1,10 @@
 # ============= Chart GeoJSON I/O Library =================
 SET(LIB_NAME chart-geojson-io)
-SET(LIB_HEADERS geojson.hpp
+SET(LIB_HEADERS boundary.inl 
+                contour.inl
+                geojson.hpp
                 )
-SET(LIB_SOURCES 
-                geojson.cpp
+SET(LIB_SOURCES geojson.cpp
                 )
 
 MESSAGE( STATUS "Generating ChartBox GeoJSON Library: ${LIB_NAME}")

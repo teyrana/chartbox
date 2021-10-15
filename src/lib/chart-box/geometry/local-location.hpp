@@ -17,6 +17,10 @@ struct LocalLocation {
         : easting(NAN), northing(NAN)
     {}
 
+    LocalLocation( double value ) 
+        : easting(value), northing(value) 
+    {}
+
     LocalLocation( double east, double north ) 
         : easting(east), northing(north) 
     {}

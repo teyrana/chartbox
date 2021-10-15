@@ -16,7 +16,7 @@ namespace chartbox::geometry {
 
 class FrameMapping {
 public:
-    FrameMapping();    
+    FrameMapping();
 
     // NYI
     bool move_to_center( const GlobalLocation& center, const double width );

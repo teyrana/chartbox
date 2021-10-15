@@ -36,6 +36,7 @@ configure: $(CONAN_MARKER)
 
 clean:
 	rm -rf build/*
+	rm -f *.png
 
 format:
 	@echo clang-tidy src
@@ -47,8 +48,20 @@ main: debug
 .PHONY: test testgrid
 test: test-all
 
+test-dyn: debug
+	build/bin/dynamic-layer-tests
+
+test-frame: debug
+	build/bin/geometry-tests FrameTests
+
 test-geometry: debug
 	build/bin/geometry-tests
+	
+test-layer: debug
+	build/bin/layer-common-tests
+	build/bin/dynamic-layer-tests
+	build/bin/rolling-layer-tests
+	build/bin/static-layer-tests
 
 test-rolling: debug
 	build/bin/rolling-grid-tests
@@ -64,6 +77,8 @@ test-search: debug
 
 test-all:
 	build/bin/geometry-tests
+	build/bin/dynamic-layer-tests
+	build/bin/layer-common-tests
 #	build/bin/quad-tree-tests
 	build/bin/rolling-grid-tests
 	build/bin/static-grid-tests

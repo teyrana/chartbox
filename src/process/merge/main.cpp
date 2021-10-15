@@ -19,9 +19,6 @@ using chartbox::layer::BOUNDARY;
 using chartbox::layer::CONTOUR;
 using namespace chartbox::io;
 
-constexpr double boundary_width = 4096.;
-constexpr double desired_precision = 1.0;
-
 constexpr size_t test_seed = 55;
 static std::mt19937 generator;
 
@@ -33,13 +30,13 @@ int main( void ){
 
     const std::filesystem::path cache_path = "cache/";
 
+    // std::string boundary_input_arg("data/block-island/boundary.develop.geojson");
     // std::string boundary_input_arg("data/block-island/boundary.simple.geojson");
     std::string boundary_input_arg("data/block-island/boundary.polygon.geojson");
     // std::string boundary_input_arg("data/massachusetts/navigation_area_100k.shp");
 
-    std::string contour_input_arg("");
+    std::string contour_input_arg("(cache)");
                 contour_input_arg = "data/block-island/coastline.geojson";
-                // contour_input_arg = "contour.cache.fb";
     
     std::string boundary_output_arg("");
                 // boundary_output_arg = "boundary.png";
@@ -84,42 +81,77 @@ int main( void ){
     chartbox::ChartBox box;
 
     {   // load inputs 
+        auto& mapping = box.mapping();
 
         fmt::print( ">>> Starting Load: \n");
-        const auto start_load = std::chrono::high_resolution_clock::now(); 
+        const auto start_load_all = std::chrono::high_resolution_clock::now(); 
 
         if ( ! boundary_input_path.empty() ) {
             auto& layer = box.get_boundary_layer();
-            auto& mapping = box.mapping();
-            fmt::print( ">>> Load Layer: {}  to: {}\n", layer.name(), boundary_input_path.string() );
+            fmt::print( ">>> Load Boundary from: {}    to Layer: {}\n", boundary_input_path.string(), layer.name() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 geojson::load_boundary_box( boundary_input_path, mapping );
+
+                layer.sectors_across_view(4);
+                layer.track( mapping.local_bounds(), 8.0 );
+
                 geojson::load_boundary_layer( boundary_input_path, mapping, layer );
             }
         }
 
-        if ( ! contour_input_path.empty() ) {
-            auto& layer = box.get_contour_layer();
-            auto& mapping = box.mapping();
+        // const auto start_load_contour = std::chrono::high_resolution_clock::now(); 
+        // if ( ! cache_path.empty() ) {
+        //     auto& to_layer = box.get_contour_layer();
 
-            // updates track-bounds and view-bounds
-            layer.track( mapping.local_bounds() );
+        //     if ( ! contour_input_path.empty() ) {
+        //         fmt::print(">>> Loading data from: {}    to layer: {}\n", contour_input_path.string(), to_layer.name() );
 
-            layer.enable_cache( cache_path );
-    
-            // DEV: temporarily disable in this feature breanch
-            // auto& mapping = box.mapping();
-            //
-            // fmt::print( ">>> Loading layer: {} <{}>  from: {}\n", layer.name(), layer.type(), contour_input_path.string() );
-            // if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
-            //     geojson::load_contour_layer( contour_input_path, mapping, layer );
-            //}
-        }
+        //         // // updates track-bounds and view-bounds
+        //         // to_layer.track( mapping.local_bounds() );
 
-        const auto finish_load = std::chrono::high_resolution_clock::now(); 
-        const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load - start_load).count())/1000;
+        //         if( contour_input_path.extension() == chartbox::io::geojson::extension ){
+        //         //     chartbox::layer::rolling::RollingGridLayer<to_layer.cells_across_sector> load_window;
+        //         //     load_window.enable_cache( cache_path, false );
+        //         //     geojson::process_contour_to_cache( contour_input_path, mapping, load_window );
+                    
+        //             // validation/develop version:
+        //             geojson::load_contour_layer( boundary_input_path, mapping, to_layer );
+
+        //         }
+        //     }
+
+        //     fmt::print( "    ::Loading cache layer:\n");
+        //     // to_layer.enable_cache( cache_path, true );
+
+        //     // debug -- dump entire window
+        //     // png::save( load_window, mapping, "placeholder.png" );
+
+        //     // fmt::print( ">>> DEBUG >>> write sectors to png...\n");
+        //     // int i=0;
+        //     // for( auto& sector : load_window.sectors() ){
+        //     //     const std::string fname = fmt::format("sector-{}.png", i);
+        //     //     png::save(sector, fname);
+        //     //     ++i;
+        //     // }
+
+        //     // {// debug -- dump entire window
+        //     //     const chartbox::geometry::LocalLocation track_origin( 0, 0 );
+        //     //     to_layer.track( track_origin );
+
+        //     //     png::save( to_layer, mapping, "load_tracked.png" );
+        //     // }
+
+        //     const auto finish_load_contour = std::chrono::high_resolution_clock::now(); 
+        //     const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load_contour - start_load_contour).count())/1000;
+        //     if( 0.5 < load_duration ){
+        //         fmt::print( "<< Loaded Contour Layer in:   {:5.2f} s \n\n", load_duration );
+        //     }
+        // }
+
+        const auto finish_load_all = std::chrono::high_resolution_clock::now(); 
+        const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load_all - start_load_all).count())/1000;
         if( 0.5 < load_duration ){
-            fmt::print( "<< Loaded in:   {:5.2f} s \n\n", load_duration );
+            fmt::print( "<< Loaded all layers in:   {:5.2f} s \n\n", load_duration );
         }
     }
 
@@ -145,39 +177,38 @@ int main( void ){
 
     {   // write outputs
 
-        const auto start_write = std::chrono::high_resolution_clock::now();
+        const auto start_write_all = std::chrono::high_resolution_clock::now();
 
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
             const auto& layer = box.get_boundary_layer();
+            const auto& mapping = box.mapping();
             fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), boundary_output_path.string() );
             if( boundary_output_path.extension() == chartbox::io::png::extension ){
-                png::save( layer, boundary_output_path );
+                png::save( layer, mapping, boundary_output_path );
             }
         }
 
-        // DEBUG
-        // temporarily disable... renable later.
-        // if( ! contour_output_path.empty() ){
-        //     const auto& layer = box.get_contour_layer();
-        //     fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
-        //     if( contour_output_path.extension() == chartbox::io::png::extension ){
-        //         png::save( layer, contour_output_path );
-        //     }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
-        //         flatbuffer::save( layer, contour_output_path);
-        //     }
-        // }
+        if( ! contour_output_path.empty() ){
+            const auto& layer = box.get_contour_layer();
+            const auto& mapping = box.mapping();
+            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
+            if( contour_output_path.extension() == chartbox::io::png::extension ){
+                png::save( layer, mapping, contour_output_path );
+            // }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
+            //     flatbuffer::save( layer, contour_output_path);
+            }
+        }
 
         if( ! chart_output_arg.empty() ){
-            // const auto& layer = box.get_view_layer();
             fmt::print( ">>> Write chart to: {}\n", view_output_path.string() );
             if( view_output_path.extension() == chartbox::io::png::extension ){
                 png::save( box, view_output_path );
             }
         }
 
-        const auto finish_write = std::chrono::high_resolution_clock::now(); 
-        const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write - start_write).count())/1000;
+        const auto finish_write_all = std::chrono::high_resolution_clock::now(); 
+        const auto write_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_write_all - start_write_all).count())/1000;
         if( 0.5 < write_duration ){
             fmt::print( "<<< Written in:   {:5.2f} s \n\n", write_duration );
         }

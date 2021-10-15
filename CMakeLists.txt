@@ -74,18 +74,19 @@ SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
 
 # depend on chart-box:
 ADD_SUBDIRECTORY(src/lib/io)
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chart-flatbuffer-io chart-geojson-io chart-png-io )
+list(APPEND LIBRARY_LINKAGE chart-flatbuffer-io 
+                            chart-geojson-io 
+                            chart-png-io 
+            )
 
-ADD_SUBDIRECTORY(src/lib/layer/static-grid)
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} staticgridlayer )
+ADD_SUBDIRECTORY(src/lib/layer)
+list(APPEND LIBRARY_LINKAGE dynamicgridlayer
+                            # rollinggridlayer
+                            staticgridlayer 
+                            # quadtreelayer
+                            # view
+            )
 
-ADD_SUBDIRECTORY(src/lib/layer/rolling-grid)
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} rollinggridlayer )
-
-# ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
-# SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} quadtreelayer )
-
-# ADD_SUBDIRECTORY(src/lib/layer/view)
-
+# ADD_SUBDIRECTORY(src/process)
 # ADD_SUBDIRECTORY(src/process/profile)
 ADD_SUBDIRECTORY(src/process/merge)
