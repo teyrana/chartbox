@@ -6,16 +6,17 @@
 #include <cmath>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 
 #include "chart-box/chart-layer-interface.hpp"
 #include "chart-box/geometry/polygon.hpp"
 #include "chart-box/geometry/bound-box.hpp"
+#include "layer/grid-index.hpp"
 
 #include "rolling-grid-sector.hpp"
-#include "rolling-grid-index.hpp"
 
-namespace chartbox::layer {
+namespace chartbox::layer::rolling {
 
 /// \brief represents an entire layer of scrolling data
 /// 
@@ -26,42 +27,27 @@ namespace chartbox::layer {
 ///  chart => layer => sector => cell
 ///            ^^^ you are here
 ///
-/// \param cells_across_sector cell count across a single dimension of each sector
-/// \param sectors_across_view sector count across a single dimension of the view
-template<uint32_t cells_across_sector, uint32_t sectors_across_view>
-class RollingGridLayer : public ChartLayerInterface< RollingGridLayer<cells_across_sector,sectors_across_view> > {
+/// \param cells_across_sector_ cell count across a single dimension of each sector
+template<uint32_t cells_across_sector_>
+class RollingGridLayer : public ChartLayerInterface< RollingGridLayer<cells_across_sector_> > {
+// `*_across_*` variables count the numbe in each dimension of a square grid
+// `*_in_*` variables count the total number in the entire grid
 public:
-
-    // `*_across_*` variables count the numbe in each dimension of a square grid
-    // `*_per_*` variables count the total number in the entire grid
-
-    // constexpr static size_t cells_per_sector = cells_across_sector * cells_across_sector;  ///< not yet needed
-    constexpr static double meters_across_cell = 1.0;   //aka precision
-    // constexpr static double area_per_cell = meters_across_cell * meters_across_cell;
-
-    // constexpr static size_t sectors_per_view = sectors_across_view * sectors_across_view;
-    constexpr static double meters_across_sector = meters_across_cell * cells_across_sector; 
-    // constexpr static double area_per_sector = area_per_cell * cells_per_sector;
-
-    constexpr static size_t cells_across_view = cells_across_sector * sectors_across_view;
-    constexpr static double meters_across_view = meters_across_cell * cells_across_view;
-
-    constexpr static double precision = meters_across_cell;
 
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "RollingGridLayer";
 
-    // used to address a cell within a sector
-    // Is explicitly a different type to prevent cross-talk
-    typedef CellInSectorIndex<cells_across_sector> CellIndex;
+    typedef RollingGridSector<cells_across_sector_> sector_t;
 
-    // used to address a sector within the active view
-    // Is explicitly a different type to prevent cross-talk
-    typedef SectorInViewIndex<sectors_across_view> SectorIndex;
+private:
+    constexpr static double meters_across_cell_ = 1.0;   //aka precision
 
-    // used to address a cell within the active view
-    // Is explicitly a different type to prevent cross-talk
-    typedef CellInViewIndex<cells_across_sector,sectors_across_view> ViewIndex;
+    constexpr static double meters_across_sector_ = meters_across_cell_ * cells_across_sector_;
+
+    constexpr static uint32_t sectors_across_view_ = 5;  // TODO: convert to dynamic parameter...
+    constexpr static uint32_t cells_across_view_ = sectors_across_view_ * cells_across_sector_; // TODO: make dynamic
+    constexpr static uint32_t sectors_in_view_ = sectors_across_view_ * sectors_across_view_;
+    constexpr static double meters_across_view_ = meters_across_cell_ * cells_across_view_;
 
 public:
     /// \brief Constructs a new 2d square grid
@@ -69,9 +55,15 @@ public:
 
     ~RollingGridLayer(){};
 
+    constexpr static uint32_t cells_across_sector() { return cells_across_sector_; }
+    constexpr static uint32_t sectors_across_view() { return sectors_across_view_; }
+    constexpr static uint32_t cells_across_view() { return cells_across_view_; }
+
     // Center in the middle of the tracked bounds:
     // ( Assume tracked-bounds are already set )
     bool center();
+
+    /// \brief track the given bounds -- this does not update the actual data in the sectors!
     bool track( const BoundBox<LocalLocation>& bounds );
     bool track( const BoundBox<UTMLocation>& bounds );
 
@@ -79,16 +71,40 @@ public:
 
     bool fill( const uint8_t value );
 
+    bool fill( const BoundBox<LocalLocation>& box, const uint8_t value ){
+        return super().fill( box, value ); }
+
+    bool fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bound, uint8_t value ){
+        return super().fill( poly, bound, value ); }
+
+    // \brief flush layer contents to the internal cache
+    bool flush_to_cache() const;
+
+    // \brief load sector-tiles from the internal cache (if avaiable)
+    bool load_from_cache();
 
     uint8_t get(const LocalLocation& p) const;
 
     inline uint8_t get( double easting, double northing ) const {
             return get({easting, northing});  }
 
-    // size_t lookup( const LocalLocation& p ) const;
+
+    inline double meters_across_cell() const { return meters_across_cell_; }
+    inline double meters_across_sector() const { return meters_across_sector_; }
+    inline double meters_across_view() const { return meters_across_view_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    std::string print_contents() const;
+    std::string print_contents_by_cell( uint32_t indent = 0) const;
+    std::string print_contents_by_location( uint32_t indent = 0 ) const;
+
+    std::string print_properties( uint32_t indent = 0) const;
+
+    bool scroll_east();
+    bool scroll_north();
+    bool scroll_south();
+    bool scroll_west();
+
+    const std::vector<sector_t>& sectors() const { return sectors_; }
 
     /// \brief Access the value at an (x, y)
     ///
@@ -97,49 +113,45 @@ public:
     /// \return true if successful
     bool store(const LocalLocation& p, uint8_t new_value);
 
+    /// \brief track from the given location  (... + the native width)
+    bool track( const LocalLocation& bounds );
+
     /// \brief Get the bounds of the tracked (overall) area
     inline const BoundBox<LocalLocation>& tracked() const { return track_bounds_; }
     inline bool tracked(const LocalLocation& p) const { return track_bounds_.contains(p); }
 
+    /// \brief shift the viewable area to this origin (with the current widths)
+    bool view(const LocalLocation& p);
+
     /// \brief Get the currently visible (active) bounds of this layer
     inline const BoundBox<LocalLocation>& visible() const { return view_bounds_; }
     inline bool visible(const LocalLocation& p) const { return view_bounds_.contains(p); }
-
-    bool save( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
-
-    bool load( const SectorIndex& sector_index, const LocalLocation& sector_anchor );
-
-
-    bool scroll_east();
-    bool scroll_north();
-    bool scroll_south();
-    bool scroll_west();
+    
 
 private:
-    std::filesystem::path generate_tilecache_filename( const std::filesystem::path& path, const LocalLocation& origin ) const;
+
+    // Just wrap the indexes around the grid, starting from the anchor:
+    GridIndex anchor_;
+
+    //  chart => layer => sector => cell
+    //                 ^^ you are here -- this structure maps from the layer to the sectors 
+    std::vector<sector_t> sectors_;
+    // NOTE: currently this is only adjusted|allocated in the constructor
 
     // this tracks the outer bounds (that the whole chart is tracking)
     geometry::BoundBox<LocalLocation> track_bounds_;
+
+    // this tracks the inner bounds (where we're actively tracking cells)
     geometry::BoundBox<LocalLocation> view_bounds_;
 
 private:
-    //  chart => layer => sector => cell
-    //                 ^^ you are here -- this structure maps from the layer to the sectors 
-    std::array<RollingGridSector<cells_across_sector>, sectors_across_view * sectors_across_view > sectors;
 
-    // Just wrap the indexes around the grid, starting from the anchor:
-    SectorIndex anchor;
-
-    std::filesystem::path cache_path_;
-
-private:
-
-    ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>& super() {
-        return *static_cast< ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>* >(this);
+    ChartLayerInterface<RollingGridLayer<cells_across_sector_>>& super() {
+        return *static_cast< ChartLayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
     }
 
-    const ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>& super() const {
-        return *static_cast< const ChartLayerInterface<RollingGridLayer<cells_across_sector,sectors_across_view>>* >(this);
+    const ChartLayerInterface<RollingGridLayer<cells_across_sector_>>& super() const {
+        return *static_cast< const ChartLayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
     }
 };
 

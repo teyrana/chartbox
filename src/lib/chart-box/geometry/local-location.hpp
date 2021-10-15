@@ -38,6 +38,10 @@ struct LocalLocation {
         return { easting + other.easting, northing + other.northing };
     }
 
+    LocalLocation operator+( double other ) const {
+        return { easting + other, northing + other };
+    }
+
     LocalLocation operator-( const LocalLocation& other ) const {
         return { easting - other.easting, northing - other.northing };
     }

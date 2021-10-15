@@ -98,7 +98,6 @@ bool load_contour_to_layer( const nlohmann::json& from_document, const geometry:
         }
     }
 
-    fmt::print( stderr, "                << finished processing features.\n");
     return true;
 }
 
@@ -129,46 +128,52 @@ bool process_contour_to_cache( const std::filesystem::path& from_path, const geo
     }
 
     const LocalLocation layer_origin = mapping.local_bounds().min;
-    const double width = mapping.local_bounds().width();
-    const double meters_across_sector = window.meters_across_sector;
-    // this is how many sectors to use for the loading window
-    const uint32_t sectors_across_window = window.sectors_across();
-    // this is how many sectors (aka tiles) across for the area we plan to load...
-    const uint32_t sectors_across_layer = width / meters_across_sector;
-    // this is how many times we need to repeat the loading process to cover the entire loading area
-    const uint32_t windows_across_layer = std::ceil( static_cast<double>(sectors_across_layer)/sectors_across_window );
+    const double meters_across_window = window.meters_across_view(); 
+    const double meters_across_layer = mapping.local_bounds().width();
 
-    fmt::print( "        ============ cache parameters: ============ \n" );
-    //fmt::print( "        :: cells_across_sector:     {}\n", cells_across_sector );
-    fmt::print( "        :: origin (layer):          {},{}\n", layer_origin.easting, layer_origin.northing );
-    fmt::print( "        :: width:                   {}\n", width );
-    fmt::print( "        :: meters_across_sector:    {}\n", meters_across_sector );
-    fmt::print( "        :: sectors_across_window:   {}\n", sectors_across_window );
-    fmt::print( "        :: sectors_across_layer:    {}\n", sectors_across_layer );
-    fmt::print( "        :: windows_across_layer:    {}\n", windows_across_layer );
+    {
+        fmt::print( "    ====== ====== Cache Parameters: ============ \n" );
+        // this is how many sectors (aka tiles) across for the total-load-area
+        const uint32_t sectors_across_layer = mapping.local_bounds().width() /  window.meters_across_sector();
+        // this is how many sectors (aka tiles) across each load-area-increment
+        const uint32_t sectors_across_window = window.sectors_across_view();
+        // this is how many times we need to repeat the loading process to cover the entire loading area
+        const uint32_t windows_across_layer = std::ceil( static_cast<double>(sectors_across_layer)/sectors_across_window );
+        fmt::print( "        :: origin (layer):          {},{}\n", layer_origin.easting, layer_origin.northing );
+        fmt::print( "        :: meters-across-cell:      {}\n", window.meters_across_cell() );
+        fmt::print( "        :: meters-across-sector:    {}\n", window.meters_across_sector() );
+        fmt::print( "        :: meters-across-window:    {}\n", meters_across_window );
+        fmt::print( "        :: meters-across-layer:     {}\n", meters_across_layer );
+        fmt::print( "        :: cells_across_sector:     {}\n", window.cells_across_sector() );
+        fmt::print( "        :: sectors-across-window:   {}\n", sectors_across_window );
+        fmt::print( "        :: sectors-across-layer:    {}\n", sectors_across_layer );
+        fmt::print( "        :: windows-across-layer:    {}\n", windows_across_layer );
 
-    fmt::print( "        ============ Load @ Window: [row,col] ============ \n" );
+        fmt::print( "    ====== ====== Cache Windows: ============ \n" );
+    }
+
     // - slide the window across the layer, incrementally;  
     //     a. at each position load the input file
     //     b. then save to cache tiles
     // - repeat until the entire desired area is covered.
-    for (size_t window_row_index = 0; window_row_index < windows_across_layer; ++window_row_index) {
-        for (size_t window_column_index = 0; window_column_index < windows_across_layer; ++window_column_index ) {
-            window.track( layer_origin + LocalLocation( window_column_index*meters_across_sector, window_row_index*meters_across_sector ) );
-            fmt::print("            >>> {{ row: {}, column: {} }}\n", window_column_index, window_row_index );
+    LocalLocation window_origin( layer_origin );
+    for( window_origin.easting = layer_origin.easting; window_origin.northing < meters_across_layer; window_origin.northing += meters_across_window ){
+        for( window_origin.easting = layer_origin.easting; window_origin.easting < meters_across_layer; window_origin.easting += meters_across_window ){
 
+            // move to the next window
+            fmt::print("{:<{}}@[ {:6.0f}East,  {:6.0f}North ]    =>", "", 8u, window_origin.easting, window_origin.northing );
+            window.track( window_origin );
+
+            fmt::print("  load-to-window    =>");
             // populates the load window with contents matching some of the input file
             load_contour_to_layer( from_document, mapping, window );
 
+            fmt::print("  flush-to-cache.\n");
             // flushes load-window tiles to cache
-            window.flush();
+            window.flush_to_cache();
         }
-        fmt::print("\n");
     }
-
-    return false; // debug
-
-    // return true;
+    return true;
 }
 
 }   // namespace

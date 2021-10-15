@@ -81,8 +81,8 @@ list(APPEND LIBRARY_LINKAGE chart-flatbuffer-io
 
 ADD_SUBDIRECTORY(src/lib/layer)
 list(APPEND LIBRARY_LINKAGE dynamicgridlayer
-                            # rollinggridlayer
-                            staticgridlayer 
+                            rollinggridlayer
+                            staticgridlayer
                             # quadtreelayer
                             # view
             )

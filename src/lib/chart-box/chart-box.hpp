@@ -9,7 +9,7 @@
 #include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
 #include "layer/static-grid/static-grid-layer.hpp"
-//#include "layer/rolling-grid/rolling-grid-layer.hpp"
+#include "layer/rolling-grid/rolling-grid-layer.hpp"
 #include "layer/dynamic-grid/dynamic-grid-layer.hpp"
 
 namespace chartbox {
@@ -23,10 +23,8 @@ public:
     // typedef chartbox::layer::StaticGridLayer boundary_layer_t;
     typedef chartbox::layer::dynamic::DynamicGridLayer boundary_layer_t;
     
-    typedef chartbox::layer::dynamic::DynamicGridLayer contour_layer_t;
-
     // note: this template must be explicitly instantiated at the bottom of `rolling-grid-layer.cpp`
-    // typedef chartbox::layer::rolling::RollingGridLayer<1024> contour_layer_t;
+    typedef chartbox::layer::rolling::RollingGridLayer<1024> contour_layer_t;
 
 public:
     ChartBox();

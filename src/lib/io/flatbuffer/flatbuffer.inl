@@ -7,125 +7,91 @@
 #include <fstream>
 
 #include "layer/rolling-grid/rolling-grid-layer.hpp"
-#include "chart-box/geometry/local-location.hpp"
 
 #include "tile-cache-generated.hpp"
 
 namespace chartbox::io::flatbuffer {
 
-// template<uint32_t n,uint32_t m>
-// bool load( const std::filesystem::path& from_path, chartbox::layer::RollingGridLayer<n,m>& to_layer ){
-//     using chartbox::geometry::LocalLocation;
-//     using chartbox::io::flatbuffer::TileCache;
-//     using chartbox::io::flatbuffer::TileCacheBuilder;
-//     using chartbox::io::flatbuffer::Location;
+template<uint32_t n>
+bool load( const chartbox::geometry::LocalLocation& at_origin, chartbox::layer::rolling::RollingGridSector<n>& to_sector ){
+    using chartbox::io::flatbuffer::TileCache;
+    using chartbox::io::flatbuffer::TileCacheBuilder;
+    using chartbox::io::flatbuffer::Location;
 
-//     if( from_path.empty() ){
-//         fmt::print(stderr, "<<!! No path given !! : {}\n", from_path.string() );
-//         return false;
-//     }else if( not std::filesystem::is_directory(from_path) ){
-//         fmt::print(stderr, "    !! Could contour input path is not a directory!!: {}\n", from_path.string());
-//         return false;
-//     }
+    if( cache_directory_path.empty() ){
+        // cache is not enabled
+        to_sector.fill(chartbox::layer::unknown_cell_value);
+        return false;
+    }
 
-//     fmt::print( "    >>> Loading from file: {}\n", from_path.string() );
+    const auto& filepath = generate_tile_cache_filename( at_origin );
+    if( not std::filesystem::is_regular_file(filepath)){
+        fmt::print(stderr, "    !! Input path is not a file!!: {}\n", filepath.string());
+        to_sector.fill(chartbox::layer::unknown_cell_value);
+        return false;
+    }
 
-    // for( uint32_t at_row = 0; at_row < index.size; ++at_row ){
-    //     for( uint32_t at_column = 0; at_column < index.size; ++at_column ){
+    // read bytes from file:
+    std::ifstream source( filepath.string(), std::ios::binary );
+    std::array<uint8_t, (sizeof(TileCache) + to_sector.size())> buffer;
+    source.read( reinterpret_cast<char*>(buffer.data()), buffer.size() );
+    source.close();
 
-    //         const Index2u32 index(at_column, at_row);
-    //         const auto& sector = to_layer.getSector( index );
-    //         const LocalLocation sector_origin = to_layer.getOrigin( index );
+    // Load raw bytes into the structured flatbuffer class
+    const auto tile = chartbox::io::flatbuffer::GetTileCache( buffer.data() );
 
-    //         const std::string filename = fmt::format("tile_local_{}E_{}N.fb", sector.origin.easting, sector.origin.northing);
-    //         const std::filesystem::path search_path = from_path / filename;  
-    //         if( std::filesystem::is_regular_file(search_path)){
-    //             // load file into tile
+    // .1. Check Dimensions Match:
+    assert( tile->dimension() == to_sector.cells_across() );
 
-//             { // Option A:
-//                 //     // write bytes to file:
-//                 //     std::ifstream source( from_path.string(), std::ios::binary );
-//                 //     std::array<uint8_t, layer.getSectorCacheSize()> buffer;
-//                 //     source.read( reinterpret_cast<char*>(buffer.data()), buffer.size() );
-//                 //     source.close();
+    // .2. Check Real-World Bounds match:
+    // sector doesn't track it's own origin ...
+    constexpr double tolerance = 1.0;
+    assert( tolerance > std::fabs(at_origin.easting - tile->origin()->easting()) );
+    assert( tolerance > std::fabs(at_origin.northing - tile->origin()->northing()) );
 
-//                 // raw bytes => structured struct
-//                 // Get a pointer to the root object inside the buffer.
-//                 //     const auto cell = chartbox::io::flatbuffer::GetCell( buffer.data() );
+    // .3. Check Stated Precision
+    // TODO: implement a precision check;  the information is not currently available to this method :(
+    // assert( tolerance > std::fabs(tile->precision() == with_precision );
 
-//                 //     fmt::print( "    >>> Loaded file into flatbuffer struct.\n" );
-//                 //     fmt::print( stderr,  "    :: dimensions: {} x {} \n", to_layer.dimension, to_layer.dimension );
-//                 //     fmt::print( stderr,  "    :: origin:     {} x {} \n", to_layer.bounds().min.easting, to_layer.bounds().min.northing );
+    // .4. Checks Passed: load actual data
+    to_sector.fill( tile->data()->data(), tile->data()->size() );
 
-//                 //     fmt::print( "    >>> Loaded file into flatbuffer struct.\n" );
-//                 //     fmt::print( stderr,  "    :: dimensions: {} x {} \n", cell->width(), cell->height() );
-//                 //     fmt::print( stderr,  "    :: origin:     {} x {} \n", cell->origin()->easting(), cell->origin()->northing() );
+    // fmt::print( "{:8s}<<< Tile loaded: {}\n", "", filepath.string() );
 
-
-//                 //     // not a guaranteed property of the layer; not all of them have this...
-//                 //     assert( cell->height() == sector.dimension() );
-//                 //     assert( cell->width() == sector.dimension() );
-
-//                 //     const LocalLocation origin( cell->origin()->easting(), cell->origin()->northing() );
-//                 // assert( sector_origin.easting == cell->origin()->easting() );
-//                 // assert( sector_origin.northing == cell->origin()->northing() );
-
-// //     // current iteration -- eventually, this should be dynamic
-// //     constexpr double tolerance = 1.0;
-// //     assert( tolerance > std::fabs(cell->origin()->easting() - to_layer.bounds().min.easting) );
-// //     assert( tolerance > std::fabs(cell->origin()->northing() - to_layer.bounds().min.northing) );
-
-//                 //     sector.fill( cell->data()->data(), cell->data()->size() );
-
-//             }
-
-//             // Option B:
-//             // sector.fill( path? );
-    //         }else{
-    //             // initialize as unknown
-    //             sector.fill(unknown_cell_value);
-    //         }
-    //     }
-    // }
-
-//     fmt::print( "    <<< Successfully Loaded.\n" );
-//     return true;
-
-//     fmt::print( "    XXX Debug Return.\n" );
-//     return false;
-// }
+    return true;
+}
 
 
-// template<uint32_t n,uint32_t m>
-// bool save( chartbox::layer::RollingGridLayer<n,m>& from_layer, const std::filesystem::path& to_path ){
-//     using chartbox::io::flatbuffer::TileCache;
-//     using chartbox::io::flatbuffer::TileCacheBuilder;
-//     using chartbox::io::flatbuffer::Location;
+template<uint32_t n>
+bool save( const chartbox::layer::rolling::RollingGridSector<n>& from_sector, const chartbox::geometry::LocalLocation& at_origin ){
+    if( cache_directory_path.empty() ){
+        // cache is not enabled
+        return false;
+    }
 
-//     fmt::print( stderr, "    >>> Write Layer to: {}\n", to_path.string() );
+    const auto& filepath = generate_tile_cache_filename( at_origin );
+    // fmt::print( stderr, "    >>> Write Sector to: {}\n", filepath.string() );
 
-    // // not a guaranteed property of the layer; not all of them have this...
-    // const size_t dimension = from_layer.dimension;
+    flatbuffers::FlatBufferBuilder builder( sizeof(TileCache) + from_sector.size() );
 
-    // flatbuffers::FlatBufferBuilder builder( sizeof(Cell) + dimension*dimension );
+    // create internal objects before parent objects:
+    const float precision = from_sector.meters_across_cell;
+    const uint32_t dimension = from_sector.cells_across();
+    chartbox::io::flatbuffer::Location origin( static_cast<float>(at_origin.easting), static_cast<float>(at_origin.northing) );
+    auto datavec = builder.CreateVector( const_cast<uint8_t*>(from_sector.data()), from_sector.size() );
 
-    // // create internal objects before parent objects:
-    // const auto& min = from_layer.bounds().min;
-    // auto origin = Location( min.easting, min.northing );
-    // auto datavec = builder.CreateVector( const_cast<uint8_t*>(from_layer.data()), dimension*dimension );
+    // build internal representation
+    auto tile_cache = chartbox::io::flatbuffer::CreateTileCache( builder, &origin, precision, dimension, datavec );
+    builder.Finish(tile_cache);
 
-    // // build internal representation
-    // auto grid_cell = CreateCell( builder, &origin, dimension, dimension, datavec );
-    // builder.Finish(grid_cell);
+    // write bytes to file
+    std::ofstream dest( filepath.string(), std::ios::binary | std::ios::trunc );
+    dest.write( reinterpret_cast<const char*>(builder.GetBufferPointer()), builder.GetSize() );
+    dest.close();
 
-    // // write bytes to file:
-    // std::ofstream dest( to_path.string(), std::ios::binary | std::ios::trunc );
-    // dest.write( reinterpret_cast<const char*>(builder.GetBufferPointer()), builder.GetSize() );
-    // dest.close();
+    // fmt::print(  "{:>16s}<<< Successfuly wrote {} bytes to: {} \n", "", builder.GetSize(), filepath.string() );
+    return true;
+}
 
-    // fmt::print(  "    <<< Successfuly wrote {} bytes to: {} \n", builder.GetSize(), to_path.string() );
-
-    // return true;
-// }
 
 }  // namespace

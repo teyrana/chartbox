@@ -6,9 +6,9 @@
 #include <cmath>
 #include <cstdint>
 
-#include "rolling-grid-index.hpp"
+#include "layer/grid-index.hpp"
 
-namespace chartbox::layer {
+namespace chartbox::layer::rolling {
 
 /// \brief Contains a grid of cells -- may be "relocated" to represent a different patch of terrain
 ///
@@ -18,8 +18,7 @@ namespace chartbox::layer {
 template<uint32_t cells_across_sector>
 class RollingGridSector {
 public:
-    // internal storage coordinates of the southest corner, in the frame of the larger owning grid.
-    typedef CellInSectorIndex<cells_across_sector> CellIndex;
+    constexpr static double meters_across_cell = 1.0;
 
 public:
 
@@ -29,21 +28,31 @@ public:
 
     ~RollingGridSector() = default;
 
-    inline bool contains( CellIndex index ) const { 
+    inline bool contains( GridIndex index ) const { 
         if( (index.column < cells_across_sector) && (index.row < cells_across_sector) ){
             return true;
         }
         return false;
     }
 
-    inline uint32_t dimension() const {
-            return cells_across_sector; }
+    inline constexpr static uint32_t cells_across() { return cells_across_sector; }
+
+    inline const uint8_t* data() const {
+        return data_.data(); }
 
     inline void fill( uint8_t value ) { 
             data_.fill(value); }
 
-    inline uint8_t get( CellIndex index ) const { 
-            return data_[index.offset()]; }
+    inline bool fill( const uint8_t * const source, size_t count ){
+        if( count == data_.size() ){
+            std::memcpy( data_.data(), source, count );
+            return true;
+        }
+        return false;
+    }
+
+    inline uint8_t get( GridIndex index ) const { 
+            return data_[index.offset(cells_across_sector)]; }
 
     inline uint8_t operator[](uint32_t index) const { 
             return data_[index]; }
@@ -51,10 +60,35 @@ public:
     inline uint8_t& operator[](uint32_t index) { 
             return data_[index]; }
 
-    inline uint8_t set( CellIndex index, uint8_t value ) {
-            return data_[index.offset()] = value; }
+    inline std::string print_contents_by_cell() const {
+        std::ostringstream buf;
+        buf << "======== ======= ======= Print Sector By Cell: ======= ======= =======\n";
+        buf << std::hex;
+        for (size_t cell_row_index = cells_across_sector - 1; cell_row_index < cells_across_sector; --cell_row_index) {
+            for (size_t cell_column_index = 0; cell_column_index < cells_across_sector; ++cell_column_index ) {
+                if( 0 == ((cell_column_index) % cells_across_sector ) ){
+                    buf << "    ";
+                }
 
-    inline uint32_t size() const { 
+                const GridIndex cell_lookup_index( cell_column_index, cell_row_index );
+                const uint8_t current_cell_value = get( cell_lookup_index );
+
+                buf << ' ' << std::setfill('0') << std::setw(2) << static_cast<int>(current_cell_value);
+            }
+            if( 0 == (cell_row_index % cells_across_sector ) ){
+                buf << '\n';
+            }
+
+            buf << '\n';
+        }
+        buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
+        return buf.str();
+    }
+
+    inline uint8_t set( GridIndex index, uint8_t value ) {
+            return data_[index.offset(cells_across_sector)] = value; }
+
+    constexpr inline uint32_t size() const { 
             return data_.size(); }
 
 private:

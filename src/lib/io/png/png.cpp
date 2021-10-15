@@ -15,19 +15,17 @@ using chartbox::layer::StaticGridLayer;
 
 namespace chartbox::io::png {
 
-bool save( const ChartBox& from_chart, const std::filesystem::path& to_path ) {
+bool save( const ChartBox& from_chart, double precision, const std::filesystem::path& to_path ) {
     fmt::print( stderr, "    >>> Write Composite Chart to: {}\n", to_path.string() );
 
     const auto bounds = from_chart.mapping().local_bounds();
-
-    constexpr double precision = 8.0;
 
     const int output_height = static_cast<int>(bounds.height())/precision;
     const int output_width = static_cast<int>(bounds.width())/precision;
     fmt::print( "         :: png output size: ( width: {} x {} : height )\n", output_width, output_height );
 
-    constexpr double easting_increment = precision;
-    constexpr double northing_increment = -precision; 
+    const double easting_increment = precision;
+    const double northing_increment = -precision; 
 
     // might be a duplicate call, but duplicate calls don't seem to cause any problems.
     GDALAllRegister();

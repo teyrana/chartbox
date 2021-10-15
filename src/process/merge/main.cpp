@@ -1,5 +1,6 @@
 // GPL v3 (c) 2021, Daniel Williams
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <random>
@@ -36,15 +37,18 @@ int main( void ){
     // std::string boundary_input_arg("data/massachusetts/navigation_area_100k.shp");
 
     std::string contour_input_arg("(cache)");
-                contour_input_arg = "data/block-island/coastline.geojson";
+                // contour_input_arg = "data/block-island/coastline.geojson";
     
     std::string boundary_output_arg("");
                 // boundary_output_arg = "boundary.png";
                 // boundary_output_arg = "boundary.cache.fb";
 
     std::string contour_output_arg("");
+                // contour_output_arg = "auto";
                 // contour_output_arg = "countour.png";
-                // contour_output_arg = "contour.cache.fb";
+
+    bool clear_cache = false;//true;
+    bool enable_cache = true;
 
     // std::string lidar_output_arg("");
 
@@ -88,7 +92,7 @@ int main( void ){
 
         if ( ! boundary_input_path.empty() ) {
             auto& layer = box.get_boundary_layer();
-            fmt::print( ">>> Load Boundary from: {}    to Layer: {}\n", boundary_input_path.string(), layer.name() );
+            fmt::print( ">>> Load Boundary from:     '{}'    to Layer: {}\n", boundary_input_path.string(), layer.name() );
             if( boundary_input_path.extension() == chartbox::io::geojson::extension ){
                 geojson::load_boundary_box( boundary_input_path, mapping );
 
@@ -99,54 +103,39 @@ int main( void ){
             }
         }
 
-        // const auto start_load_contour = std::chrono::high_resolution_clock::now(); 
-        // if ( ! cache_path.empty() ) {
-        //     auto& to_layer = box.get_contour_layer();
+        const auto start_load_contour = std::chrono::high_resolution_clock::now(); 
+        if ( enable_cache ) {
+            auto& to_layer = box.get_contour_layer();
 
-        //     if ( ! contour_input_path.empty() ) {
-        //         fmt::print(">>> Loading data from: {}    to layer: {}\n", contour_input_path.string(), to_layer.name() );
+            if( clear_cache ) {
+                const size_t files_deleted_count = std::filesystem::remove_all(cache_path);
+                fmt::print(">>> Cleared Cache: {} files\n", files_deleted_count );
+            }
 
-        //         // // updates track-bounds and view-bounds
-        //         // to_layer.track( mapping.local_bounds() );
+            if ( ! contour_input_path.empty() ) {
+                fmt::print(">>> Populating cache:        '{}'    <<== '{}'\n", cache_path.string(), contour_input_path.string() );
 
-        //         if( contour_input_path.extension() == chartbox::io::geojson::extension ){
-        //         //     chartbox::layer::rolling::RollingGridLayer<to_layer.cells_across_sector> load_window;
-        //         //     load_window.enable_cache( cache_path, false );
-        //         //     geojson::process_contour_to_cache( contour_input_path, mapping, load_window );
-                    
-        //             // validation/develop version:
-        //             geojson::load_contour_layer( boundary_input_path, mapping, to_layer );
+                // updates track-bounds and view-bounds
+                to_layer.track( mapping.local_bounds() );
 
-        //         }
-        //     }
+                if( contour_input_path.extension() == chartbox::io::geojson::extension ){
+                    chartbox::layer::rolling::RollingGridLayer<to_layer.cells_across_sector()> load_window;
+                    load_window.enable_cache( cache_path );
+                    geojson::process_contour_to_cache( contour_input_path, mapping, load_window );
+                }
+            }
 
-        //     fmt::print( "    ::Loading cache layer:\n");
-        //     // to_layer.enable_cache( cache_path, true );
+            fmt::print( ">>> Loading from cache:     '{}'    to layer: {}\n", cache_path.string(), to_layer.name() );
+            to_layer.enable_cache( cache_path );
+            to_layer.view( LocalLocation(0,0) );
+            to_layer.load_from_cache();
 
-        //     // debug -- dump entire window
-        //     // png::save( load_window, mapping, "placeholder.png" );
-
-        //     // fmt::print( ">>> DEBUG >>> write sectors to png...\n");
-        //     // int i=0;
-        //     // for( auto& sector : load_window.sectors() ){
-        //     //     const std::string fname = fmt::format("sector-{}.png", i);
-        //     //     png::save(sector, fname);
-        //     //     ++i;
-        //     // }
-
-        //     // {// debug -- dump entire window
-        //     //     const chartbox::geometry::LocalLocation track_origin( 0, 0 );
-        //     //     to_layer.track( track_origin );
-
-        //     //     png::save( to_layer, mapping, "load_tracked.png" );
-        //     // }
-
-        //     const auto finish_load_contour = std::chrono::high_resolution_clock::now(); 
-        //     const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load_contour - start_load_contour).count())/1000;
-        //     if( 0.5 < load_duration ){
-        //         fmt::print( "<< Loaded Contour Layer in:   {:5.2f} s \n\n", load_duration );
-        //     }
-        // }
+            const auto finish_load_contour = std::chrono::high_resolution_clock::now(); 
+            const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load_contour - start_load_contour).count())/1000;
+            if( 0.5 < load_duration ){
+                fmt::print( "<< Loaded Contour Layer in:   {:5.2f} s \n\n", load_duration );
+            }
+        }
 
         const auto finish_load_all = std::chrono::high_resolution_clock::now(); 
         const auto load_duration = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(finish_load_all - start_load_all).count())/1000;
@@ -155,23 +144,35 @@ int main( void ){
         }
     }
 
+    {   // DEBUG
+        fmt::print(">>> Perform one-time modifications:\n");
+
+        auto& layer = box.get_contour_layer();
+        layer.view(LocalLocation( 1024, 5120));
+        fmt::print("    >>> Move contour-layer-view:    {}, {}\n", layer.visible().min.easting, layer.visible().min.northing );
+        //layer.view(LocalLocation( 5120, 5120));
+        layer.load_from_cache();
+
+    }   // DEBUG
 
     {   // DEBUG
         using namespace chartbox::io;
 
         //print the resultant bounds:
-        box.mapping().print();
-
+        // box.mapping().print();
+        
         // box.get_boundary_layer().print_contents();
 
         // // print a summary of layers in the chartbox...
         // box.print_layers() ;
 
         // const auto boundary_layer = box.get_boundary_layer();
-        // box.get_boundary_layer().print_contents();
+        // fmt::print( "====== ====== Layer:{} ====== ====== \n", boundary_layer.name() );
+        // fmt::print( "{}\n", boundary_layer.print_properties() );
 
         // const auto contour_layer = box.get_contour_layer();
-        // box.get_contour_layer().print_contents();
+        // fmt::print( "====== ====== Layer:{} ====== ====== \n", contour_layer.name() );
+        // fmt::print( "{}\n", contour_layer.print_properties() );
 
     }   // DEBUG
 
@@ -182,19 +183,23 @@ int main( void ){
         // Optionally load boundary path:
         if( ! boundary_output_path.empty() ){
             const auto& layer = box.get_boundary_layer();
-            const auto& mapping = box.mapping();
-            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), boundary_output_path.string() );
+            const auto& bounds = box.mapping().local_bounds();
+            fmt::print( ">>> Write Layer: {}    to: {}\n", layer.name(), boundary_output_path.string() );
             if( boundary_output_path.extension() == chartbox::io::png::extension ){
-                png::save( layer, mapping, boundary_output_path );
+                png::save( layer, bounds, boundary_output_path );
             }
         }
 
         if( ! contour_output_path.empty() ){
             const auto& layer = box.get_contour_layer();
-            const auto& mapping = box.mapping();
-            fmt::print( ">>> Write Layer: {}  to: {}\n", layer.name(), contour_output_path.string() );
-            if( contour_output_path.extension() == chartbox::io::png::extension ){
-                png::save( layer, mapping, contour_output_path );
+            if( "auto" == contour_output_path ){
+                const auto& visible = layer.visible();
+                const std::string filepath = fmt::format("to-layer-visible-{:06.0f}E-{:06.0f}N.png", visible.min.easting, visible.min.northing );
+                fmt::print( ">>> Write Layer: {}    to: {}\n", layer.name(), filepath );
+                png::save( layer, visible, filepath );
+            }else if( chartbox::io::png::extension == contour_output_path.extension() ){
+                fmt::print( ">>> Write Layer: {}    to: {}\n", layer.name(), contour_output_path.string() );
+                png::save( layer, box.mapping().local_bounds(), contour_output_path );
             // }else if( contour_output_path.extension() == chartbox::io::flatbuffer::extension ){
             //     flatbuffer::save( layer, contour_output_path);
             }
@@ -203,7 +208,7 @@ int main( void ){
         if( ! chart_output_arg.empty() ){
             fmt::print( ">>> Write chart to: {}\n", view_output_path.string() );
             if( view_output_path.extension() == chartbox::io::png::extension ){
-                png::save( box, view_output_path );
+                png::save( box, 8.0, view_output_path );
             }
         }
 

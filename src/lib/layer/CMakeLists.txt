@@ -1,8 +1,8 @@
 ADD_SUBDIRECTORY(dynamic-grid)
 ADD_SUBDIRECTORY(static-grid)
-# ADD_SUBDIRECTORY(rolling-grid)
-# ADD_SUBDIRECTORY(src/lib/layer/quad-tree)
-# ADD_SUBDIRECTORY(src/lib/layer/view)
+ADD_SUBDIRECTORY(rolling-grid)
+# ADD_SUBDIRECTORY(quad-tree)
+# ADD_SUBDIRECTORY(view)
 
 
 # ============= Chart Base Library =================

@@ -45,15 +45,8 @@ bool load_contour_layer( const std::filesystem::path& from_path, const chartbox:
 /// \brief generic version for loading data to the cache
 ///
 /// \param transfer_window - data struct to load with input file, and then flush to cache -- this is a scratch buffer
-// template<typename buffer_t>
-// bool process_contour_to_cache( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, const buffer_t& transfer_window );
-
-// template<typename buffer_t>
-// bool process_contour_to_cache( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, const chartbox::layer::RollingGridLayer<n>& to_layer );
-
-// not used/implemented.
-// template<>
-// bool process_countour_to_cache( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, chartbox::layer::DynamicGridLayer& to_layer );
+template<typename buffer_t>
+bool process_contour_to_cache( const std::filesystem::path& from_path, const chartbox::geometry::FrameMapping& mapping, const buffer_t& transfer_window );
 
 // ====== Internal Functions ======
 
@@ -73,4 +66,4 @@ chartbox::geometry::Polygon<chartbox::geometry::LocalLocation> load_polygon(cons
 
 #include "boundary.inl"
 
-// #include "contour.inl"
+#include "contour.inl"

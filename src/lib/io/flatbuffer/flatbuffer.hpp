@@ -4,32 +4,44 @@
 // standard library includes
 #include <filesystem>
 
-#include "layer/static-grid/static-grid-layer.hpp"
+#include "chart-box/geometry/local-location.hpp"
+#include "layer/rolling-grid/rolling-grid-sector.hpp"
 
 namespace chartbox::io::flatbuffer {
 
 const std::string extension = ".fb";
 
+extern std::filesystem::path cache_directory_path;
+
+bool active();
+
+// enable read/write of flatbuffer files by configuring a cache location for them
+// - module defaults-off; and fails-off 
+// - calling with an empty path explicitly disables read/write
+// - scope: global:  all code in a particular program is affecter by this.
+bool enable( std::filesystem::path _path );
+
+std::filesystem::path generate_tile_cache_filename( const chartbox::geometry::LocalLocation& origin );
+
+// general declaration
 // template<typename T>
 // bool load( const std::filesystem::path& source_path, T& to );
 
-// // declare the specialization
-// template<>
-// bool load( const std::filesystem::path& from_path, chartbox::layer::StaticGridLayer& to_layer );
+// used for cache tile loading
+template<uint32_t n>
+bool load( const chartbox::geometry::LocalLocation& at_origin, chartbox::layer::rolling::RollingGridSector<n>& to_sector );
 
-// template<uint32_t n>
-// bool load( const std::filesystem::path& from_path, chartbox::layer::RollingGridSector<n>& to_layer );
+// ============ ============ Save Methods ============ ============ 
 
+// general declaration
 // template<typename T>
 // bool save( const T& from, const std::filesystem::path& to_path );
 
-// // declare the specialization
-// template<>
-// bool save( const chartbox::layer::StaticGridLayer& from_layer, const std::filesystem::path& to_path);
+// specialization 2: Rolling-Grid-Sector: used for cache tile saving
+template<uint32_t n>
+bool save( const chartbox::layer::rolling::RollingGridSector<n>& from_sector, const chartbox::geometry::LocalLocation& at_origin );
 
-// template<uint32_t n>
-// bool save( chartbox::layer::RollingGridSector<n>& from_layer, const std::filesystem::path& to_path );
 
 } // namespace
 
-#include "flatbuffer.inl"
+#include "io/flatbuffer/flatbuffer.inl"
