@@ -4,7 +4,7 @@
 // standard library includes
 #include <filesystem>
 
-#include "chart-box/geometry/local-location.hpp"
+#include "geometry/local-location.hpp"
 #include "layer/rolling-grid/rolling-grid-sector.hpp"
 
 namespace chartbox::io::flatbuffer {

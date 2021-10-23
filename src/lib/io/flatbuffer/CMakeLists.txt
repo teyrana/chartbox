@@ -1,6 +1,6 @@
 
 # ============= Chart Flatbuffer I/O Library =================
-SET(LIB_NAME chart-flatbuffer-io)
+SET(LIB_NAME chartbox-io-flatbuffer )
 
 SET(GENERATED_HEADERS  "tile-cache-generated.hpp" )
                 

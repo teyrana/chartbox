@@ -20,7 +20,6 @@ add_library(${LIB_NAME} STATIC ${LIB_HEADERS} ${LIB_SOURCES})
 target_include_directories( ${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/lib )
 
 target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE} )
-target_link_libraries(${LIB_NAME} PUBLIC chartbox )
 target_link_libraries(${LIB_NAME} PUBLIC CONAN_PKG::gdal )
 
 

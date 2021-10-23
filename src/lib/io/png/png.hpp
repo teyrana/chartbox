@@ -6,8 +6,8 @@
 #include <string>
 
 #include "chart-box/chart-box.hpp"
-#include "chart-box/geometry/bound-box.hpp"
-#include "chart-box/geometry/local-location.hpp"
+#include "geometry/bound-box.hpp"
+#include "geometry/local-location.hpp"
 
 namespace chartbox::io::png {
 

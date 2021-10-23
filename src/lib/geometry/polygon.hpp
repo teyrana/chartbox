@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chart-box/geometry/bound-box.hpp"
+#include "geometry/bound-box.hpp"
 
 namespace chartbox::geometry {
 

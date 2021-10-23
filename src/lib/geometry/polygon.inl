@@ -1,6 +1,6 @@
 // GPL v3 (c) 2021, Daniel Williams 
 
-#include <algorithm>
+// #include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
@@ -11,8 +11,8 @@
 #include <limits>
 #include <vector>
 
-// from GDAL
-#include <cpl_json.h>
+// // from GDAL
+// #include <nlohmann/json.hpp>
 
 #include "polygon.hpp"
 

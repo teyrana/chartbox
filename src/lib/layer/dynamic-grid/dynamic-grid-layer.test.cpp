@@ -8,8 +8,8 @@
 #include <catch2/catch_test_macros.hpp>
 using Catch::Approx;
 
-#include "chart-box/geometry/bound-box.hpp"
 #include "dynamic-grid-layer.hpp"
+#include "geometry/bound-box.hpp"
 
 using chartbox::geometry::BoundBox;
 using chartbox::geometry::LocalLocation;

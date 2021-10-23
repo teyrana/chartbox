@@ -10,7 +10,7 @@
 
 #include "chart-box/chart-layer-interface.hpp"
 
-#include "../grid-index.hpp"
+#include "layer/grid-index.hpp"
 
 namespace chartbox::layer::dynamic {
 

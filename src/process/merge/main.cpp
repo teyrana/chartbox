@@ -10,8 +10,7 @@
 
 #include <fmt/core.h>
 
-#include "chart-box.hpp"
-
+#include "chart-box/chart-box.hpp"
 #include "io/flatbuffer/flatbuffer.hpp"
 #include "io/geojson/geojson.hpp"
 #include "io/png/png.hpp"

@@ -8,8 +8,8 @@
 #include <catch2/catch_test_macros.hpp>
 using Catch::Approx;
 
-#include "chart-box/geometry/bound-box.hpp"
-#include "chart-box/geometry/polygon.hpp"
+#include "geometry/bound-box.hpp"
+#include "geometry/polygon.hpp"
 #include "layer/grid-index.hpp"
 
 #include "rolling-grid-layer.hpp"

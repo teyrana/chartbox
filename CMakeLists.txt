@@ -65,18 +65,26 @@ ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 ENABLE_TESTING()
 
 INCLUDE_DIRECTORIES(${CONAN_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(extern)
-INCLUDE_DIRECTORIES(include)
-INCLUDE_DIRECTORIES(src/lib)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/lib)
+
+# include_directories( ${CMAKE_SOURCE_DIR}/src/lib/chart-box )
+# include_directories( ${CMAKE_SOURCE_DIR}/src/lib/geometry )
+# include_directories( ${CMAKE_SOURCE_DIR}/src/lib/io )
+# include_directories( ${CMAKE_SOURCE_DIR}/src/lib/layer )
 
 ADD_SUBDIRECTORY(src/lib/chart-box)
-SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox )
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox-base )
+
+ADD_SUBDIRECTORY(src/lib/geometry)
+SET(LIBRARY_LINKAGE ${LIBRARY_LINKAGE} chartbox-geometry )
 
 # depend on chart-box:
 ADD_SUBDIRECTORY(src/lib/io)
-list(APPEND LIBRARY_LINKAGE chart-flatbuffer-io 
-                            chart-geojson-io 
-                            chart-png-io 
+list(APPEND LIBRARY_LINKAGE chartbox-io-flatbuffer
+                            chartbox-io-geojson
+                            chartbox-io-png
             )
 
 ADD_SUBDIRECTORY(src/lib/layer)

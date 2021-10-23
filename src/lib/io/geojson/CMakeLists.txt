@@ -1,5 +1,5 @@
 # ============= Chart GeoJSON I/O Library =================
-SET(LIB_NAME chart-geojson-io)
+SET(LIB_NAME chartbox-io-geojson)
 SET(LIB_HEADERS boundary.inl 
                 contour.inl
                 geojson.hpp

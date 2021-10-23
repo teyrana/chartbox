@@ -13,9 +13,9 @@
 
 // this project & libraries
 #include "chart-box/chart-layer-interface.hpp"
-#include "chart-box/geometry/frame-mapping.hpp"
-#include "chart-box/geometry/local-location.hpp"
-#include "chart-box/geometry/polygon.hpp"
+#include "geometry/frame-mapping.hpp"
+#include "geometry/local-location.hpp"
+#include "geometry/polygon.hpp"
 #include "layer/static-grid/static-grid-layer.hpp"
 #include "layer/rolling-grid/rolling-grid-layer.hpp"
 

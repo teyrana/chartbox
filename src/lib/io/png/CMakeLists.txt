@@ -1,5 +1,5 @@
 # ============= Chart PNG I/O Library =================
-SET(LIB_NAME chart-png-io )
+SET(LIB_NAME chartbox-io-png )
 SET(LIB_HEADERS png.hpp png.inl )
 SET(LIB_SOURCES png.cpp )
 

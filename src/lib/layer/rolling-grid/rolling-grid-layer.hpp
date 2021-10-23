@@ -10,8 +10,8 @@
 #include <string>
 
 #include "chart-box/chart-layer-interface.hpp"
-#include "chart-box/geometry/polygon.hpp"
-#include "chart-box/geometry/bound-box.hpp"
+#include "geometry/polygon.hpp"
+#include "geometry/bound-box.hpp"
 #include "layer/grid-index.hpp"
 
 #include "rolling-grid-sector.hpp"

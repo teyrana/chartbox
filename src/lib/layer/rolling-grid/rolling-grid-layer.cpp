@@ -1,8 +1,8 @@
 // GPL v3 (c) 2021, Daniel Williams 
 
-#include "chart-box/geometry/bound-box.hpp"
-#include "chart-box/geometry/local-location.hpp"
-#include "chart-box/geometry/polygon.hpp"
+#include "geometry/bound-box.hpp"
+#include "geometry/local-location.hpp"
+#include "geometry/polygon.hpp"
 
 #include "rolling-grid-layer.hpp"
 

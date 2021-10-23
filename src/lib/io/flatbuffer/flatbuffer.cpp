@@ -6,9 +6,9 @@
 
 #include <fstream>
 
+#include "geometry/local-location.hpp"
 #include "layer/static-grid/static-grid-layer.hpp"
 #include "layer/rolling-grid/rolling-grid-layer.hpp"
-#include "chart-box/geometry/local-location.hpp"
 
 #include "flatbuffer.hpp"
 #include "tile-cache-generated.hpp"
