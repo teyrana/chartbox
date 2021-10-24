@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chart-box/chart-layer-interface.hpp"
+#include "layer/layer-interface.hpp"
 
 namespace chartbox::layer {
 
@@ -17,7 +17,7 @@ namespace chartbox::layer {
 ///
 /// \note this class is not currently used or tested -- it turns out to just not be necessary
 template< typename layer_0_t, typename layer_1_t >
-class ViewLayer : public ChartLayerInterface<ViewLayer<layer_0_t, layer_1_t>, VIEW> {
+class ViewLayer : public LayerInterface<ViewLayer<layer_0_t, layer_1_t>, VIEW> {
 public:
 
     /// \brief name of this layer's type
@@ -67,12 +67,12 @@ private:
 
 private:
 
-    ChartLayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>& super() {
-        return *static_cast< ChartLayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>* >(this);
+    LayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>& super() {
+        return *static_cast< LayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>* >(this);
     }
 
-    const ChartLayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>& super() const {
-        return *static_cast< const ChartLayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>* >(this);
+    const LayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>& super() const {
+        return *static_cast< const LayerInterface< ViewLayer<layer_0_t, layer_1_t>, VIEW>* >(this);
     }
 };
 

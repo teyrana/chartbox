@@ -1,7 +1,6 @@
 # ============= Chart Base Library =================
 SET(LIB_NAME chartbox-base)
 SET(LIB_HEADERS chart-box.hpp
-                chart-layer-interface.hpp chart-layer-interface.inl
                 )
 SET(LIB_SOURCES chart-box.cpp
                 )
@@ -12,6 +11,4 @@ MESSAGE( STATUS "    with sources: ${LIB_SOURCES}")
 
 # Generate the static library from the sources
 add_library(${LIB_NAME} STATIC ${LIB_HEADERS} ${LIB_SOURCES})
-target_link_libraries(${LIB_NAME} PRIVATE chartbox-geometry)
 target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE})
-target_link_libraries(${LIB_NAME} PRIVATE CONAN_PKG::fmt)

@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "chart-box/chart-layer-interface.hpp"
+#include "layer/layer-interface.hpp"
 
 #include "leaf-node.hpp"
 #include "quad-node.hpp"
@@ -24,7 +24,7 @@ namespace chartbox::layer {
 ///! The implementation currently requires pre-determined bounds for data as it
 ///! can not rebalance itself to that degree.
 ///! 
-class QuadTreeLayer : public ChartLayerInterface<QuadTreeLayer> {
+class QuadTreeLayer : public LayerInterface<QuadTreeLayer> {
 public:
 
     /// \brief number of cells along each dimension of the entire tree
@@ -84,7 +84,7 @@ public:
     void debug_tree( bool show_pointer=false) const;
 
     ///! \brief sets all leaf nodes to the given value
-    ///!       override from ChartLayerInterface
+    ///!       override from LayerInterface
     ///! \param fill_value - value to write
     void fill( uint8_t fill_value);
 
@@ -143,12 +143,12 @@ private:
     std::unique_ptr<QuadNode> root;
 
 private:
-    ChartLayerInterface<QuadTreeLayer>& super() {
-        return *static_cast< ChartLayerInterface<QuadTreeLayer>* >(this);
+    LayerInterface<QuadTreeLayer>& super() {
+        return *static_cast< LayerInterface<QuadTreeLayer>* >(this);
     }
 
-    const ChartLayerInterface<QuadTreeLayer>& super() const {
-        return *static_cast< const ChartLayerInterface<QuadTreeLayer>* >(this);
+    const LayerInterface<QuadTreeLayer>& super() const {
+        return *static_cast< const LayerInterface<QuadTreeLayer>* >(this);
     }
 };
 

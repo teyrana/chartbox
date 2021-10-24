@@ -4,6 +4,9 @@ ADD_SUBDIRECTORY(rolling-grid)
 # ADD_SUBDIRECTORY(quad-tree)
 # ADD_SUBDIRECTORY(view)
 
+set( COMMON_LAYER_INCLUDES layer-interface.hpp
+                            layer-interface.inl
+                            grid-index.hpp )
 
 # ============= Chart Base Library =================
 # These tests can use the Catch2-provided main

@@ -12,12 +12,11 @@
 #include <fmt/core.h>
 
 // this project & libraries
-#include "chart-box/chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
 #include "geometry/local-location.hpp"
 #include "geometry/polygon.hpp"
-#include "layer/static-grid/static-grid-layer.hpp"
 #include "layer/rolling-grid/rolling-grid-layer.hpp"
+#include "layer/static-grid/static-grid-layer.hpp"
 
 /// \brief Load a GeoJSON file into a layer
 ///

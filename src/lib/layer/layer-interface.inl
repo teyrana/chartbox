@@ -11,11 +11,11 @@
 // third-party includes
 #include <fmt/core.h>
 
-using chartbox::layer::ChartLayerInterface;
+using chartbox::layer::LayerInterface;
 
 
 template< typename layer_t>
-bool ChartLayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uint8_t value) {
+bool LayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uint8_t value) {
     const double incr = layer().meters_across_cell();
     const double easting_max = box.max.easting;
     const double easting_min = box.min.easting + incr/2;
@@ -32,7 +32,7 @@ bool ChartLayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, cons
 }
 
 template< typename layer_t>
-bool ChartLayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bounds, uint8_t value ){
+bool LayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bounds, uint8_t value ){
     // adapted from:
     //  Public-domain code by Darel Rex Finley, 2007:  "Efficient Polygon Fill Algorithm With C Code Sample"
     //  Retrieved: (https://alienryderflex.com/polygon_fill/); 2019-09-07

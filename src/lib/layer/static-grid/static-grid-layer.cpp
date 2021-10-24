@@ -14,7 +14,7 @@
 
 #include "static-grid-layer.hpp"
 
-using chartbox::layer::ChartLayerInterface;
+using chartbox::layer::LayerInterface;
 using chartbox::layer::StaticGridLayer;
 
 bool StaticGridLayer::contains(const LocalLocation& p ) const {

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chart-box/geometry/local-location.hpp"
+#include "geometry/local-location.hpp"
 
 
 #include "quad-tree-layer.hpp"
@@ -58,15 +58,13 @@ QuadNode* descend(const LocalLocation& /*target*/, // double& x_c, double& y_c,
 }
 
 QuadTreeLayer::QuadTreeLayer()
-    : ChartLayerInterface<QuadTreeLayer>({{0,0},{1,1}})
-    , center_( 0, 0 )
+    : center_( 0, 0 )
     , width_2_( static_cast<double>(dimension) / 2.0f )
     , precision_( 1.0 )
 {}
 
 QuadTreeLayer::QuadTreeLayer(const LocalLocation& _center, double _width )
-    : ChartLayerInterface<QuadTreeLayer>({{0,0},{1,1}})
-    , center_( _center )
+    : center_( _center )
     , width_2_( _width / 2.0f )
     , precision_( _width/dimension )
 {}

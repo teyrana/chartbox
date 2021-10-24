@@ -39,9 +39,9 @@ constexpr uint8_t default_cell_value = unknown_cell_value;
 // https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c/
 // https://eli.thegreenplace.net/2013/12/05/the-cost-of-dynamic-virtual-calls-vs-static-crtp-dispatch-in-c
 template< typename layer_t >
-class ChartLayerInterface {
+class LayerInterface {
 protected:
-    ChartLayerInterface() = default;
+    LayerInterface() = default;
 
 public:
 
@@ -114,15 +114,15 @@ protected:
         return *static_cast<const layer_t*>(this);
     }
 
-    ~ChartLayerInterface() = default;
+    ~LayerInterface() = default;
 
 protected:
 
     /// \brief descriptive for this layer's purpose
     std::string name_;
 
-}; // class ChartLayerInterface< uint8_t, layer_t >
+}; // class LayerInterface< uint8_t, layer_t >
 
 } // namespace chart
 
-#include "chart-layer-interface.inl"
+#include "layer-interface.inl"

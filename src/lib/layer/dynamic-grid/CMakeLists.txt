@@ -1,7 +1,7 @@
 
 # ============= Chart Base Library =================
 SET(LIB_NAME dynamicgridlayer )
-SET(LIB_HEADERS ../grid-index.hpp
+SET(LIB_HEADERS ${COMMON_LAYER_INCLUDES}
                 dynamic-grid-layer.hpp
                 )
 SET(LIB_SOURCES dynamic-grid-layer.cpp

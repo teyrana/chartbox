@@ -8,8 +8,7 @@
 #include <filesystem>
 #include <string>
 
-#include "chart-box/chart-layer-interface.hpp"
-
+#include "layer/layer-interface.hpp"
 #include "layer/grid-index.hpp"
 
 namespace chartbox::layer::dynamic {
@@ -23,7 +22,7 @@ namespace chartbox::layer::dynamic {
 ///  chart => layer => sector => cell
 ///            ^^^ you are here
 ///
-class DynamicGridLayer : public ChartLayerInterface<DynamicGridLayer> {
+class DynamicGridLayer : public LayerInterface<DynamicGridLayer> {
 public:
 
     /// \brief name of this layer's type
@@ -127,12 +126,12 @@ private:
 
 private:
 
-    ChartLayerInterface<DynamicGridLayer>& super() {
-        return *static_cast< ChartLayerInterface<DynamicGridLayer>* >(this);
+    LayerInterface<DynamicGridLayer>& super() {
+        return *static_cast< LayerInterface<DynamicGridLayer>* >(this);
     }
 
-    const ChartLayerInterface<DynamicGridLayer>& super() const {
-        return *static_cast< const ChartLayerInterface<DynamicGridLayer>* >(this);
+    const LayerInterface<DynamicGridLayer>& super() const {
+        return *static_cast< const LayerInterface<DynamicGridLayer>* >(this);
     }
 };
 

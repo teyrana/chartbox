@@ -4,7 +4,6 @@
 
 #include <fmt/core.h>
 
-using chartbox::layer::ChartLayerInterface;
 using chartbox::layer::ViewLayer;
 using chartbox::layer::VIEW;
 using chartbox::geometry::BoundBox;
@@ -12,8 +11,7 @@ using chartbox::geometry::UTMLocation;
 
 template< typename layer_0_t, typename layer_1_t >
 ViewLayer<layer_0_t,layer_1_t>::ViewLayer( const BoundBox<UTMLocation>& _bounds, layer_0_t _layer0, layer_1_t _layer1 )
-    : ChartLayerInterface< ViewLayer<layer_0_t,layer_1_t>, VIEW >( _bounds)
-    , layer_0_(_layer0)
+    : layer_0_(_layer0)
     , layer_1_(_layer1)
 {
     fmt::print( "======== ======== ViewLayer Constructor:  ======== ======== \n" );

@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "chart-box/chart-layer-interface.hpp"
+#include "layer/layer-interface.hpp"
 
 namespace chartbox::layer {
 
 // template<uint32_t dimension>
-class StaticGridLayer : public ChartLayerInterface<StaticGridLayer> {
+class StaticGridLayer : public LayerInterface<StaticGridLayer> {
 public:
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "StaticGridLayer";
@@ -35,7 +35,7 @@ public:
     inline const uint8_t* data() const {
         return grid.data(); }
 
-    // override from ChartLayerInterface
+    // override from LayerInterface
     bool fill( const uint8_t value );
 
     bool fill( const uint8_t* const buffer, size_t count );
@@ -99,12 +99,12 @@ protected:
 
 private:
 
-    ChartLayerInterface<StaticGridLayer>& super() {
-        return *static_cast< ChartLayerInterface<StaticGridLayer>* >(this);
+    LayerInterface<StaticGridLayer>& super() {
+        return *static_cast< LayerInterface<StaticGridLayer>* >(this);
     }
 
-    const ChartLayerInterface<StaticGridLayer>& super() const {
-        return *static_cast< const ChartLayerInterface<StaticGridLayer>* >(this);
+    const LayerInterface<StaticGridLayer>& super() const {
+        return *static_cast< const LayerInterface<StaticGridLayer>* >(this);
     }
 };
 

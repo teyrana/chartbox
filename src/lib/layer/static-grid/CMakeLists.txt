@@ -1,6 +1,8 @@
 # ============= Fixed-Grid Chart Layer Library =================
 SET(LIB_NAME staticgridlayer )
-SET(LIB_HEADERS static-grid-layer.hpp
+
+SET(LIB_HEADERS ${COMMON_LAYER_INCLUDES}
+                static-grid-layer.hpp
                 # z-order-index.hpp z-order-index.inl
                 )
 SET(LIB_SOURCES 

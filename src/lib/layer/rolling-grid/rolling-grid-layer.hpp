@@ -9,9 +9,9 @@
 #include <memory>
 #include <string>
 
-#include "chart-box/chart-layer-interface.hpp"
 #include "geometry/polygon.hpp"
 #include "geometry/bound-box.hpp"
+#include "layer/layer-interface.hpp"
 #include "layer/grid-index.hpp"
 
 #include "rolling-grid-sector.hpp"
@@ -29,7 +29,7 @@ namespace chartbox::layer::rolling {
 ///
 /// \param cells_across_sector_ cell count across a single dimension of each sector
 template<uint32_t cells_across_sector_>
-class RollingGridLayer : public ChartLayerInterface< RollingGridLayer<cells_across_sector_> > {
+class RollingGridLayer : public LayerInterface< RollingGridLayer<cells_across_sector_> > {
 // `*_across_*` variables count the numbe in each dimension of a square grid
 // `*_in_*` variables count the total number in the entire grid
 public:
@@ -146,12 +146,12 @@ private:
 
 private:
 
-    ChartLayerInterface<RollingGridLayer<cells_across_sector_>>& super() {
-        return *static_cast< ChartLayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
+    LayerInterface<RollingGridLayer<cells_across_sector_>>& super() {
+        return *static_cast< LayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
     }
 
-    const ChartLayerInterface<RollingGridLayer<cells_across_sector_>>& super() const {
-        return *static_cast< const ChartLayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
+    const LayerInterface<RollingGridLayer<cells_across_sector_>>& super() const {
+        return *static_cast< const LayerInterface<RollingGridLayer<cells_across_sector_>>* >(this);
     }
 };
 

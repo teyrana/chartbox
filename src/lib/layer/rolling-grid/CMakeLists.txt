@@ -1,8 +1,7 @@
 
 # ============= Chart Base Library =================
 SET(LIB_NAME rollinggridlayer )
-SET(LIB_HEADERS 
-                ../grid-index.hpp
+SET(LIB_HEADERS ${COMMON_LAYER_INCLUDES}
                 rolling-grid-layer.hpp
                 rolling-grid-sector.hpp
                 )

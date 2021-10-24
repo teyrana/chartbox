@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "chart-layer-interface.hpp"
 #include "geometry/frame-mapping.hpp"
-#include "layer/static-grid/static-grid-layer.hpp"
-#include "layer/rolling-grid/rolling-grid-layer.hpp"
+#include "layer/layer-interface.hpp"
 #include "layer/dynamic-grid/dynamic-grid-layer.hpp"
+#include "layer/rolling-grid/rolling-grid-layer.hpp"
+#include "layer/static-grid/static-grid-layer.hpp"
 
 namespace chartbox {
 
