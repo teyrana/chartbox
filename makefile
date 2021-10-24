@@ -7,7 +7,7 @@ BUILD_DIR=$(ROOT_DIR)/build
 CONAN_MARKER=$(BUILD_DIR)/conanbuildinfo.cmake
 
 
-MAIN_EXE=build/bin/mapmerge
+SANDBOX_EXE=build/bin/sandbox
 
 #-------------------------------------------------------------------
 #  Part 2: Invoke the call to make in the build directory
@@ -41,9 +41,9 @@ clean:
 format:
 	@echo clang-tidy src
 
-.PHONY: main
-main: debug
-	${MAIN_EXE}
+.PHONY: sandbox
+sandbox: debug
+	${SANDBOX_EXE}
 
 .PHONY: test testgrid
 test: test-all

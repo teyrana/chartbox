@@ -98,6 +98,7 @@ list(APPEND LIBRARY_LINKAGE dynamicgridlayer
                             # view
             )
 
-# ADD_SUBDIRECTORY(src/process)
+
 # ADD_SUBDIRECTORY(src/process/profile)
-ADD_SUBDIRECTORY(src/process/merge)
+ADD_SUBDIRECTORY(src/process/sandbox)
+# ADD_SUBDIRECTORY(src/process/search)

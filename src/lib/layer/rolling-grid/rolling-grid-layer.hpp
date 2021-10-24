@@ -27,6 +27,13 @@ namespace chartbox::layer::rolling {
 ///  chart => layer => sector => cell
 ///            ^^^ you are here
 ///
+/// Sources / Inspiration / Further Reading
+/// 1. Grid-Map (aka Rolling-Grid)
+///     - http://wiki.ros.org/grid_map
+///     - https://github.com/ANYbotics/grid_map
+/// 2. Implement Cyclical Grid-Buffer (Occupancy Grid) 
+///     - https://github.com/embeddedartistry/embedded-resources/blob/master/examples/cpp/circular_buffer.cpp
+///
 /// \param cells_across_sector_ cell count across a single dimension of each sector
 template<uint32_t cells_across_sector_>
 class RollingGridLayer : public LayerInterface< RollingGridLayer<cells_across_sector_> > {
