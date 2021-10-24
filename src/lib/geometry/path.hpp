@@ -1,7 +1,6 @@
-// GPL v3 (c) 2020, Daniel Williams 
+// GPL v3 (c) 2021, Daniel Williams 
 
-#ifndef _GEOMETRY_PATH_HPP_
-#define _GEOMETRY_PATH_HPP_
+#pragma once
 
 #include <initializer_list>
 #include <memory>
@@ -10,53 +9,53 @@
 #include <string>
 #include <vector>
 
-#include "local-location.hpp"
+#include "bound-box.hpp"
 
-namespace chart::geometry {
+namespace chartbox::geometry {
 
+template<typename frame_vector_t>
 class Path {
 public:
     Path();
-    Path(std::vector<LocalLocation>& init);
-    Path(std::initializer_list<LocalLocation> init);
+    Path( size_t initial_size );
+    Path(std::vector<frame_vector_t>& init);
+    Path(std::initializer_list<frame_vector_t> init);
 
     // clears the internal point vector
     void clear();
 
-    void emplace_back(const double x, const double y);
+    // inline const BoundBox<frame_vector_t>& bounds() const { return bounds_; }
+
+    void emplace_back( frame_vector_t v );
+
+    void emplace_back( const double x, const double y );
 
     bool empty() const;
 
-    LocalLocation segment(const size_t index) const;
+    frame_vector_t segment(const size_t index) const;
 
     double length() const;
 
-    bool load(std::vector<LocalLocation> source);
+    bool load(std::vector<frame_vector_t> source);
 
-    LocalLocation& operator[](const size_t index);
+    frame_vector_t& operator[](const size_t index);
 
-    const LocalLocation& operator[](const size_t index) const;
+    const frame_vector_t& operator[](const size_t index) const;
 
-    void push_back(const LocalLocation p);
+    void push_back(const frame_vector_t p);
 
     void resize(size_t capacity);
 
     size_t size() const;
 
-    // dumps the contains points to stderr
-    // \param title - text to print in the output header
-    // \param pts - set of points to dump
-    std::string to_yaml(const std::string& indent = "") const;
-
-private:
-    double calculate_length();
+    std::string str( int indent = 0 ) const;
 
 // ====== ====== ====== Class Attributes ====== ====== ====== 
 private:
     /// Main data store for this class.
-    std::vector<LocalLocation> points;
+    std::vector<frame_vector_t> points;
 
-    double length_;
+    // double length_;
 
 public:
     // these need to be declared after the 'points' property
@@ -66,5 +65,3 @@ public:
 };
 
 } // namespace chart::geometry
-
-#endif // #endif _GEOMETRY_POLYGON_HPP_

@@ -4,12 +4,14 @@
 SET(LIB_NAME chartbox-geometry)
 SET(LIB_HEADERS bound-box.hpp
                 frame-mapping.hpp
-                polygon.hpp
                 global-location.hpp
+                path.hpp
+                polygon.hpp
                 utm-location.hpp
                 )
 
 SET(LIB_SOURCES frame-mapping.cpp
+                path.cpp
                 polygon.cpp
                 )
 
@@ -30,6 +32,7 @@ add_executable(geometry-tests
                 ${LIB_HEADERS}
                 bounds.test.cpp
                 frame.test.cpp
+                path.test.cpp
                 polygon.test.cpp
                 )
 target_link_libraries(geometry-tests PRIVATE ${LIB_NAME})

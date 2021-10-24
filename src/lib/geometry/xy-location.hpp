@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace chartbox::geometry {
 
 /// \brief Represents a generic x-y orthogonal vector
@@ -19,6 +21,14 @@ struct XYLocation {
 
     bool nearby( const XYLocation& other, double tolerance = 0.01 ) const { 
         return ( tolerance > std::fabs( x - other.x) && tolerance > std::fabs( y - other.y) );
+    }
+
+    uint32_t norm1() const {
+        return std::abs(x) + std::fabs(y );
+    }
+
+    uint32_t norm2() const {
+        return std::sqrt( std::pow(x,2) + std::pow(y,2) );
     }
 
     XYLocation operator*( double factor ) const {

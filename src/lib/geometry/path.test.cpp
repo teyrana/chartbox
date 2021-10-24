@@ -1,121 +1,84 @@
-// GPL v3 (c) 2020, Daniel Williams 
+// GPL v3 (c) 2021, Daniel Williams 
 
 #include <iostream>
 #include <memory>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+using Catch::Approx;
 
-#include "geometry/path.hpp"
+#include <geometry/xy-location.hpp>
 
+#include "path.hpp"
 
-using chart::geometry::Path;
+using chartbox::geometry::XYLocation;
+using chartbox::geometry::Path;
 
-TEST(Path, CreateDefault) {
-    const Path path;
-
-    ASSERT_EQ( path.size(), 0 );
-    ASSERT_TRUE( path.empty() );
+TEST_CASE("Initialize Path with defaults"){
+    const Path<XYLocation> path;
+    CHECK( 0 == path.size() );
+    CHECK( path.empty() );
 }
 
-TEST(Path, CreateWithInitializer){
-    Path path = {{0,0}, {2,2}, {2,0}, {3,0}};
+TEST_CASE( "Initialize Path with initialization list" ){
+    const Path<XYLocation> path({{3, 4}, {5, 6},{9, 5}, {12, 8}, {5, 11}});
 
-    ASSERT_EQ( path.size(), 4);
-    ASSERT_NEAR( path.length(), 5.82842712, 1e-8);
+    CHECK( 5 == path.size() );
+    CHECK( path[0] == XYLocation(3, 4) );
+    CHECK( path[1] == XYLocation(5, 6) );
+    CHECK( path[2] == XYLocation(9, 5) );
+    CHECK( path[3] == XYLocation(12, 8) );
+    CHECK( path[4] == XYLocation(5, 11) );
 }
 
-TEST(Path, CreateAndEmplaceBack ) {
-    Path path;
-
-    ASSERT_TRUE( path.empty() );
-    ASSERT_EQ( path.size(), 0 );
+TEST_CASE( "Create Path and emplace-points-back" ){
+    Path<XYLocation> path;
+    REQUIRE( path.empty() );
+    REQUIRE( 0 == path.size() );
 
     path.emplace_back(0,0);
-    ASSERT_FALSE( path.empty() );
-    ASSERT_EQ( path.size(), 1 );
-    ASSERT_NEAR( path.length(), 0, 1e-8);
+    CHECK( 1 == path.size() );
+    CHECK( path[0] == XYLocation( 0, 0));
 
     path.emplace_back(2,2);
-    ASSERT_EQ( path.size(), 2 );
-    ASSERT_NEAR( path.length(), 2.82842712, 1e-8);
+    CHECK( 2 == path.size() );
+    CHECK( path[1] == XYLocation( 2, 2));
 
     path.emplace_back(2,0);
-    ASSERT_EQ( path.size(), 3 );
-    ASSERT_NEAR( path.length(), 4.82842712, 1e-8);
+    CHECK( 3 == path.size() );
+    CHECK( path[2] == XYLocation( 2, 0));
 
     path.emplace_back(3,0);
-    ASSERT_EQ( path.size(), 4 );
-    ASSERT_NEAR( path.length(), 5.82842712, 1e-8);
+    CHECK( 4 == path.size() );
+    CHECK( path[3] == XYLocation( 3, 0));
 }
 
-TEST(Path, CreateAndPushBack ) {
-    Path path;
+TEST_CASE( "Path can calculate its length" ){
+    const Path<XYLocation> path({{3, 4}, {5, 6},{9, 5}, {12, 8}, {5, 11}});
 
-    ASSERT_TRUE( path.empty() );
-    ASSERT_EQ( path.size(), 0 );
+    CHECK( 5 == path.size() );
+    CHECK( path[0] == XYLocation(3, 4) );
+    CHECK( path[1] == XYLocation(5, 6) );
+    CHECK( path[2] == XYLocation(9, 5) );
+    CHECK( path[3] == XYLocation(12, 8) );
+    CHECK( path[4] == XYLocation(5, 11) );
 
-    path.push_back({0,0});
-
-    ASSERT_FALSE( path.empty() );
-    ASSERT_EQ( path.size(), 1 );
-    ASSERT_NEAR( path.length(), 0, 1e-8);
+    CHECK( Approx(17.0) == path.length() );
 }
 
-TEST(Path, CreateFromVector) {
-    Path path({{0,0}, {1,0}, {1,1}, {0,1}});
-
-    ASSERT_EQ( path.size(), 4);
-    ASSERT_DOUBLE_EQ( path.length(), 3.);
-
-    ASSERT_TRUE( path[0].isApprox( Vector2d(0,0) ));
-    ASSERT_TRUE( path[1].isApprox( Vector2d(1,0) ));
-    ASSERT_TRUE( path[2].isApprox( Vector2d(1,1) ));
-    ASSERT_TRUE( path[3].isApprox( Vector2d(0,1) ));
-}
-
-TEST(Path, CreateFromInitializer){
-    const Path path = {{0,0}, {1,0}, {1,1}, {0,1}};
-
-    ASSERT_EQ( path.size(), 4);
-    ASSERT_DOUBLE_EQ( path.length(), 3.);
-
-    ASSERT_TRUE( path[0].isApprox( Vector2d(0,0) ));
-    ASSERT_TRUE( path[1].isApprox( Vector2d(1,0) ));
-    ASSERT_TRUE( path[2].isApprox( Vector2d(1,1) ));
-    ASSERT_TRUE( path[3].isApprox( Vector2d(0,1) ));
-}
-
-TEST(Path, GetSegments){
-    Path path = {{0,0}, {1,0}, {1,1}, {0,1}};
-
-    ASSERT_EQ( path.size(), 4);
-
-    const auto& seg0 = path.segment(0);
-    ASSERT_DOUBLE_EQ( seg0.x(), 1.);
-    ASSERT_DOUBLE_EQ( seg0.y(), 0.);
-
-    const auto& seg1 = path.segment(1);
-    ASSERT_DOUBLE_EQ( seg1.x(), 0.);
-    ASSERT_DOUBLE_EQ( seg1.y(), 1.);
-
-    const auto& seg2 = path.segment(2);
-    ASSERT_DOUBLE_EQ( seg2.x(), -1.);
-    ASSERT_DOUBLE_EQ( seg2.y(),  0.);
-}
-
-TEST(Path, IteratePoints){
-    Path path = {{0,0}, {1,0}, {1,1}, {0,1}};
+TEST_CASE( "Users can iterate over path points" ){
+    Path<XYLocation> path = {{0,0}, {1,0}, {1,1}, {0,1}};
 
     auto iter = path.begin();
-    ASSERT_TRUE( *iter == path[0] );
+    CHECK( *iter == path[0] );
 
     ++iter;
-    ASSERT_TRUE( *iter == path[1] );
+    CHECK( *iter == path[1] );
 
     ++iter;
-    ASSERT_TRUE( *iter == path[2] );
+    CHECK( *iter == path[2] );
 
     ++iter;
-    ASSERT_TRUE( *iter == path[3] );
+    CHECK( *iter == path[3] );
 }

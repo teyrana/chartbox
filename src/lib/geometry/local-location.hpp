@@ -32,6 +32,14 @@ struct LocalLocation {
                && tolerance > std::fabs( northing - other.northing) );
     }
 
+    uint32_t norm1() const {
+        return std::abs(easting) + std::fabs(northing );
+    }
+
+    uint32_t norm2() const {
+        return std::sqrt( std::pow(easting,2) + std::pow(northing,2) );
+    }
+
     LocalLocation operator*( double factor ) const {
         return { easting * factor, northing * factor };
     }
