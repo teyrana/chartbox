@@ -11,9 +11,6 @@
 #include <limits>
 #include <vector>
 
-// // from GDAL
-// #include <nlohmann/json.hpp>
-
 #include "polygon.hpp"
 
 using chartbox::geometry::BoundBox;
@@ -113,7 +110,7 @@ bool Polygon<frame_vector_t>::load(std::vector<frame_vector_t> source) {
 
 template<typename frame_vector_t>
 Polygon<frame_vector_t>& Polygon<frame_vector_t>::move(const frame_vector_t& delta) {
-    std::for_each(points.begin(), points.end(), [&](frame_vector_t& p) { p += delta; });
+    std::for_each(points.begin(), points.end(), [&](frame_vector_t& p) { p = p + delta; });
     return *this;
 }
 
@@ -149,16 +146,13 @@ void Polygon<frame_vector_t>::set(const size_t index, frame_vector_t value ){
 template<typename frame_vector_t>
 size_t Polygon<frame_vector_t>::size() const { return points.size(); }
 
-template<typename frame_vector_t>
-std::string Polygon<frame_vector_t>::yaml(const std::string& indent) const {
-    std::ostringstream buf;
 
-    buf << indent << "- points:\n";
-    for (uint i = 0; i < points.size(); ++i) {
-        auto& p = points[i];
-        buf << indent << "    - " << p[0] << ", " << p[1] << '\n';
-    }
-    buf << bounds_.yaml(indent);
+#include "global-location.hpp"
+#include "local-location.hpp"
+#include "utm-location.hpp"
+#include "xy-location.hpp"
 
-    return buf.str();
-}
+template class chartbox::geometry::Polygon< chartbox::geometry::GlobalLocation>;
+template class chartbox::geometry::Polygon< chartbox::geometry::LocalLocation>;
+template class chartbox::geometry::Polygon< chartbox::geometry::UTMLocation>;
+template class chartbox::geometry::Polygon< chartbox::geometry::XYLocation>;

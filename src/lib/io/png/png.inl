@@ -8,6 +8,9 @@
 
 namespace chartbox::io::png {
 
+using chartbox::geometry::BoundBox;
+using chartbox::geometry::LocalLocation;
+
 template< typename layer_t >
 bool save( const layer_t& from_layer, const BoundBox<LocalLocation>& bounds, const std::filesystem::path& to_path ) {
     const double precision = from_layer.meters_across_cell();

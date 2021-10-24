@@ -21,6 +21,22 @@ struct XYLocation {
         return ( tolerance > std::fabs( x - other.x) && tolerance > std::fabs( y - other.y) );
     }
 
+    XYLocation operator*( double factor ) const {
+        return { x * factor, y * factor };
+    }
+
+    XYLocation operator+( const XYLocation& other ) const {
+        return { x + other.x, y + other.y };
+    }
+
+    XYLocation operator-( const XYLocation& other ) const {
+        return { x - other.x, y - other.y };
+    }
+
+    XYLocation operator/( double divisor ) const {
+        return { x / divisor, y / divisor };
+    }
+
     bool operator==( const XYLocation& other ) const { 
         return this->nearby(other);
     }
@@ -40,7 +56,11 @@ struct XYLocation {
             default: return;
         }
     }
-
 };
+
+inline std::ostream& operator<< (std::ostream& os, const XYLocation& ll) {
+    os << "{ " << ll[0] << ", " << ll[1] << " }";
+    return os;
+}
 
 } // namespace chart::geometry

@@ -27,6 +27,23 @@ struct UTMLocation {
                && tolerance > std::fabs( northing - other.northing) );
     }
 
+
+    UTMLocation operator*( double factor ) const {
+        return { easting * factor, northing * factor };
+    }
+
+    UTMLocation operator+( const UTMLocation& other ) const {
+        return { easting + other.easting, northing + other.northing };
+    }
+
+    UTMLocation operator-( const UTMLocation& other ) const {
+        return { easting - other.easting, northing - other.northing };
+    }
+
+    UTMLocation operator/( double divisor ) const {
+        return { easting / divisor, northing / divisor };
+    }
+
     bool operator==( const UTMLocation& other ) const {
         return this->nearby(other);
     }

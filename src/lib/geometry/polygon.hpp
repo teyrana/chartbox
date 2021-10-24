@@ -55,9 +55,6 @@ public:
 
     size_t size() const;
 
-    // \brief formats the contents to a given string
-    std::string yaml(const std::string& indent = "") const;
-
     // if necessary, adds an extra point to the end of the polygon-point vector
     // to wrap it back to the first point. this is not strictly operationally
     // necessary, but it simplifies most of the algorithms that need to iterate
@@ -87,5 +84,3 @@ protected: // Configuration parameters
 };
 
 } // namespace chart::geometry
-
-#include "polygon.inl"

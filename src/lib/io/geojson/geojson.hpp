@@ -12,6 +12,7 @@
 #include <fmt/core.h>
 
 // this project & libraries
+#include "geometry/bound-box.hpp"
 #include "geometry/frame-mapping.hpp"
 #include "geometry/local-location.hpp"
 #include "geometry/polygon.hpp"

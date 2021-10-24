@@ -4,11 +4,13 @@
 SET(LIB_NAME chartbox-geometry)
 SET(LIB_HEADERS bound-box.hpp
                 frame-mapping.hpp
+                polygon.hpp
                 global-location.hpp
                 utm-location.hpp
                 )
 
 SET(LIB_SOURCES frame-mapping.cpp
+                polygon.cpp
                 )
 
 MESSAGE( STATUS "Generating ChartBox Library: ${LIB_NAME}")

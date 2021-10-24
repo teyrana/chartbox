@@ -28,6 +28,22 @@ struct GlobalLocation {
                 NAN);
     }
 
+    GlobalLocation operator*( double factor ) const {
+        return { longitude * factor, latitude * factor };
+    }
+
+    GlobalLocation operator+( const GlobalLocation& other ) const {
+        return { longitude + other.longitude, latitude + other.latitude };
+    }
+
+    GlobalLocation operator-( const GlobalLocation& other ) const {
+        return { longitude - other.longitude, latitude - other.latitude };
+    }
+
+    GlobalLocation operator/( double divisor ) const {
+        return { longitude / divisor, latitude / divisor };
+    }
+
     bool operator==( const GlobalLocation& other ) const { 
         return this->nearby(other);
     }

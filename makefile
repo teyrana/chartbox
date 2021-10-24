@@ -75,7 +75,7 @@ test-static: debug
 test-search: debug
 	build/bin/search-tests
 
-test-all:
+test-all: debug
 	build/bin/geometry-tests
 	build/bin/dynamic-layer-tests
 	build/bin/common-layer-tests

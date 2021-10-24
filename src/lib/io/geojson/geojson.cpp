@@ -9,6 +9,7 @@ using nlohmann::json;
 #include "geojson.hpp"
 
 using chartbox::geometry::FrameMapping;
+using chartbox::geometry::BoundBox;
 using chartbox::geometry::GlobalLocation;
 using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
