@@ -80,7 +80,7 @@ test-all:
 	build/bin/dynamic-layer-tests
 	build/bin/common-layer-tests
 #	build/bin/quad-tree-tests
-	build/bin/rolling-grid-tests
-	build/bin/static-grid-tests
+	build/bin/rolling-layer-tests
+	build/bin/static-layer-tests
 #	build/bin/search-tests
 

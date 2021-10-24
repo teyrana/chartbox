@@ -21,8 +21,11 @@ conan_basic_setup(TARGETS)
 # Required, even with conan
 find_package(Catch2 3 REQUIRED)
 
-# ============= PDal =================
-SET( APPEND LIBRARY_LINKAGE CONAN_PKG::pdal CONAN_PKG::fmt )
+# ============= Conan Linking =================
+set(LIBRARY_LINKAGE CONAN_PKG::fmt 
+                    CONAN_PKG::gdal
+                    CONAN_PKG::pdal
+                    )
 
 
 # Set Compile Flags

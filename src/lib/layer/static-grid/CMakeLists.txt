@@ -14,15 +14,14 @@ MESSAGE( STATUS "    with sources: ${LIB_SOURCES}")
 # header + source static library
 add_library(${LIB_NAME} STATIC ${LIB_HEADERS} ${LIB_SOURCES})
 target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE} )
-target_link_libraries(${LIB_NAME} PRIVATE CONAN_PKG::gdal )
 
 # ============= Chart Base Library =================
 # These tests can use the Catch2-provided main
-add_executable( static-grid-tests
+set( TEST_BIN_NAME static-layer-tests )
+add_executable( ${TEST_BIN_NAME}
                 static-grid.test.cpp
                 )
 
-target_link_libraries(static-grid-tests PRIVATE ${LIB_NAME})
-target_link_libraries(static-grid-tests PRIVATE ${LIBRARY_LINKAGE} )
-target_link_libraries(static-grid-tests PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(static-grid-tests PRIVATE CONAN_PKG::fmt)
+target_link_libraries(${TEST_BIN_NAME} PRIVATE ${LIB_NAME})
+target_link_libraries(${TEST_BIN_NAME} PRIVATE ${LIBRARY_LINKAGE} )
+target_link_libraries(${TEST_BIN_NAME} PRIVATE Catch2::Catch2WithMain)
