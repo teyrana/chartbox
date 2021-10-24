@@ -45,8 +45,13 @@ format:
 sandbox: debug
 	${SANDBOX_EXE}
 
-.PHONY: test testgrid
+.PHONY: test
 test: test-all
+
+test-a-star: debug
+	build/bin/a-star-search-tests
+
+test-all: test-geometry test-layer test-search
 
 test-geometry: debug
 	build/bin/geometry-tests
@@ -59,6 +64,3 @@ test-layer: debug
 
 test-search: debug
 	build/bin/a-star-search-tests
-
-test-all: test-geometry test-layer test-search
-

@@ -98,6 +98,10 @@ list(APPEND LIBRARY_LINKAGE dynamic-grid-layer
                             # view
             )
 
+ADD_SUBDIRECTORY(src/lib/search)
+list(APPEND LIBRARY_LINKAGE a-star-search
+                            # rrt
+            )
 
 # ADD_SUBDIRECTORY(src/process/profile)
 ADD_SUBDIRECTORY(src/process/sandbox)
