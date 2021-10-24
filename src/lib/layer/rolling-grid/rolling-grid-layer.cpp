@@ -108,15 +108,17 @@ uint8_t RollingGridLayer<cells_across_sector_>::get(const LocalLocation& layer_l
 
         const GridIndex view_index = GridIndex( static_cast<uint32_t>(view_location.easting), 
                                                 static_cast<uint32_t>(view_location.northing) )
-                                        / meters_across_cell_;
+                                            .div(meters_across_cell_);
 
         /// index of the sector to lookup in
-        const size_t sector_offset = ((view_index / cells_across_sector_) + anchor_)
-                                        .wrap(sectors_across_view_)
-                                        .offset(sectors_across_view_);
+        const size_t sector_offset = view_index.div(cells_across_sector_)
+                                                .add(anchor_)
+                                                .wrap(sectors_across_view_)
+                                                .offset(sectors_across_view_);
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = (view_index % cells_across_sector_).offset(cells_across_sector_);
+        const size_t cell_offset = view_index.mod(cells_across_sector_)
+                                            .offset(cells_across_sector_);
 
         // current_index.get_sector()  // refactor idea ==> retreives raw-index to sector-within-layer
         // current_index.get_cell()    // refactor idea: retreives raw-index to cell-within-sector
@@ -381,15 +383,17 @@ bool RollingGridLayer<cells_across_sector_>::store(const LocalLocation& layer_lo
 
         const GridIndex view_index = GridIndex( static_cast<uint32_t>(view_location.easting), 
                                                 static_cast<uint32_t>(view_location.northing) )
-                                        / meters_across_cell_;
+                                            .div(meters_across_cell_);
 
         /// index of the sector to lookup in
-        const size_t sector_offset = ((view_index / cells_across_sector_) + anchor_)
-                                        .wrap(sectors_across_view_)
-                                        .offset(sectors_across_view_);
+        const size_t sector_offset = view_index.div(cells_across_sector_)
+                                                .add(anchor_)
+                                                .wrap(sectors_across_view_)
+                                                .offset(sectors_across_view_);
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = (view_index % cells_across_sector_).offset(cells_across_sector_);
+        const size_t cell_offset = view_index.mod(cells_across_sector_)
+                                            .offset(cells_across_sector_);
 
         sectors_[ sector_offset ][ cell_offset ] = new_value;
 

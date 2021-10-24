@@ -46,35 +46,32 @@ TEST_CASE( "RollingGridIndex calculates storage offset "){
 } // TEST_CASE
 
 TEST_CASE( "GridIndex can mod indices "){
-    const auto rem = GridIndex(4,9) % 2;
+    const auto rem = GridIndex(4,9).mod(2);
     CHECK( 0 == rem.column );
     CHECK( 1 == rem.row );
 } // TEST_CASE
 
 TEST_CASE( "GridIndex can add indices "){
-    const auto sum = GridIndex(1,1) + GridIndex(1,1);
+    const auto sum = GridIndex(1,1).add({1,1});
     CHECK( 2 == sum.column );
     CHECK( 2 == sum.row );
 } // TEST_CASE
 
-
 TEST_CASE( "GridIndex can multiply indices "){
-    const auto prod = GridIndex(2,3) * 2;
+    const auto prod = GridIndex(2,3).mult(2);
     CHECK( 4 == prod.column );
     CHECK( 6 == prod.row );
 } // TEST_CASE
 
 TEST_CASE( "GridIndex can subtract indices "){
-    const auto diff = GridIndex(1,2) - GridIndex(1,1);
+    const auto diff = GridIndex(1,2).sub({1,1});
 
     CHECK( 0 == diff.column );
     CHECK( 1 == diff.row );
 } // TEST_CASE
 
 TEST_CASE( "GridIndex can divide indices "){
-    const auto div = GridIndex(4,8) / 2;
-    // WARNING -- this implementation is probably wrong!  
-    // .... Or at the very last, not relevant to our use case
+    const auto div = GridIndex(4,8).div(2);
     CHECK( 2 == div.column );
     CHECK( 4 == div.row );
 } // TEST_CASE

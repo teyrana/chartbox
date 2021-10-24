@@ -56,17 +56,19 @@ uint8_t DynamicGridLayer::get(const LocalLocation& layer_location ) const {
 
     if( visible(layer_location) ){
         const LocalLocation relative_location = layer_location - view_bounds_.min;
+
         // if the point is on the max-border (east OR north) clamp it inside bounds.
         const LocalLocation view_location( std::fmin(relative_location.easting, view_bounds_.width() - meters_across_cell_/10),
                                            std::fmin(relative_location.northing, view_bounds_.height() - meters_across_cell_/10) );
 
-        const GridIndex view_index = GridIndex( view_location.easting, view_location.northing) / meters_across_cell_;
+        const GridIndex view_index = GridIndex( view_location.easting, view_location.northing).div(meters_across_cell_);
 
         /// index of the sector to lookup in
-        const size_t sector_offset = (view_index / cells_across_sector_).offset(sectors_across_view_);
+        const size_t sector_offset = view_index.div(cells_across_sector_).offset(sectors_across_view_);
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = (view_index % cells_across_sector_).offset(cells_across_sector_);
+        const size_t cell_offset = view_index.mod(cells_across_sector_)
+                                            .offset(cells_across_sector_);
         uint8_t current_cell_value = sectors_[ sector_offset ][ cell_offset ];
 
         return current_cell_value;
@@ -115,8 +117,10 @@ std::string DynamicGridLayer::print_contents_by_cell() const {
                 buf << "    ";
             }
             const GridIndex cell_view_index(cell_column_index, cell_row_index);
-            const size_t sector_offset = (cell_view_index/cells_across_sector_).offset(sectors_across_view_);
-            const size_t cell_offset = (cell_view_index % cells_across_sector_).offset(cells_across_sector_);
+            const size_t sector_offset = cell_view_index.div(cells_across_sector_)
+                                                        .offset(sectors_across_view_);
+            const size_t cell_offset = cell_view_index.mod(cells_across_sector_)
+                                                        .offset(cells_across_sector_);
 
             buf << fmt::format(" {:2X}", sectors_[sector_offset][cell_offset] );
         }
@@ -219,13 +223,16 @@ uint32_t DynamicGridLayer::sectors_across_view( uint32_t new_sectors_across ){
 bool DynamicGridLayer::store(const LocalLocation& layer_location, uint8_t new_value) {
     if( visible(layer_location) ){
         const LocalLocation view_location = layer_location - view_bounds_.min;
-        const GridIndex view_index = GridIndex( view_location.easting, view_location.northing) / meters_across_cell_;
+        const GridIndex view_index = GridIndex( view_location.easting, view_location.northing)
+                                            .div(meters_across_cell_);
         
         /// index of the sector to lookup in
-        const size_t sector_offset = (view_index / cells_across_sector_).offset(sectors_across_view_);
+        const size_t sector_offset = view_index.div(cells_across_sector_)
+                                                .offset(sectors_across_view_);
 
         /// location of cell within sector (indexed above)
-        const size_t cell_offset = (view_index % cells_across_sector_).offset(cells_across_sector_);
+        const size_t cell_offset = view_index.mod(cells_across_sector_)
+                                                .offset(cells_across_sector_);
 
         sectors_[ sector_offset ][ cell_offset ] = new_value;
 

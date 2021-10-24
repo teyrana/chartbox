@@ -58,7 +58,7 @@ test-geometry: debug
 	build/bin/geometry-tests
 	
 test-layer: debug
-	build/bin/layer-common-tests
+	build/bin/common-layer-tests
 	build/bin/dynamic-layer-tests
 	build/bin/rolling-layer-tests
 	build/bin/static-layer-tests
@@ -78,7 +78,7 @@ test-search: debug
 test-all:
 	build/bin/geometry-tests
 	build/bin/dynamic-layer-tests
-	build/bin/layer-common-tests
+	build/bin/common-layer-tests
 #	build/bin/quad-tree-tests
 	build/bin/rolling-grid-tests
 	build/bin/static-grid-tests

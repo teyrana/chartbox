@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <ostream>
 #include <sstream>
@@ -21,6 +22,28 @@ struct GridIndex {
         : column(_col), row(_row)
     {}
 
+    GridIndex add( const GridIndex& other ) const {
+            return { column + other.column, row + other.row }; }
+
+    GridIndex div( uint32_t divisor ) const {
+            return { column / divisor, row / divisor }; }
+
+    GridIndex mod( uint32_t divisor ) const {
+            return { column % divisor, row % divisor }; }
+
+    /// \warning dead-code
+    GridIndex mult( uint32_t factor ) const {
+            return { column * factor, row * factor }; }
+
+    uint32_t norm1( const GridIndex& other ) const {
+        return std::abs(static_cast<int32_t>(column + row) - static_cast<int32_t>(other.column + other.row));
+    }
+
+    uint32_t norm2( const GridIndex& other ) const {
+        return std::sqrt( std::pow(static_cast<int32_t>(column) - static_cast<int32_t>(other.column),2)
+                        + std::pow(static_cast<int32_t>(row)    - static_cast<int32_t>(other.row),2));
+    }
+
     uint32_t offset( uint32_t length) const {
         return column + row*length;
     }
@@ -29,20 +52,9 @@ struct GridIndex {
         return ( (column == other.column) && (row == other.row));
     }
 
-    GridIndex operator%( uint32_t divisor ) const {
-            return { column % divisor, row % divisor }; }
-
-    GridIndex operator*( uint32_t factor ) const {
-            return { column * factor, row * factor }; }
-
-    GridIndex operator+( const GridIndex& other ) const {
-            return { column + other.column, row + other.row }; }
-
-    GridIndex operator-( const GridIndex& other ) const {
+    /// \warning dead-code
+    GridIndex sub( const GridIndex& other ) const {
             return { column - other.column, row - other.row }; }
-
-    GridIndex operator/( uint32_t divisor ) const {
-            return { column / divisor, row / divisor }; }
 
     bool within( uint32_t cells_across ) const { 
         return ((column < cells_across) && ( row < cells_across))?true:false;
