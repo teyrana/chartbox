@@ -63,7 +63,7 @@ bool save( const ChartBox& from_chart, double precision, const std::filesystem::
 
             // fmt::print( "             [{:4}]: @( {:6}, {:6} ) = {} \n", buffer_index, at_easting, at_northing, from_chart.classify(at_location) ); 
 
-            line_buffer[buffer_index] = from_chart.classify(at_location);
+            line_buffer[buffer_index] = from_chart.get(at_location);
             at_easting += easting_increment;
         }
         

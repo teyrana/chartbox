@@ -24,7 +24,7 @@ ChartBox::ChartBox()
     contour_layer_.name("ContourLayerGrid");
 }
 
-uint8_t ChartBox::classify( const LocalLocation& location ) const { 
+uint8_t ChartBox::get( const LocalLocation& location ) const { 
     const uint8_t boundary_value = boundary_layer_.get( location );
     const uint8_t contour_value = contour_layer_.get( location );
     return std::max( boundary_value, contour_value );

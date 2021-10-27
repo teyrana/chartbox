@@ -33,7 +33,7 @@ public:
     /// @param {double} x The x-coordinate; in real-world units; meters
     /// @param {double} y The y-coordinate; in real-world units; meters
     /// @return {cell_value_t} The value of the node, if available; or the default value.
-    uint8_t classify(const LocalLocation& p) const;
+    uint8_t get(const LocalLocation& p) const;
 
     inline boundary_layer_t& get_boundary_layer() {  return boundary_layer_; }
 
