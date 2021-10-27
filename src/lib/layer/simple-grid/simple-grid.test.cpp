@@ -1,12 +1,18 @@
 // GPL v3 (c) 2021, Daniel Williams 
 
+// #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <cstring>
+#include <string>
+#include <memory>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 using Catch::Approx;
+
+#include <fmt/core.h>
 
 #include "geometry/bound-box.hpp"
 #include "geometry/polygon.hpp"
@@ -20,10 +26,17 @@ using chartbox::geometry::UTMLocation;
 using chartbox::layer::simple::SimpleGridLayer;
 
 // ============ ============  Static-Grid-Index-Tests  ============ ============
-TEST_CASE( "StaticGrid Simple Initialization" ){
+TEST_CASE( "SimpleGridLayer Default Template Initialization" ){
     SimpleGridLayer layer;
 
     REQUIRE( 1024 == layer.cells_across_view() );
+    REQUIRE( 1.0 == Approx(layer.meters_across_cell()) );
+} // TEST_CASE
+
+TEST_CASE( "SimpleGridLayer Simple Template Initialization" ){
+    SimpleGridLayer<uint32_t,512,16000> layer;
+
+    REQUIRE( 512 == layer.cells_across_view() );
     REQUIRE( 16.0 == Approx(layer.meters_across_cell()) );
 } // TEST_CASE
 

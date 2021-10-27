@@ -12,54 +12,55 @@
 
 namespace chartbox::layer::simple {
 
-// template<uint32_t dimension>
-class SimpleGridLayer : public LayerInterface<SimpleGridLayer> {
+template<typename cell_t=uint8_t, uint32_t dimension_=1024, uint32_t precision_mm_=1000>
+class SimpleGridLayer : public LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>> {
 public:
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "SimpleGridLayer";
 
+    /// \brief number of cells along each dimension of this grid
+    constexpr static size_t cells_across_layer_ = dimension_;
+
+    /// \brief width of each cell, in meters
+    constexpr static double meters_across_cell_ = static_cast<double>(precision_mm_)/1000;
+
 public:
 
     SimpleGridLayer() = default;
-    
-//    const std::array<uint8_t, dimension*dimension> & array() const;
 
     bool contains(const LocalLocation& p ) const;
 
     /// \brief number of cells along each dimension of this grid
     constexpr static size_t dimension() { return cells_across_layer_; }
 
-    inline uint8_t* data() {
+    inline cell_t* data() {
         return grid.data(); }
 
-    inline const uint8_t* data() const {
+    inline const cell_t* data() const {
         return grid.data(); }
 
     // override from LayerInterface
-    bool fill( const uint8_t value );
+    bool fill( const cell_t value );
 
-    bool fill( const uint8_t* const buffer, size_t count );
+    bool fill( const cell_t* const buffer, size_t count );
     
-    bool fill( const BoundBox<LocalLocation>& box, const uint8_t value ){
+    bool fill( const BoundBox<LocalLocation>& box, const cell_t value ){
         return super().fill( box, value ); }
 
-    bool fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bound, uint8_t value ){
+    bool fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bound, cell_t value ){
         return super().fill( poly, bound, value ); }
 
     /// \brief Fill the entire grid with values from the buffer
     /// 
     /// \param source - values to fill.  This must be the same byte-count as this layer
     /// \param fill_value - value to write inside the area
-    bool fill( const std::vector<uint8_t>& source );
+    bool fill( const std::vector<cell_t>& source );
 
-    uint8_t& get( const LocalLocation& p );
+    cell_t& get( const LocalLocation& p );
 
-    uint8_t get(const LocalLocation& p) const;
+    cell_t get(const LocalLocation& p) const;
 
     size_t lookup( const uint32_t i, const uint32_t j ) const;
-
-    size_t lookup( const LocalLocation& p ) const;
-
 
     inline uint32_t cells_across_view() const { return cells_across_layer_; }
 
@@ -77,36 +78,31 @@ public:
     ///!
     /// \param p - the x,y coordinates to search at:
     /// \return reference to the cell value
-    bool store(const LocalLocation& p, const uint8_t new_value);
+    bool store(const LocalLocation& p, const cell_t new_value);
 
     ~SimpleGridLayer() = default;
 
 
 protected:
 
-    /// \brief number of cells along each dimension of this grid
-    constexpr static size_t cells_across_layer_ = 1024;
-
-    /// \brief width of each cell, in meters
-    constexpr static double meters_across_cell_ = 16.0;
-
     /// \brief width of each cell, in meters
     constexpr static double meters_across_layer_ = meters_across_cell_ * cells_across_layer_;
 
     /// \brief contains the data for this tile
     // raw array:  2D addressing is performed through the index, below
-    std::array<uint8_t, cells_across_layer_*cells_across_layer_> grid;
+    std::array<cell_t, cells_across_layer_*cells_across_layer_> grid;
 
 private:
 
-    LayerInterface<SimpleGridLayer>& super() {
-        return *static_cast< LayerInterface<SimpleGridLayer>* >(this);
+    LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>>& super() {
+        return *static_cast< LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>>* >(this);
     }
 
-    const LayerInterface<SimpleGridLayer>& super() const {
-        return *static_cast< const LayerInterface<SimpleGridLayer>* >(this);
+    const LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>>& super() const {
+        return *static_cast< const LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>>* >(this);
     }
 };
 
+#include "simple-grid-layer.inl"
 
 } // namespace
