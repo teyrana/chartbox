@@ -10,18 +10,18 @@ using Catch::Approx;
 
 #include "geometry/bound-box.hpp"
 #include "geometry/polygon.hpp"
-#include "static-grid-layer.hpp"
+#include "simple-grid-layer.hpp"
 
 using chartbox::geometry::BoundBox;
 using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
  
-using chartbox::layer::StaticGridLayer;
+using chartbox::layer::simple::SimpleGridLayer;
 
 // ============ ============  Static-Grid-Index-Tests  ============ ============
 TEST_CASE( "StaticGrid Simple Initialization" ){
-    StaticGridLayer layer;
+    SimpleGridLayer layer;
 
     REQUIRE( 1024 == layer.cells_across_view() );
     REQUIRE( 16.0 == Approx(layer.meters_across_cell()) );

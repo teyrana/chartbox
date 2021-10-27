@@ -10,17 +10,17 @@
 
 #include "layer/layer-interface.hpp"
 
-namespace chartbox::layer {
+namespace chartbox::layer::simple {
 
 // template<uint32_t dimension>
-class StaticGridLayer : public LayerInterface<StaticGridLayer> {
+class SimpleGridLayer : public LayerInterface<SimpleGridLayer> {
 public:
     /// \brief name of this layer's type
-    constexpr static char type_name_[] = "StaticGridLayer";
+    constexpr static char type_name_[] = "SimpleGridLayer";
 
 public:
 
-    StaticGridLayer() = default;
+    SimpleGridLayer() = default;
     
 //    const std::array<uint8_t, dimension*dimension> & array() const;
 
@@ -79,7 +79,7 @@ public:
     /// \return reference to the cell value
     bool store(const LocalLocation& p, const uint8_t new_value);
 
-    ~StaticGridLayer() = default;
+    ~SimpleGridLayer() = default;
 
 
 protected:
@@ -99,12 +99,12 @@ protected:
 
 private:
 
-    LayerInterface<StaticGridLayer>& super() {
-        return *static_cast< LayerInterface<StaticGridLayer>* >(this);
+    LayerInterface<SimpleGridLayer>& super() {
+        return *static_cast< LayerInterface<SimpleGridLayer>* >(this);
     }
 
-    const LayerInterface<StaticGridLayer>& super() const {
-        return *static_cast< const LayerInterface<StaticGridLayer>* >(this);
+    const LayerInterface<SimpleGridLayer>& super() const {
+        return *static_cast< const LayerInterface<SimpleGridLayer>* >(this);
     }
 };
 

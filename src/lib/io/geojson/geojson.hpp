@@ -16,8 +16,8 @@
 #include "geometry/frame-mapping.hpp"
 #include "geometry/local-location.hpp"
 #include "geometry/polygon.hpp"
-#include "layer/rolling-grid/rolling-grid-layer.hpp"
-#include "layer/static-grid/static-grid-layer.hpp"
+#include "layer/layer-interface.hpp"
+
 
 /// \brief Load a GeoJSON file into a layer
 ///

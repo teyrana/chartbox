@@ -15,7 +15,7 @@ using chartbox::geometry::GlobalLocation;
 using chartbox::geometry::LocalLocation;
 using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
-using chartbox::layer::StaticGridLayer;
+
 using nlohmann::json;
 
 namespace chartbox::io::geojson {

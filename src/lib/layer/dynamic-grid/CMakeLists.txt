@@ -1,6 +1,6 @@
 
 # ============= Chart Base Library =================
-SET(LIB_NAME dynamicgridlayer )
+SET(LIB_NAME dynamic-grid-layer )
 SET(LIB_HEADERS ${COMMON_LAYER_INCLUDES}
                 dynamic-grid-layer.hpp
                 )

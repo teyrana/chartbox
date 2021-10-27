@@ -12,12 +12,12 @@
 
 #include <fmt/core.h>
 
-#include "static-grid-layer.hpp"
+#include "simple-grid-layer.hpp"
 
-using chartbox::layer::LayerInterface;
-using chartbox::layer::StaticGridLayer;
+// using chartbox::layer::LayerInterface;
+using chartbox::layer::simple::SimpleGridLayer;
 
-bool StaticGridLayer::contains(const LocalLocation& p ) const {
+bool SimpleGridLayer::contains(const LocalLocation& p ) const {
     if( 0 > p.easting || 0 > p.northing ){
         return false;
     }else if( cells_across_layer_ < p.easting || cells_across_layer_ < p.northing ){
@@ -26,12 +26,12 @@ bool StaticGridLayer::contains(const LocalLocation& p ) const {
     return true;
 }
 
-bool StaticGridLayer::fill( const uint8_t  value) {
+bool SimpleGridLayer::fill( const uint8_t  value) {
     grid.fill( value);
     return true;
 }
 
-bool StaticGridLayer::fill( const uint8_t * const source, size_t count ){
+bool SimpleGridLayer::fill( const uint8_t * const source, size_t count ){
     if ( count > grid.size()) {
         return false;
     }
@@ -39,7 +39,7 @@ bool StaticGridLayer::fill( const uint8_t * const source, size_t count ){
     return true;
 }
 
-bool StaticGridLayer::fill(const std::vector<uint8_t >& source) {
+bool SimpleGridLayer::fill(const std::vector<uint8_t >& source) {
     if (source.size() != grid.size()) {
         return false;
     }
@@ -47,24 +47,24 @@ bool StaticGridLayer::fill(const std::vector<uint8_t >& source) {
     return true;
 }
 
-uint8_t StaticGridLayer::get(const LocalLocation& p ) const {
+uint8_t SimpleGridLayer::get(const LocalLocation& p ) const {
     return grid[ lookup(p) ];
 }
 
-uint8_t & StaticGridLayer::get(const LocalLocation& p ) {
+uint8_t & SimpleGridLayer::get(const LocalLocation& p ) {
     return grid[ lookup(p) ];
 }
 
-size_t StaticGridLayer::lookup( const uint32_t i, const uint32_t j ) const {
+size_t SimpleGridLayer::lookup( const uint32_t i, const uint32_t j ) const {
     return i + (j * cells_across_layer_);
 }
 
-size_t StaticGridLayer::lookup( const LocalLocation& p ) const {
+size_t SimpleGridLayer::lookup( const LocalLocation& p ) const {
     return lookup( static_cast<uint32_t>(p.easting/meters_across_cell_),
                    static_cast<uint32_t>(p.northing/meters_across_cell_) );
 }
 
-void StaticGridLayer::print_contents() const {
+void SimpleGridLayer::print_contents() const {
     fmt::print( "============ ============ Fixed-Grid-Layer Contents ============ ============\n" );
     for (size_t j = cells_across_layer_ - 1; j < cells_across_layer_; --j) {
         for (size_t i = 0; i < cells_across_layer_; ++i) {
@@ -87,7 +87,7 @@ void StaticGridLayer::print_contents() const {
     fmt::print( "============ ============ ============ ============ ============ ============\n" );
 }
 
-bool StaticGridLayer::store( const LocalLocation& p, const uint8_t  value) {
+bool SimpleGridLayer::store( const LocalLocation& p, const uint8_t  value) {
     const auto offset = lookup( p );
     grid[offset] = value;
     return true;

@@ -1,10 +1,10 @@
 ADD_SUBDIRECTORY(dynamic-grid)
-ADD_SUBDIRECTORY(static-grid)
+ADD_SUBDIRECTORY(simple-grid)
 ADD_SUBDIRECTORY(rolling-grid)
 # ADD_SUBDIRECTORY(quad-tree)
 # ADD_SUBDIRECTORY(view)
 
-set( COMMON_LAYER_INCLUDES layer-interface.hpp
+set( COMMON_LAYER_INCLUDES  layer-interface.hpp
                             layer-interface.inl
                             grid-index.hpp )
 

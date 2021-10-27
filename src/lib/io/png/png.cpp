@@ -11,7 +11,7 @@
 #include "png.hpp"
 
 using chartbox::ChartBox;
-using chartbox::layer::StaticGridLayer;
+
 
 namespace chartbox::io::png {
 

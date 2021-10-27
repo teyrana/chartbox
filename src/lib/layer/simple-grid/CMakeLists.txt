@@ -1,12 +1,11 @@
 # ============= Fixed-Grid Chart Layer Library =================
-SET(LIB_NAME staticgridlayer )
+SET(LIB_NAME simple-grid-layer )
 
 SET(LIB_HEADERS ${COMMON_LAYER_INCLUDES}
-                static-grid-layer.hpp
-                # z-order-index.hpp z-order-index.inl
+                simple-grid-layer.hpp
                 )
 SET(LIB_SOURCES 
-                static-grid-layer.cpp
+                simple-grid-layer.cpp
                 )
 
 MESSAGE( STATUS "Generating StaticGrid Library: ${LIB_NAME}")
@@ -19,9 +18,9 @@ target_link_libraries(${LIB_NAME} PRIVATE ${LIBRARY_LINKAGE} )
 
 # ============= Chart Base Library =================
 # These tests can use the Catch2-provided main
-set( TEST_BIN_NAME static-layer-tests )
+set( TEST_BIN_NAME simple-layer-tests )
 add_executable( ${TEST_BIN_NAME}
-                static-grid.test.cpp
+                simple-grid.test.cpp
                 )
 
 target_link_libraries(${TEST_BIN_NAME} PRIVATE ${LIB_NAME})

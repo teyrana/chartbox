@@ -58,10 +58,7 @@ test-geometry: debug
 	build/bin/geometry-tests
 	
 test-layer: debug
-	build/bin/common-layer-tests
-	build/bin/dynamic-layer-tests
-	build/bin/rolling-layer-tests
-	build/bin/static-layer-tests
+	build/bin/*-layer-tests
 
 test-rolling: debug
 	build/bin/rolling-grid-tests

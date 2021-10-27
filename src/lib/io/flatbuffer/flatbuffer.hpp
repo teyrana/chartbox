@@ -2,6 +2,7 @@
 #pragma once
 
 // standard library includes
+#include <cstring> // for std::memcpy
 #include <filesystem>
 
 #include "geometry/local-location.hpp"

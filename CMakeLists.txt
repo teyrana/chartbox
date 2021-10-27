@@ -91,9 +91,9 @@ list(APPEND LIBRARY_LINKAGE chartbox-io-flatbuffer
             )
 
 ADD_SUBDIRECTORY(src/lib/layer)
-list(APPEND LIBRARY_LINKAGE dynamicgridlayer
-                            rollinggridlayer
-                            staticgridlayer
+list(APPEND LIBRARY_LINKAGE dynamic-grid-layer
+                            rolling-grid-layer
+                            simple-grid-layer
                             # quadtreelayer
                             # view
             )
