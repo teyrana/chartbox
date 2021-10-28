@@ -34,10 +34,7 @@ public:
     constexpr static size_t dimension() { return cells_across_layer_; }
 
     inline cell_t* data() {
-        return grid.data(); }
-
-    inline const cell_t* data() const {
-        return grid.data(); }
+        return grid_.data(); }
 
     // override from LayerInterface
     bool fill( cell_t value );
@@ -55,8 +52,6 @@ public:
     /// \param source - values to fill.  This must be the same byte-count as this layer
     /// \param fill_value - value to write inside the area
     bool fill( const std::vector<cell_t>& source );
-
-    cell_t& get( const LocalLocation& p );
 
     cell_t get(const LocalLocation& p) const;
 
@@ -89,8 +84,7 @@ public:
     bool tracked(const LocalLocation& p) const {
         return visible(p); }
 
-    bool view(const BoundBox<LocalLocation>& nb ) {
-        view_bounds_ = nb; return true; }
+    bool view(const BoundBox<LocalLocation>& nb );
     const BoundBox<LocalLocation>& visible() const { 
         return view_bounds_; }
     bool visible(const LocalLocation& p) const {
@@ -103,7 +97,7 @@ protected:
 
     /// \brief contains the data for this tile
     // raw array:  2D addressing is performed through the index, below
-    std::array<cell_t, cells_across_layer_*cells_across_layer_> grid;
+    std::array<cell_t, cells_across_layer_*cells_across_layer_> grid_;
 
     // this tracks the bounds of the visible grid
     geometry::BoundBox<LocalLocation> view_bounds_;

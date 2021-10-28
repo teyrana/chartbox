@@ -20,36 +20,33 @@ bool SimpleGridLayer<cell_t,dimension_,precision_mm>::contains(const LocalLocati
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 bool SimpleGridLayer<cell_t,dimension_,precision_mm>::fill( const cell_t  value) {
-    grid.fill( value);
+    grid_.fill( value);
     return true;
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 bool SimpleGridLayer<cell_t,dimension_,precision_mm>::fill( const cell_t * const source, size_t count ){
-    if ( count > grid.size()) {
+    if ( count > grid_.size()) {
         return false;
     }
-    memcpy( grid.data(), source, sizeof(cell_t ) * std::min(count, grid.size()) );
+    memcpy( grid_.data(), source, sizeof(cell_t ) * std::min(count, grid_.size()) );
     return true;
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 bool SimpleGridLayer<cell_t,dimension_,precision_mm>::fill(const std::vector<cell_t >& source) {
-    if (source.size() != grid.size()) {
+    if (source.size() != grid_.size()) {
         return false;
     }
-    memcpy(grid.data(), source.data(), sizeof(cell_t ) * source.size());
+    memcpy(grid_.data(), source.data(), sizeof(cell_t ) * source.size());
     return true;
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 cell_t SimpleGridLayer<cell_t,dimension_,precision_mm>::get(const LocalLocation& p ) const {
-    return grid[ lookup(p) ];
-}
-
-template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
-cell_t & SimpleGridLayer<cell_t,dimension_,precision_mm>::get(const LocalLocation& p ) {
-    return grid[ lookup(p) ];
+    const size_t offset = lookup(static_cast<uint32_t>(p.easting/meters_across_cell_),
+                                 static_cast<uint32_t>(p.northing/meters_across_cell_));
+    return grid_[ offset ];
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
@@ -63,7 +60,7 @@ void SimpleGridLayer<cell_t,dimension_,precision_mm>::print_contents() const {
     for (size_t j = cells_across_layer_ - 1; j < cells_across_layer_; --j) {
         for (size_t i = 0; i < cells_across_layer_; ++i) {
             const auto offset = lookup(i,j);
-            const auto value = grid[offset];
+            const auto value = grid_[offset];
             if( 0 == (i%8) ){
                 fmt::print(" ");
             }
@@ -85,6 +82,18 @@ template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 bool SimpleGridLayer<cell_t,dimension_,precision_mm>::store( const LocalLocation& p, const cell_t  value) {
     const auto offset = lookup( static_cast<uint32_t>(p.easting/meters_across_cell_),
                                 static_cast<uint32_t>(p.northing/meters_across_cell_) );
-    grid[offset] = value;
+    grid_[offset] = value;
     return true;
+}
+
+
+template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
+bool SimpleGridLayer<cell_t,dimension_,precision_mm>::view(const BoundBox<LocalLocation>& nb ) {
+    if( nb.width() > meters_across_view() || nb.height() > meters_across_view() ){
+       return false;
+    }
+
+    view_bounds_.min = nb.min;
+    view_bounds_.max = nb.min + meters_across_view();
+    return true; 
 }
