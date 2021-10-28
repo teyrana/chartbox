@@ -4,8 +4,6 @@
 
 #include <memory>
 
-#include <gdal.h>
-
 #include "geometry/bound-box.hpp"
 #include "geometry/global-location.hpp"
 #include "geometry/local-location.hpp"
@@ -53,7 +51,7 @@ public:
 
     /// \brief sets the entire layer to the given value
     /// \param fill_value - fill value for entire grid
-    bool fill( const uint8_t value ){
+    bool fill( uint8_t value ){
         return layer().fill(value); }
 
     /// \brief Fill the given area with the given value.

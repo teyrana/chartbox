@@ -48,36 +48,17 @@ sandbox: debug
 .PHONY: test testgrid
 test: test-all
 
-test-dyn: debug
-	build/bin/dynamic-layer-tests
-
-test-frame: debug
-	build/bin/geometry-tests FrameTests
-
 test-geometry: debug
 	build/bin/geometry-tests
-	
+
 test-layer: debug
-	build/bin/*-layer-tests
-
-test-rolling: debug
-	build/bin/rolling-grid-tests
-
-test-qtree: debug
-	build/bin/quad-tree-tests
-
-test-static: debug
-	build/bin/static-grid-tests
+	build/bin/common-layer-tests
+	build/bin/dynamic-layer-tests
+	build/bin/rolling-layer-tests
+	build/bin/simple-layer-tests
 
 test-search: debug
-	build/bin/search-tests
+	build/bin/a-star-search-tests
 
-test-all: debug
-	build/bin/geometry-tests
-	build/bin/dynamic-layer-tests
-	build/bin/common-layer-tests
-#	build/bin/quad-tree-tests
-	build/bin/rolling-layer-tests
-	build/bin/static-layer-tests
-#	build/bin/search-tests
+test-all: test-geometry test-layer test-search
 

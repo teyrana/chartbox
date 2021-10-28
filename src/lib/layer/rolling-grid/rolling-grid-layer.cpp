@@ -47,7 +47,7 @@ bool RollingGridLayer<cells_across_sector_>::enable_cache( std::filesystem::path
 }
 
 template<uint32_t cells_across_sector_>
-bool RollingGridLayer<cells_across_sector_>::fill(const uint8_t value){
+bool RollingGridLayer<cells_across_sector_>::fill( uint8_t value){
     for( auto& each_sector : sectors_){
         each_sector.fill(value);
     }

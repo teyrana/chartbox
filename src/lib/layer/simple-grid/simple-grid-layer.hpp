@@ -40,7 +40,7 @@ public:
         return grid.data(); }
 
     // override from LayerInterface
-    bool fill( const cell_t value );
+    bool fill( cell_t value );
 
     bool fill( const cell_t* const buffer, size_t count );
     

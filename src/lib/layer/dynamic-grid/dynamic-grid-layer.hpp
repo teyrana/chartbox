@@ -47,7 +47,7 @@ public:
     bool center( const geometry::LocalLocation& center );
     bool origin( const geometry::LocalLocation& origin );
 
-    bool fill( const uint8_t value );
+    bool fill( uint8_t value );
 
     // NYI -- not needed?
     // bool fill( const uint8_t* const buffer, size_t count );

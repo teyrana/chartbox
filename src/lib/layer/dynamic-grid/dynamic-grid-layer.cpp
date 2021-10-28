@@ -44,7 +44,7 @@ bool DynamicGridLayer::center( const LocalLocation& new_center ) {
 }
 
 
-bool DynamicGridLayer::fill(const uint8_t value){
+bool DynamicGridLayer::fill( uint8_t value){
     for( auto& each_sector : sectors_){
         each_sector.assign( cells_across_sector_*cells_across_sector_, value );
     }

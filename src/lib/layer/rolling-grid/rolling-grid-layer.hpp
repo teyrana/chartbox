@@ -76,7 +76,7 @@ public:
 
     bool enable_cache( std::filesystem::path cache_path );
 
-    bool fill( const uint8_t value );
+    bool fill( uint8_t value );
 
     bool fill( const BoundBox<LocalLocation>& box, const uint8_t value ){
         return super().fill( box, value ); }
