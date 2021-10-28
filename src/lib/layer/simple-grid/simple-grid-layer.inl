@@ -1,6 +1,13 @@
 // using chartbox::layer::LayerInterface;
 using chartbox::layer::simple::SimpleGridLayer;
 
+
+
+template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
+SimpleGridLayer<cell_t,dimension_,precision_mm>::SimpleGridLayer()
+    : view_bounds_( {0,0}, {meters_across_view(),meters_across_view()})
+{}
+
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
 bool SimpleGridLayer<cell_t,dimension_,precision_mm>::contains(const LocalLocation& p ) const {
     if( 0 > p.easting || 0 > p.northing ){

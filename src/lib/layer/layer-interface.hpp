@@ -82,9 +82,12 @@ public:
     uint8_t get(const LocalLocation& p) const { 
         return layer().get(p); }
 
-    inline std::string name() const { return name_; }
+    std::string name() const { 
+        return name_; }
 
-    layer_t name( const std::string& _name ){ name_ = _name; return layer(); }
+    layer_t name( const std::string& _name ){ 
+        name_ = _name;
+        return layer(); }
 
     /// \brief reset the layer to its default state
     void reset() { 
@@ -103,6 +106,24 @@ public:
 
     std::string type() const { 
         return layer().type_name_; }
+
+    /// \brief track from the given location  (... + the native width)
+    bool track( const BoundBox<LocalLocation>& bounds ){
+        return layer().track(bounds); }
+    /// \brief Get the bounds of the tracked (overall) area
+    const BoundBox<LocalLocation>& tracked() const {
+        return layer().tracked(); }
+    bool tracked(const LocalLocation& p) const {
+        return layer().tracked(p); }
+
+    /// \brief shift the viewable area to this origin (with the current widths)
+    bool view(const BoundBox<LocalLocation>& p) {
+        return layer().view(p); }
+    /// \brief Get the currently visible (active) bounds of this layer
+    const BoundBox<LocalLocation>& visible() const { 
+        return layer().visible(); }
+    bool visible(const LocalLocation& p) const {
+        return layer().contains(p); }
 
 protected:
 

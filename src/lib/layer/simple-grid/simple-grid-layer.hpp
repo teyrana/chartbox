@@ -26,7 +26,7 @@ public:
 
 public:
 
-    SimpleGridLayer() = default;
+    SimpleGridLayer();
 
     bool contains(const LocalLocation& p ) const;
 
@@ -65,7 +65,7 @@ public:
     inline uint32_t cells_across_view() const { return cells_across_layer_; }
 
     inline double meters_across_cell() const { return meters_across_cell_; }
-    inline double meters_across_view() const { return meters_across_layer_; }
+    inline double meters_across_view() const { return meters_across_cell_ * cells_across_layer_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
     void print_contents() const;
@@ -80,17 +80,33 @@ public:
     /// \return reference to the cell value
     bool store(const LocalLocation& p, const cell_t new_value);
 
+    /// \brief track from the given location  (... + the native width)
+    bool track( const BoundBox<LocalLocation>& bounds ){
+        return false; }
+    /// \brief Get the bounds of the tracked (overall) area
+    const BoundBox<LocalLocation>& tracked() const {
+        return visible(); }
+    bool tracked(const LocalLocation& p) const {
+        return visible(p); }
+
+    bool view(const BoundBox<LocalLocation>& nb ) {
+        view_bounds_ = nb; return true; }
+    const BoundBox<LocalLocation>& visible() const { 
+        return view_bounds_; }
+    bool visible(const LocalLocation& p) const {
+        return view_bounds_.contains(p); }
+
     ~SimpleGridLayer() = default;
 
 
 protected:
 
-    /// \brief width of each cell, in meters
-    constexpr static double meters_across_layer_ = meters_across_cell_ * cells_across_layer_;
-
     /// \brief contains the data for this tile
     // raw array:  2D addressing is performed through the index, below
     std::array<cell_t, cells_across_layer_*cells_across_layer_> grid;
+
+    // this tracks the bounds of the visible grid
+    geometry::BoundBox<LocalLocation> view_bounds_;
 
 private:
 

@@ -40,35 +40,40 @@ TEST_CASE( "SimpleGridLayer Simple Template Initialization" ){
     REQUIRE( 16.0 == Approx(layer.meters_across_cell()) );
 } // TEST_CASE
 
-// TEST( StaticGrid, ConstructDefault1k) {
-//     StaticGrid1k g;
- 
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(),  16.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(),  16.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), -16.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), -16.);
+TEST_CASE( "SimpleGridLayer can test bounds" ){
+    SimpleGridLayer<uint32_t,32,2000> layer;
+    REQUIRE( 32 == layer.cells_across_view() );
+    REQUIRE( 2.0 == Approx(layer.meters_across_cell()) );
+    REQUIRE( LocalLocation(    0.0,    0.0) == layer.tracked().min );
+    REQUIRE( LocalLocation(   64.0,   64.0) == layer.tracked().max );
+    REQUIRE( LocalLocation(    0.0,    0.0) == layer.visible().min );
+    REQUIRE( LocalLocation(   64.0,   64.0) == layer.visible().max );
 
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 32);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 32);
+    CHECK( not layer.visible( LocalLocation( -1.0, -1.0 )) );
+    CHECK(     layer.visible( LocalLocation(  0.0,  0.0 )) );
+    CHECK(     layer.visible( LocalLocation( 10.0, 10.0 )) );
+    CHECK(     layer.visible( LocalLocation( 60.0, 60.0 )) );
+    CHECK(     layer.visible( LocalLocation( 64.0, 64.0 )) );
+    CHECK( not layer.visible( LocalLocation( 65.0, 65.0 )) );
+}
 
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
+TEST_CASE( "SimpleGridLayer can remember new bounds" ){
+    SimpleGridLayer<uint32_t,32,1000> layer;
+    layer.view( BoundBox<LocalLocation>( {8,16}, {40,48}) );
+    REQUIRE( 32 == layer.cells_across_view() );
+    REQUIRE( 1.0 == Approx(layer.meters_across_cell()) );
+    REQUIRE( LocalLocation(    8.0,   16.0) == layer.tracked().min );
+    REQUIRE( LocalLocation(   40.0,   48.0) == layer.tracked().max );
+    REQUIRE( LocalLocation(    8.0,   16.0) == layer.visible().min );
+    REQUIRE( LocalLocation(   40.0,   48.0) == layer.visible().max );
 
-// TEST( StaticGrid, ConstructFromSquareBounds) {
-//     StaticGrid1k g(Bounds({0., 1.},{32., 33.}));
-
-//     auto& bds = g.bounds();
-//     EXPECT_DOUBLE_EQ( bds.max().x(), 32.);
-//     EXPECT_DOUBLE_EQ( bds.max().y(), 33.);
-//     EXPECT_DOUBLE_EQ( bds.min().x(), 0.);
-//     EXPECT_DOUBLE_EQ( bds.min().y(), 1.);
-
-//     EXPECT_DOUBLE_EQ( bds.size().x(), 32.);
-//     EXPECT_DOUBLE_EQ( bds.size().y(), 32.);
-
-//     EXPECT_DOUBLE_EQ( g.precision(), 1.0);
-// }
+    CHECK( not layer.visible( LocalLocation(  5.0,  5.0 )) );
+    CHECK(     layer.visible( LocalLocation( 20.0, 20.0 )) );
+    CHECK(     layer.visible( LocalLocation( 30.0, 30.0 )) );
+    CHECK(     layer.visible( LocalLocation( 40.0, 40.0 )) );
+    CHECK(     layer.visible( LocalLocation( 40.0, 45.0 )) );
+    CHECK( not layer.visible( LocalLocation( 50.0, 50.0 )) );
+}
 
 // TEST( StaticGrid, ConstructFromUnevenBounds) {
 //     StaticGrid1k g(Bounds({-2., -4.},{2., 4.}));
