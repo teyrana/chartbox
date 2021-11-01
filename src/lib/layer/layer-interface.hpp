@@ -7,6 +7,7 @@
 #include "geometry/bound-box.hpp"
 #include "geometry/global-location.hpp"
 #include "geometry/local-location.hpp"
+#include "geometry/path.hpp"
 #include "geometry/polygon.hpp"
 #include "geometry/utm-location.hpp"
 
@@ -15,6 +16,7 @@ namespace chartbox::layer {
 using chartbox::geometry::BoundBox;
 using chartbox::geometry::GlobalLocation;
 using chartbox::geometry::LocalLocation;
+using chartbox::geometry::Path;
 using chartbox::geometry::Polygon;
 using chartbox::geometry::UTMLocation;
 
@@ -59,6 +61,12 @@ public:
     /// \param source - bounds defining the fill area, in local coordinates
     /// \param fill_value - value to write inside the box
     bool fill( const BoundBox<LocalLocation>& box, uint8_t value );
+
+    /// \brief Fills the points along the path with the given value 
+    /// 
+    /// \param source - polygon defining the fill araea. Assumed to be in local coordinates, closed, CCW, and non-intersectings
+    /// \param fill_value - fill value for polygon interior
+    bool fill( const geometry::Path<LocalLocation>& source, const BoundBox<LocalLocation>& bounds, uint8_t value );
 
     /// \brief Fills the interior of the given polygon with the given value.
     /// 

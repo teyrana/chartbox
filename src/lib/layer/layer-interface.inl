@@ -1,6 +1,7 @@
 // GPL v3 (c) 2021, Daniel Williams 
 
 // standard library includes
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <iostream>
@@ -30,6 +31,52 @@ bool LayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uin
     }
     return true;
 }
+
+template< typename layer_t>
+bool LayerInterface<layer_t>::fill( const Path<LocalLocation>& path, const BoundBox<LocalLocation>& bounds, uint8_t value ){
+    if( 2 > path.size() ){
+        return false;
+    }
+    const size_t segment_count = path.size() - 1;
+    const double fill_spacing = layer().precision();
+    const uint8_t fill_segment_value = value;
+    const uint8_t fill_vertex_value = value;
+
+    for( size_t segment_index = 0; segment_index < segment_count; ++segment_index ){
+        const auto segment_start_point = path[segment_index];
+        const auto segment_end_point = path[segment_index+1];
+
+        if( segment_start_point.isnan() || segment_end_point.isnan() ){
+            return false;
+        }
+
+        // draw segment if at least one point is in-bounds
+        if( bounds.contains(segment_start_point) || bounds.contains(segment_end_point) ){
+            const auto fill_start_point = bounds.clamp(segment_start_point);
+            const auto fill_end_point = bounds.clamp(segment_end_point);
+
+            layer().store( fill_start_point, fill_vertex_value );
+
+            const LocalLocation fill_segment = (fill_end_point - fill_start_point);
+            const size_t divs = static_cast<size_t>(std::ceil(fill_segment.easting/fill_spacing));
+            const LocalLocation fill_increment = { fill_spacing, fill_segment.northing/fill_segment.easting*fill_spacing };
+            LocalLocation fill_point = fill_start_point; // copy
+            for( size_t i=1; i < divs; ++i ){
+                fill_point += fill_increment;
+                layer().store( fill_point, fill_segment_value );
+            }
+        }
+    }
+
+    // print at the last vertex: (equality to 'segment_count' is coincidental
+    const auto path_end_point = path[path.size()-1];
+    if( bounds.contains(path_end_point) ){
+        layer().store( path_end_point, fill_vertex_value );
+    }
+
+    return true;
+}
+
 
 template< typename layer_t>
 bool LayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const BoundBox<LocalLocation>& bounds, uint8_t value ){

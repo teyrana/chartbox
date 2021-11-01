@@ -41,6 +41,9 @@ public:
 
     bool fill( const cell_t* const buffer, size_t count );
     
+    bool fill( const Path<LocalLocation>& path, const BoundBox<LocalLocation>& bounds, cell_t value ){
+        return super().fill( path, bounds, value); }
+
     bool fill( const BoundBox<LocalLocation>& box, const cell_t value ){
         return super().fill( box, value ); }
 
@@ -62,12 +65,17 @@ public:
     inline double meters_across_cell() const { return meters_across_cell_; }
     inline double meters_across_view() const { return meters_across_cell_ * cells_across_layer_; }
 
+    double precision() const {
+        return meters_across_cell_; }
+
     /// \brief Draws a simple debug representation of this grid to stderr
     void print_contents() const;
 
     inline void reset(){ 
         fill( default_cell_value );  }
 
+    uint32_t size() const {
+        return cells_across_layer_*cells_across_layer_; }
 
     /// \brief Access the value at an (x, y)
     ///!

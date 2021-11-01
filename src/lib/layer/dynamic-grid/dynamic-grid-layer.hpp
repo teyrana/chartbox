@@ -51,7 +51,10 @@ public:
 
     // NYI -- not needed?
     // bool fill( const uint8_t* const buffer, size_t count );
-    
+
+    bool fill( const Path<LocalLocation>& path, const BoundBox<LocalLocation>& bounds, uint8_t value ){
+        return super().fill( path, bounds, value); }
+
     bool fill( const BoundBox<LocalLocation>& box, const uint8_t value ){
         return super().fill( box, value ); }
 
@@ -66,9 +69,9 @@ public:
 
     uint8_t get(const LocalLocation& p) const;
 
-    // size_t lookup( const LocalLocation& p ) const;
-
     const geometry::LocalLocation& origin() const { return view_bounds_.min; }
+
+    double precision() const {  return meters_across_cell(); }
 
     /// \brief Draws a simple debug representation of this grid to stderr
     std::string print_contents_by_cell() const;
