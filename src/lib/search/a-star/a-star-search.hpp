@@ -12,7 +12,7 @@
 #include "geometry/local-location.hpp"
 #include "geometry/path.hpp"
 #include "geometry/polygon.hpp"
-#include "layer/simple-grid/simple-grid-layer.hpp"
+#include "layer/dynamic-grid/dynamic-grid-layer.hpp"
 
 namespace chartbox::search {
 
@@ -63,8 +63,6 @@ public:
     /// \param goal  - find a path to here
     SearchPath compute( const geometry::LocalLocation& start, const geometry::LocalLocation& end );
 
-    inline uint32_t dimension() const { return visited_.dimension(); }
-
     inline double precision() const { return visited_.meters_across_cell(); }
 
     /// \brief calculates the cost-to-goal for this point
@@ -74,6 +72,8 @@ public:
     /// \param p -- the location to measure
     static float cost( const geometry::LocalLocation& p, const geometry::LocalLocation& goal );
 
+    const geometry::BoundBox<geometry::LocalLocation>& searchable() const { return visited_.visible(); }
+
 public:
 // public only for development -- hide again, once this is working
     static geometry::LocalLocation decode_adjacency_flags( uint8_t flags );
@@ -81,9 +81,10 @@ public:
 
 // ====== ====== Private Function Declarations ====== ======
 private:
-    constexpr static bool simplify_elbows = true;
+    // constexpr static bool smooth_corners = true;  // meh.
+    constexpr static bool simplify_straights = true;
+    constexpr static float minimum_separation = 1.0;
     constexpr static float maximum_separation = 4.0;
-
     SearchPath extract_path(const geometry::LocalLocation& goal);
 
     /// \brief offsets for the 4 neighbors directly adjacent to the center coordinate
@@ -131,7 +132,6 @@ private:
     template<typename array_t>
     static array_t get_neighbors( const geometry::LocalLocation& center, const array_t& neighbor_offsets );
 
-    std::string to_debug() const;
 
 // ====== ====== Private Type Definitions ====== ======
 private:
@@ -153,18 +153,6 @@ private:
             // this ordering is be reversed in order to induce bubble the lowest-cost options to the top
             return (this->cost > rhs.cost); }
     };
-
-    // // plain-old-data struct
-    // struct VisitedCell {
-    //     static constexpr float maximum_cost = std::numeric_limits<float>::max();
-
-    //     float cost_spent; // travel-distance from start-cell
-    //     // float cost_to_goal;
-
-    //     /// \brief i,j location of the previous node in this path
-    //     /// \note initialized to 0,0, or the start-point by default
-    //     geometry::LocalLocation previous;
-    // };
 
     // these fields define bit-packing for the values in `visited_`
 
@@ -193,8 +181,7 @@ private:
     // holds the return path via a list of local-deltas
     // aka 'closed set'
     // layer::simple::SimpleGridLayer<uint8_t,1024,1000> visited_;
-    layer::simple::SimpleGridLayer<uint8_t,24,1000> visited_;
-
+    layer::dynamic::DynamicGridLayer visited_;
 
 };
 

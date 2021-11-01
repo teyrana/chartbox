@@ -48,9 +48,6 @@ sandbox: debug
 .PHONY: test
 test: test-all
 
-test-a-star: debug
-	build/bin/a-star-search-tests
-
 test-all: test-geometry test-layer test-search
 
 test-geometry: debug

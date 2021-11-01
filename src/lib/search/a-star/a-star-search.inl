@@ -17,20 +17,14 @@ template<typename layer_t>
 AStarSearch<layer_t>::AStarSearch( const layer_t& _context )
     : context_(_context)
 {
-    // we just constructed this, so OF COURSE it should be empty.
-    assert( 0 == fringe_.size());
-
-    // not dynamic.... yet
-    assert( context_.dimension() == visited_.dimension() );
+    visited_.meters_across_cell( 1.0 );
     assert( 1.0 == visited_.meters_across_cell() );
 
-    visited_.fill( VACANT_FLAG );
-    //for( size_t i = 0; i < visited_.size(); ++i ){
-    //    fmt::print("    @[{}]:\n", i );
-    //     cell.cost_spent = VisitedCell::maximum_cost;
-    //     cell.previous = {0,0};
-    //}
+    visited_.view( context_.visible() );
+    assert( context_.visible().height() == visited_.visible().height() );
+    assert( context_.visible().width()  == visited_.visible().width() );
 
+    visited_.fill( VACANT_FLAG );
 }
 
 template<typename layer_t>
@@ -40,78 +34,71 @@ float AStarSearch<layer_t>::cost( const LocalLocation& p, const LocalLocation& g
 
 template<typename layer_t>
 SearchPath AStarSearch<layer_t>::extract_path(const geometry::LocalLocation& goal) {
-    // is the list easy to use, for some reason?
-    // geometry::Path<LocalLocation> draft_path;
-    std::list<LocalLocation> draft_v1_list;
+    // std::list is easier to modify than our path (which is based on std::vector)
+    std::list<LocalLocation> draft_path;
 
     {   // Stage 1: Extract Raw Path from `visited_` array
-        fmt::print( "====== 2. Trace Gradients: ======\n");
         LocalLocation at = goal;
         uint8_t value = SENTINEL_FLAG;
         do {
-            draft_v1_list.push_front(at);
+            draft_path.push_front(at);
             value = visited_.get(at);
             if( VACANT_FLAG == value ){
-
+                fmt::print(stderr, "<<!!ERROR!!: found a vacant cell while attempting to build the path! Aborting.\n");
+                return {};
             }
 
-            // fmt::print( "    >> @ {} == {:02X} \n", at.to_string(), value );
             const LocalLocation delta = decode_adjacency_flags( value );
-            // fmt::print( "       ==>> {} \n", delta.to_string() );
             at += delta;
         } while( value != SENTINEL_FLAG );
 
         // fmt::print( "====== First Draft Path: ======\n");
-        // for( auto& p : draft_v1_list ){
+        // for( auto& p : draft_path ){
         //     fmt::print( "    - {}\n", p.to_string() );
         // }
     }
 
     {   // Stage 2: Reduce Excess vertices
-        fmt::print( "====== 3. Reduce Vertices ======\n");
-//     auto cur = draft_path.begin();
-//     LocalLocation p0 = *cur;
-//     LocalLocation p1 = *(++cur);
-//     LocalLocation p2 = *(++cur);
-//     while( cur != draft_path.end() ){
-//         const signed int s0x = static_cast<int>(p1.row) - static_cast<int>(p0.row);
-//         const signed int s0y = static_cast<int>(p1.column) - static_cast<int>(p0.column);
-//         const signed int s1x = static_cast<int>(p2.row) - static_cast<int>(p1.row);
-//         const signed int s1y = static_cast<int>(p2.column) - static_cast<int>(p1.column);
+        auto current_point = draft_path.begin();
+        LocalLocation p0 = *current_point;
+        LocalLocation p1 = *(++current_point);
+        LocalLocation p2 = *(++current_point);
+        while( current_point != draft_path.end() ){
+            const LocalLocation seg0_delta = (p1 - p0).normalize();
+            const LocalLocation seg1_delta = (p2 - p1).normalize();
+            const float separation = (p2 - p0).norm2();
 
-//         // fmt::print(stderr, "==> p0:      %3d, %3d\n", p0.row, p0.column);
-//         // fmt::print(stderr, "      > s0:      %3d, %3d\n", s0x, s0y);
-//         // fmt::print(stderr, "    p1:      %3d, %3d\n", p1.row, p1.column);
-//         // fmt::print(stderr, "      > s1:      %3d, %3d\n", s1x, s1y);
-//         // fmt::print(stderr, "    p2:      %3d, %3d\n", p2.row, p2.column);
+            // const std::string prefix = "        ";
+            // fmt::print(stderr, "{}==> p0:      {}\n",    prefix, p0.to_string() );
+            // fmt::print(stderr, "{}      > s0:     {}\n", prefix, seg0_delta.to_string() );
+            // fmt::print(stderr, "{}    p1:      {}\n",    prefix, p1.to_string() );
+            // fmt::print(stderr, "{}      > s1:     {}\n", prefix, seg1_delta.to_string() );
+            // fmt::print(stderr, "{}    p2:      {}\n",    prefix, p2.to_string() );
 
-//         if( maximum_separation < std::max(s1x,s1y) ){
-//             // noop: just let the loop advance
-        
-//         // (a) if segments are the same direction:
-//         // - *definitely* reduce
-//         // - rewind to beginning of reduced segment
-//         }else if( (s0x==s1x) && (s0y==s1y) ){
-//             cur = draft_path.erase(--cur);
-//             p1 = p2;
-//             p2 = *(++cur);
-//             continue;
-//         }
+            // are we at a small enough scale to check for simplifications
+            if( maximum_separation > separation ){
+                // (a) if segments are the same direction:
+                // - *definitely* reduce
+                // - rewind to beginning of reduced segment, and continue
+                if( seg0_delta == seg1_delta ){
+                    current_point = draft_path.erase(--current_point);
 
-//         p0 = p1;
-//         p1 = p2;
-//         p2 = *(++cur);
-//     }
+                    // advance the counters, and restart the loop
+                    p1 = *(current_point);
+                    p2 = *(++current_point);
+                    continue;
+                }
+            }
 
-    //         fmt::print(stderr, "====== Reduced Path: ======\n");
-    //         for( auto& p : draft_path ){
-    //             fmt::print(stderr, "    %d, %d\n", p.row, p.column);
-    //         }
+            p0 = p1;
+            p1 = p2;
+            p2 = *(++current_point);
+        }
     }
 
     // convert the list -> path/vector
-    Path<LocalLocation> final_path;( draft_v1_list.size() );
-    for( auto& at : draft_v1_list ){
+    Path<LocalLocation> final_path;( draft_path.size() );
+    for( auto& at : draft_path ){
         final_path.emplace_back( at );
     }
     return final_path;
@@ -164,23 +151,6 @@ array_t AStarSearch<layer_t>::get_neighbors( const LocalLocation& center, const 
 }
 
 template<typename layer_t>
-std::string AStarSearch<layer_t>::to_debug() const {
-    static const std::string header("======== ======= ======= ======= ======= ======= ======= ======= ======= =======\n");
-    std::ostringstream buf;
-
-    buf << header;
-    // print from top-down (max j => min j) to mirror north => south
-    for (size_t j = visited_.dimension() - 1; j < visited_.dimension(); --j) {
-        for (size_t i = 0; i < visited_.dimension(); ++i) {
-            buf << fmt::format(" {:02X}", visited_.get({i,j}) );
-        }
-        buf << '\n';
-    }
-    buf << header;
-    return buf.str();
-}
-
-template<typename layer_t>
 SearchPath AStarSearch<layer_t>::compute( const LocalLocation& start_point, const LocalLocation& goal_point ) {
 
     const auto search_bounds = context_.visible();
@@ -188,51 +158,38 @@ SearchPath AStarSearch<layer_t>::compute( const LocalLocation& start_point, cons
         return {}; // error condition
     }
 
-    fmt::print( "====== 0. Setup: ======\n");
-    fmt::print("    ::Start @ {}    //  {:5.2f}\n", start_point.to_string(), cost(start_point,goal_point) );
-    fmt::print("    ::Goal  @ {}    //  {:5.2f}\n", goal_point.to_string(), 0.0 );
+    // fmt::print("    ====== 0. Setup: ======\n");
+    // fmt::print("        ::Start @ {}    ==>>    Goal @ {}\n", start_point.to_string(), goal_point.to_string() );
 
-    // explicitly -- DO NOT MARK the goal!  it interferes with the control flow, below.
-    // visited_.store( goal_point, SENTINEL_FLAG | FLAG_GOAL );
+    // check if start is passable
+    if( context_passable_threshold < context_.get(start_point) ){
+        fmt::print(stderr, "    << start point is inaccessible: {} !?\n", start_point.to_string() );
+        return {};
+    }else if( context_passable_threshold < context_.get(goal_point) ){
+        fmt::print(stderr, "    << goal point is inaccessible!?\n");
+        return {};
+    }
 
     visited_.store( start_point, SENTINEL_FLAG );
     fringe_.emplace( start_point, cost(start_point,goal_point) );
 
-    // DEBUG:  drastically restrict this value
-    // const uint32_t iteration_guard = grid_.size();
-    constexpr uint32_t iteration_guard = 12;
+    const uint32_t iteration_guard = visited_.cells_in_view();
 
-    fmt::print( "====== 1. Build Vectors To Goal: ======\n");
+    // fmt::print("    ====== 1. Build Vectors To Goal: ======\n");
     uint32_t iteration = 0;
     while( (0 < fringe_.size()) && (iteration < iteration_guard) ){
-         
-        // pop next node:
-        // ( because we're using a priority heap, it will be the closest available to our goal
+        // pop next node: `fringe_` is sorted, therefore it always offers the lowest-cost-node
         auto next = fringe_.top();
         fringe_.pop();
         const auto& current_center = next.at;
 
-        // {   // DEBUG
-        //     const double current_cost = next.cost;
-        //     fmt::print("    ::[{:2d} ?<? {:2d}]    @@ {:2.0f}, {:2.0f}  //  {:5.2f}\n", iteration, iteration_guard, current_center.easting, current_center.northing, current_cost );
-        // }   // DEBUG
-
         // Add next nodes (neighbors) to our search list
         const auto& neighbors = get_neighbors( current_center, neighbor_8_offsets );
-        // size_t neighbor_index = 0; // debugging-only
         for( auto& each_point : neighbors ) {
             const float each_cost = cost( each_point, goal_point );
             const uint8_t each_delta_flags = encode_adjacency_flags( current_center - each_point );
 
-            // DEBUG
-            // fmt::print( "        :[{}] @ {:2.0f}, {:2.0f}  //  {:5.2f}  //  {:02X}h\n", 
-            //                         neighbor_index, each_point.easting, each_point.northing,
-            //                         each_cost, each_delta_flags );
-            // ++neighbor_index;
-            // DEBUG
-
             if( not search_bounds.contains( each_cost )){
-                //fmt::print( "            << Out-Of-Bounds\n");
                 continue; // out-of-bounds. ignore.
             }
 
@@ -242,7 +199,6 @@ SearchPath AStarSearch<layer_t>::compute( const LocalLocation& start_point, cons
             }
 
             // this is the canonical step, but because we're mapping orthogonal grids to real-space, it's redundant.
-
             // // if this path to the neighbor cell is shorter, update the cache
             // if (cost_spent_to_neighbor < visited(neighbor).cost_spent ){
 
@@ -258,14 +214,11 @@ SearchPath AStarSearch<layer_t>::compute( const LocalLocation& start_point, cons
                 fringe_.emplace( each_point, each_cost );
             }
         }
-        // fmt::print( "    <<({}) fringe points left\n", fringe_.size() );
 
         ++iteration;
     }
 
-#ifdef DEBUG
     fmt::print("<<< Iteration guard reached !!\n");
-#endif // #ifdef DEBUG
 
     // If we get here, no path was found
     return {};
