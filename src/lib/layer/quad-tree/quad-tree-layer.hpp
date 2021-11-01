@@ -24,7 +24,7 @@ namespace chartbox::layer {
 ///! The implementation currently requires pre-determined bounds for data as it
 ///! can not rebalance itself to that degree.
 ///! 
-class QuadTreeLayer : public LayerInterface<QuadTreeLayer> {
+class QuadTreeLayer final : public LayerInterface<QuadTreeLayer> {
 public:
 
     /// \brief number of cells along each dimension of the entire tree

@@ -36,7 +36,7 @@ namespace chartbox::layer::rolling {
 ///
 /// \param cells_across_sector_ cell count across a single dimension of each sector
 template<uint32_t cells_across_sector_>
-class RollingGridLayer : public LayerInterface< RollingGridLayer<cells_across_sector_> > {
+class RollingGridLayer final : public LayerInterface< RollingGridLayer<cells_across_sector_> > {
 // `*_across_*` variables count the numbe in each dimension of a square grid
 // `*_in_*` variables count the total number in the entire grid
 public:

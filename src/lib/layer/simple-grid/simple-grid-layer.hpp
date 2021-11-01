@@ -13,7 +13,7 @@
 namespace chartbox::layer::simple {
 
 template<typename cell_t=uint8_t, uint32_t dimension_=1024, uint32_t precision_mm_=1000>
-class SimpleGridLayer : public LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>> {
+class SimpleGridLayer final : public LayerInterface<SimpleGridLayer<cell_t,dimension_,precision_mm_>> {
 public:
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "SimpleGridLayer";

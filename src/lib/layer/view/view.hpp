@@ -17,7 +17,7 @@ namespace chartbox::layer {
 ///
 /// \note this class is not currently used or tested -- it turns out to just not be necessary
 template< typename layer_0_t, typename layer_1_t >
-class ViewLayer : public LayerInterface<ViewLayer<layer_0_t, layer_1_t>, VIEW> {
+class ViewLayer final : public LayerInterface<ViewLayer<layer_0_t, layer_1_t>, VIEW> {
 public:
 
     /// \brief name of this layer's type

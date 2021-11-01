@@ -22,7 +22,7 @@ namespace chartbox::layer::dynamic {
 ///  chart => layer => sector => cell
 ///            ^^^ you are here
 ///
-class DynamicGridLayer : public LayerInterface<DynamicGridLayer> {
+class DynamicGridLayer final : public LayerInterface<DynamicGridLayer> {
 public:
 
     /// \brief name of this layer's type
