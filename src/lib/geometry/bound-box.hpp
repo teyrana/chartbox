@@ -32,6 +32,24 @@ struct BoundBox {
         return { {min[0], min[1]}, {max[0],max[1]}};
     }
 
+    frame_vector_t clamp( frame_vector_t p ) const { 
+        constexpr static double margin = 0.1;
+
+        if( min[0] > p[0] ){
+            p.x() = min[0];
+        }else if( max[0] <= p[0] ){
+            p.x() = max[0] - margin;
+        }
+
+        if( min[1] > p[1] ){
+            p.x() = min[1];
+        }else if( max[1] <= p[1] ){
+            p.y() = max[1] - margin;
+        }
+
+        return p;
+    }
+
     inline void clear(){
         min = { std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
         max = { -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max() };
@@ -134,10 +152,10 @@ struct BoundBox {
     
     inline const frame_vector_t& southwest() const { return min; }
 
-    inline std::string dump( const std::string& indent="" ) const {
+    inline std::string to_string( const std::string& indent="" ) const {
         std::ostringstream buf;
-        buf << indent << "    - " << std::fixed << min[0] << " < " << std::fixed << max[0] << '\n';
-        buf << indent << "    - " << std::fixed << min[1] << " < " << std::fixed << max[1] << '\n';
+        buf << indent << "    - x: " << std::fixed << min[0] << " < " << std::fixed << max[0] << '\n';
+        buf << indent << "    - y: " << std::fixed << min[1] << " < " << std::fixed << max[1] << '\n';
         return buf.str();
     }
 

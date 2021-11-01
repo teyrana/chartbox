@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include <fmt/core.h>
+
 namespace chartbox::geometry {
 
 
@@ -15,28 +17,39 @@ struct LocalLocation {
     double easting;
     double northing;
 
-    LocalLocation()
+    constexpr LocalLocation()
         : easting(NAN), northing(NAN)
     {}
 
-    LocalLocation( double value ) 
-        : easting(value), northing(value) 
+    LocalLocation( double value )
+        : easting(value), northing(value)
     {}
 
-    LocalLocation( double east, double north ) 
+    constexpr LocalLocation( double east, double north )
         : easting(east), northing(north) 
     {}
 
-    bool nearby( const LocalLocation& other, double tolerance = 0.01 ) const { 
-        return ( tolerance > std::fabs( easting - other.easting) 
+    bool isnan() const {
+        return std::isnan(easting) || std::isnan(northing);
+    }
+
+    double length() const {
+        return norm2(); }
+
+    bool nearby( const LocalLocation& other, double tolerance = 0.01 ) const {
+        return ( tolerance > std::fabs( easting - other.easting)
                && tolerance > std::fabs( northing - other.northing) );
     }
 
-    uint32_t norm1() const {
+    static LocalLocation nan() {
+        return LocalLocation(NAN, NAN);
+    }
+
+    double norm1() const {
         return std::abs(easting) + std::fabs(northing );
     }
 
-    uint32_t norm2() const {
+    double norm2() const {
         return std::sqrt( std::pow(easting,2) + std::pow(northing,2) );
     }
 
@@ -46,6 +59,12 @@ struct LocalLocation {
 
     LocalLocation operator+( const LocalLocation& other ) const {
         return { easting + other.easting, northing + other.northing };
+    }
+
+    LocalLocation* operator+=( const LocalLocation& other ){
+        easting += other.easting;
+        northing += other.northing;
+        return this;
     }
 
     LocalLocation operator+( double other ) const {
@@ -78,10 +97,15 @@ struct LocalLocation {
         }
     }
 
+    std::string to_string() const {
+        return fmt::format( "{{ {:9.4f}E, {:9.4f}N }}", easting, northing );
+    }
 
-    inline double x() const { return easting; }
+    double  x() const { return easting; }
+    double& x() { return easting; }
 
-    inline double y() const { return northing; }
+    double  y() const { return northing; }
+    double& y() { return northing; }
 
 };
 
