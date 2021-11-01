@@ -96,7 +96,8 @@ int main( void ){
                 geojson::load_boundary_box( boundary_input_path, mapping );
 
                 layer.sectors_across_view(4);
-                layer.track( mapping.local_bounds(), 8.0 );
+                layer.meters_across_cell(8.0);
+                layer.track( mapping.local_bounds() );
 
                 geojson::load_boundary_layer( boundary_input_path, mapping, layer );
             }

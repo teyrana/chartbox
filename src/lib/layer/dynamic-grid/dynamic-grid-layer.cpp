@@ -213,24 +213,28 @@ bool DynamicGridLayer::store(const LocalLocation& layer_location, uint8_t new_va
     return false;
 }
 
-bool DynamicGridLayer::track( const geometry::BoundBox<geometry::LocalLocation>& _new_bounds, double precision ) {
+bool DynamicGridLayer::track( const geometry::BoundBox<geometry::LocalLocation>& _new_bounds ) {
     const LocalLocation origin = _new_bounds.min;
     const double request_width = std::max(_new_bounds.width(), _new_bounds.height());
-    const double divs = std::ceil( request_width / precision );
-    const double use_width = precision * divs;
+    const double divs = std::ceil( request_width / meters_across_cell_ );
+    const double use_width = meters_across_cell_ * divs;
 
     view_bounds_.min = origin;
     view_bounds_.max = origin + LocalLocation(use_width);
 
-    cells_across_view_ = use_width / precision;
+    cells_across_view_ = use_width / meters_across_cell_;
     // sectors_across_view_ // no change needed
     cells_across_sector_ = cells_across_sector( cells_across_view_ / sectors_across_view_ );
 
     meters_across_view_ = use_width;
-    meters_across_cell_ = precision;
-    meters_across_sector_ = precision * cells_across_sector_;
+    meters_across_cell_ = meters_across_cell_;
+    meters_across_sector_ = meters_across_cell_ * cells_across_sector_;
 
     return true;
+}
+
+bool DynamicGridLayer::view(const BoundBox<LocalLocation>& box) {
+    return track( box );
 }
 
 }  // namespace

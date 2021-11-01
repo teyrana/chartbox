@@ -66,6 +66,38 @@ TEST_CASE( "DynamicGridLayer Default Initialization"){
 } // TEST_CASE
 
 
+TEST_CASE( "DynamicGridLayer Can Track Bounds"){
+    DynamicGridLayer layer;
+
+    const BoundBox<LocalLocation> visible = {{0,0},{24,24}};
+    layer.track( visible );
+
+    REQUIRE(  8 == layer.cells_across_sector() );
+    REQUIRE(  3 == layer.sectors_across_view() );
+    REQUIRE(  9 == layer.sectors_per_view() );
+    REQUIRE( 24 == layer.cells_across_view() );
+
+    REQUIRE(  1.0 == Approx(layer.meters_across_cell()) );
+    REQUIRE(  8.0 == Approx(layer.meters_across_sector()) );
+    REQUIRE( 24.0 == Approx(layer.meters_across_view()) );
+}
+
+TEST_CASE( "DynamicGridLayer Can Set Visible Bounds"){
+    DynamicGridLayer layer;
+
+    const BoundBox<LocalLocation> visible = {{0,0},{24,24}};
+    layer.view( visible );
+
+    REQUIRE(  8 == layer.cells_across_sector() );
+    REQUIRE(  3 == layer.sectors_across_view() );
+    REQUIRE(  9 == layer.sectors_per_view() );
+    REQUIRE( 24 == layer.cells_across_view() );
+
+    REQUIRE(  1.0 == Approx(layer.meters_across_cell()) );
+    REQUIRE(  8.0 == Approx(layer.meters_across_sector()) );
+    REQUIRE( 24.0 == Approx(layer.meters_across_view()) );
+}
+
 TEST_CASE( "DynamicGridLayer Check Default Bounds"){
     const DynamicGridLayer layer;
 
@@ -197,7 +229,8 @@ TEST_CASE( "DynamicGridLayer Can Store and Retrieve Values"){
 
 TEST_CASE( "DynamicGridLayer Can Store and Retrieve Values at novel precision"){
     DynamicGridLayer layer;
-    layer.track( {{0,0}, {144,144}}, 10.0 );
+    layer.meters_across_cell( 10.0 );
+    layer.track( {{0,0}, {144,144}} );
 
     CHECK(  5 == layer.cells_across_sector() );
     CHECK( 25 == layer.cells_per_sector() );

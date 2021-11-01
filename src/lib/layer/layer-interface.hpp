@@ -128,7 +128,7 @@ public:
     bool tracked(const LocalLocation& p) const {
         return layer().tracked(p); }
 
-    /// \brief shift the viewable area to this origin (with the current widths)
+    /// \brief set the active / visible bounds for this layer
     bool view(const BoundBox<LocalLocation>& p) {
         return layer().view(p); }
     /// \brief Get the currently visible (active) bounds of this layer

@@ -94,7 +94,10 @@ public:
     /// \return true if successful
     bool store(const LocalLocation& p, uint8_t new_value);
 
-    bool track( const geometry::BoundBox<geometry::LocalLocation>& bounds, double precision );
+    bool track( const geometry::BoundBox<geometry::LocalLocation>& bounds );
+
+    /// \brief set the active-visible bounds for this layer
+    bool view(const BoundBox<LocalLocation>& box);
 
     /// \brief Get the currently visible (active) bounds of this layer
     inline const BoundBox<LocalLocation>& visible() const { 
