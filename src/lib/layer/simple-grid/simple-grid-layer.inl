@@ -55,27 +55,35 @@ size_t SimpleGridLayer<cell_t,dimension_,precision_mm>::lookup( const uint32_t i
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>
-void SimpleGridLayer<cell_t,dimension_,precision_mm>::print_contents() const {
-    fmt::print( "============ ============ Fixed-Grid-Layer Contents ============ ============\n" );
+std::string SimpleGridLayer<cell_t,dimension_,precision_mm>::print_contents_by_cell( uint32_t indent ) const {
+    const uint32_t break_interval = 8;
+    std::ostringstream buf;
+
+    std::string prefix = fmt::format("{:{}}", "", indent );
+    buf << prefix << "============ ============ Fixed-Grid-Layer Contents ============ ============\n" << prefix;
     for (size_t j = cells_across_layer_ - 1; j < cells_across_layer_; --j) {
         for (size_t i = 0; i < cells_across_layer_; ++i) {
             const auto offset = lookup(i,j);
             const auto value = grid_[offset];
-            if( 0 == (i%8) ){
-                fmt::print(" ");
+            if( 0 == (i%break_interval) ){
+                buf << " ";
             }
-            if( 0 < value ){
-                fmt::print(" {:2X}", static_cast<int>(value) );
+
+            if( 0 == value ){
+                buf << "   ";
+            }else if( std::isalpha(value) || std::ispunct(value) ){
+                buf << fmt::format(" {:2c}", value );
             }else{
-                fmt::print(" --");
+                buf << fmt::format(" {:2X}", static_cast<int>(value) );
             }
         }
-        if( 0 == (j%8) ){
-            fmt::print("\n");
+        if( 0 == (j%break_interval) ){
+            buf << '\n' << prefix;
         }
-        fmt::print("\n");
+        buf << '\n' << prefix;
     }
-    fmt::print( "============ ============ ============ ============ ============ ============\n" );
+    buf << "============ ============ ============ ============ ============ ============\n";
+    return buf.str();
 }
 
 template<typename cell_t, uint32_t dimension_, uint32_t precision_mm>

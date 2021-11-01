@@ -106,9 +106,15 @@ public:
     /// \return true for success; else false
     bool store(const LocalLocation& point, const uint8_t value){
         return layer().store(point,value); }
+ 
+    double precision() const {
+        return layer().precision(); }
 
-    std::string print_contents() const {
-        return layer().print_contents(); }
+    /// \brief Draws a simple debug representation of this grid to stderr
+    std::string print_contents_by_cell( uint32_t indent = 0) const {
+        return layer().print_contents_by_cell(indent); }
+
+    std::string print_contents_by_location( uint32_t indent ) const;
 
     std::string type() const { 
         return layer().type_name_; }

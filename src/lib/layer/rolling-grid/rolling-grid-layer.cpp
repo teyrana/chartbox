@@ -134,7 +134,6 @@ uint8_t RollingGridLayer<cells_across_sector_>::get(const LocalLocation& layer_l
 template<uint32_t cells_across_sector_>
 std::string RollingGridLayer<cells_across_sector_>::print_contents_by_cell( uint32_t indent ) const {
     std::ostringstream buf;
-
     const std::string prefix = fmt::format("{:<{}}", "", indent );
 
     // print raw contents
@@ -160,41 +159,6 @@ std::string RollingGridLayer<cells_across_sector_>::print_contents_by_cell( uint
 
         buf << '\n' << prefix;
     }
-    buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
-    return buf.str();
-}
-
-
-template<uint32_t cells_across_sector_>
-std::string RollingGridLayer<cells_across_sector_>::print_contents_by_location( uint32_t indent ) const {
-    std::ostringstream buf;
-
-    const std::string prefix = fmt::format("{:<{}}", "", indent );
-
-    buf << prefix << "======== ======= ======= Printing By Location ======= ======= =======\n";
-    buf << prefix << "     View:      [ [ " << view_bounds_.min[0] << ", " << view_bounds_.min[1] << " ] < [ "
-                                 << view_bounds_.max[0] << ", " << view_bounds_.max[1] << " ] ]\n";
-    buf << prefix << "     Anchor:    ( " << anchor_.column << ", " << anchor_.row << " )\n";
-    
-    // print location-aware contents
-    for( double northing = (view_bounds_.max.northing - (meters_across_cell_/2)); northing > view_bounds_.min.northing; northing -= meters_across_cell_ ) {
-        for( double easting = (view_bounds_.min.easting + (meters_across_cell_/2)); easting < view_bounds_.max.easting; easting += meters_across_cell_ ) {
-            if( 0.1*meters_across_cell_ > std::fabs(std::fmod( easting - view_bounds_.min.easting, meters_across_sector_ )) ){
-                buf << "    ";
-            }
-
-            const LocalLocation cell_lookup_index( easting, northing );
-            uint8_t current_cell_value = get( cell_lookup_index );
-            buf << ' ' << std::setw(2) << static_cast<int>(current_cell_value);
-
-        }
-        if( 0.1*meters_across_cell_ > std::fabs(std::fmod( northing - view_bounds_.min.northing, meters_across_sector_ ))){
-            buf << '\n' << prefix;
-        }
-
-        buf << '\n' << prefix;
-    }
-
     buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
     return buf.str();
 }

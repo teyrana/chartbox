@@ -134,3 +134,37 @@ bool LayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const Bo
 
     return true;
 }
+
+template< typename layer_t>
+std::string LayerInterface<layer_t>::print_contents_by_location( uint32_t indent ) const {
+    const auto precision = layer().precision();
+    const auto& visible = layer().visible();
+
+    std::ostringstream buf;
+    std::string prefix = fmt::format("{:{}}", "", indent );
+
+    buf << indent << "======== ======= ======= Print Contents By Location ======= ======= =======\n";
+    buf << indent << "     View:      [ [ " << visible.min[0] << ", " << visible.min[1] << " ] < [ "
+                                            << visible.max[0] << ", " << visible.max[1] << " ] ]\n";
+
+    // print location-aware contents
+    for( double northing = (visible.max.northing - (precision/2)); northing > visible.min.northing; northing -= precision ) {
+        for( double easting = (visible.min.easting + (precision/2)); easting < visible.max.easting; easting += precision ) {
+            const LocalLocation at_point( easting, northing );
+            uint8_t value = layer().get( at_point );
+
+            if( 0 == value ){
+                buf << "   ";
+            }else if( std::isalpha(value) || std::ispunct(value) ){
+                buf << fmt::format(" {:2c}", value );
+            }else{
+                buf << fmt::format(" {:2X}", static_cast<int>(value) );
+            }
+        
+        }
+        buf << '\n' << indent;
+    }
+
+    buf << indent << "======== ======= ======= =======  =======  ======= ======= ======= =======\n";
+    return buf.str();
+}

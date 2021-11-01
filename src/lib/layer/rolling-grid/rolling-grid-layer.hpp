@@ -101,9 +101,8 @@ public:
     inline double meters_across_view() const { return meters_across_view_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    std::string print_contents_by_cell( uint32_t indent = 0) const;
-    std::string print_contents_by_location( uint32_t indent = 0 ) const;
-
+    std::string print_contents_by_cell( uint32_t indent ) const;
+    std::string print_contents_by_location( uint32_t indent = 0 ) const { return super().print_contents_by_location(indent); }
     std::string print_properties( uint32_t indent = 0) const;
 
     bool scroll_east();

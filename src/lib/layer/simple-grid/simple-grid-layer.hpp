@@ -69,7 +69,8 @@ public:
         return meters_across_cell_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    void print_contents() const;
+    std::string print_contents_by_cell( uint32_t indent = 0) const ;
+    std::string print_contents_by_location( uint32_t indent = 0 ) const { return super().print_contents_by_location(indent); }
 
     inline void reset(){ 
         fill( default_cell_value );  }
@@ -99,7 +100,6 @@ public:
         return view_bounds_.contains(p); }
 
     ~SimpleGridLayer() = default;
-
 
 protected:
 

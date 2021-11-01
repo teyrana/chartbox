@@ -107,14 +107,15 @@ double DynamicGridLayer::meters_across_cell( double across ){
 }
 
 
-std::string DynamicGridLayer::print_contents_by_cell() const {
+std::string DynamicGridLayer::print_contents_by_cell( uint32_t indent ) const {
     std::ostringstream buf;
-    buf << "======== ======= ======= Print Contents By Cell: ======= ======= =======\n";
-    buf << std::hex;
+    const std::string prefix = fmt::format("{:<{}}", "", indent );
+
+    buf << prefix << "======== ======= ======= Print Contents By Cell: ======= ======= =======\n";
     for (size_t cell_row_index = cells_across_view_ - 1; cell_row_index < cells_across_view_; --cell_row_index) {
         for (size_t cell_column_index = 0; cell_column_index < cells_across_view_; ++cell_column_index ) {
             if( 0 == ((cell_column_index) % cells_across_sector_ ) ){
-                buf << "    ";
+                buf << prefix << "    ";
             }
             const GridIndex cell_view_index(cell_column_index, cell_row_index);
             const size_t sector_offset = cell_view_index.div(cells_across_sector_)
@@ -125,43 +126,13 @@ std::string DynamicGridLayer::print_contents_by_cell() const {
             buf << fmt::format(" {:2X}", sectors_[sector_offset][cell_offset] );
         }
         if( 0 == (cell_row_index % cells_across_sector_ ) ){
-            buf << '\n';
+            buf << '\n' << prefix;
         }
 
-        buf << '\n';
+        buf << '\n' << prefix;
     }
 
     buf << "======== ======= ======= ======= ======= ======= ======= =======\n";
-    return buf.str();
-}
-
-std::string DynamicGridLayer::print_contents_by_location() const {
-    std::ostringstream buf;
-    buf << "======== ======= ======= Print Contents By Location ======= ======= =======\n";
-    buf << "     View:      [ [ " << view_bounds_.min[0] << ", " << view_bounds_.min[1] << " ] < [ "
-                                  << view_bounds_.max[0] << ", " << view_bounds_.max[1] << " ] ]\n";
-    buf << std::hex;
-
-    // print location-aware contents
-    for( double northing = (view_bounds_.max.northing - (meters_across_cell_/2)); northing > view_bounds_.min.northing; northing -= meters_across_cell_ ) {
-        for( double easting = (view_bounds_.min.easting + (meters_across_cell_/2)); easting < view_bounds_.max.easting; easting += meters_across_cell_ ) {
-            if( meters_across_cell_ > std::fabs(std::fmod( easting - view_bounds_.min.easting, meters_across_sector_ )) ){
-                buf << "    ";
-            }
-
-            const LocalLocation cell_lookup_index( easting, northing );
-            uint8_t current_cell_value = get( cell_lookup_index );
-
-            buf << fmt::format(" {:2X}", current_cell_value );
-        }
-        if( meters_across_cell_ > std::fabs(std::fmod( northing - view_bounds_.min.northing, meters_across_sector_ ))){
-            buf << '\n';
-        }
-
-        buf << '\n';
-    }
-
-    buf << "======== ======= ======= =======  =======  ======= ======= ======= =======\n";
     return buf.str();
 }
 
