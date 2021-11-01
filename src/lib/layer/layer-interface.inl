@@ -136,15 +136,15 @@ bool LayerInterface<layer_t>::fill( const Polygon<LocalLocation>& poly, const Bo
 }
 
 template< typename layer_t>
-std::string LayerInterface<layer_t>::print_contents_by_location( uint32_t indent ) const {
+std::string LayerInterface<layer_t>::to_location_content_string( uint32_t indent ) const {
     const auto precision = layer().precision();
     const auto& visible = layer().visible();
 
     std::ostringstream buf;
     std::string prefix = fmt::format("{:{}}", "", indent );
 
-    buf << indent << "======== ======= ======= Print Contents By Location ======= ======= =======\n";
-    buf << indent << "     View:      [ [ " << visible.min[0] << ", " << visible.min[1] << " ] < [ "
+    buf << prefix << "======== ======= ======= Print Contents By Location ======= ======= =======\n";
+    buf << prefix << "     View:      [ [ " << visible.min[0] << ", " << visible.min[1] << " ] < [ "
                                             << visible.max[0] << ", " << visible.max[1] << " ] ]\n";
 
     // print location-aware contents
@@ -162,9 +162,9 @@ std::string LayerInterface<layer_t>::print_contents_by_location( uint32_t indent
             }
         
         }
-        buf << '\n' << indent;
+        buf << '\n' << prefix;
     }
 
-    buf << indent << "======== ======= ======= =======  =======  ======= ======= ======= =======\n";
+    buf << "======== ======= ======= =======  =======  ======= ======= ======= =======\n";
     return buf.str();
 }

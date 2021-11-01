@@ -18,11 +18,15 @@ public:
     /// \brief name of this layer's type
     constexpr static char type_name_[] = "SimpleGridLayer";
 
+    /// \brief width of each cell, in meters
+    constexpr static double meters_across_cell_ = static_cast<double>(precision_mm_)/1000;
+
     /// \brief number of cells along each dimension of this grid
     constexpr static size_t cells_across_layer_ = dimension_;
 
-    /// \brief width of each cell, in meters
-    constexpr static double meters_across_cell_ = static_cast<double>(precision_mm_)/1000;
+    /// \brief width of entire layer, in meters
+    constexpr static double meters_across_layer_ = meters_across_cell_ * static_cast<double>(cells_across_layer_);
+
 
 public:
 
@@ -69,8 +73,9 @@ public:
         return meters_across_cell_; }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    std::string print_contents_by_cell( uint32_t indent = 0) const ;
-    std::string print_contents_by_location( uint32_t indent = 0 ) const { return super().print_contents_by_location(indent); }
+    std::string to_cell_content_string( uint32_t indent = 0) const ;
+    std::string to_location_content_string( uint32_t indent = 0 ) const { return super().to_location_content_string(indent); }
+    std::string to_property_string( uint32_t indent = 0 ) const;
 
     inline void reset(){ 
         fill( default_cell_value );  }

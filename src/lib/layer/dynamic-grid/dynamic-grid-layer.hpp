@@ -74,10 +74,10 @@ public:
     double precision() const {  return meters_across_cell(); }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    std::string print_contents_by_cell( uint32_t indent ) const;
-    std::string print_contents_by_location( uint32_t indent = 0 ) const { return super().print_contents_by_location(indent); }
-    std::string print_contents_by_sector() const;
-    std::string print_properties() const;
+    std::string to_cell_content_string( uint32_t indent = 0 ) const;
+    std::string to_location_content_string( uint32_t indent = 0 ) const { return super().to_location_content_string(indent); }
+    std::string to_sector_content_string( uint32_t indenrt = 0 ) const;
+    std::string to_property_string( uint32_t indent = 0 ) const;
 
     bool save( const DynamicGridSector& sector, const LocalLocation& sector_origin ) const;
 

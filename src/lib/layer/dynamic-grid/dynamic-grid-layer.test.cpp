@@ -68,9 +68,7 @@ TEST_CASE( "DynamicGridLayer Default Initialization"){
 
 TEST_CASE( "DynamicGridLayer Can Track Bounds"){
     DynamicGridLayer layer;
-
-    const BoundBox<LocalLocation> visible = {{0,0},{24,24}};
-    layer.track( visible );
+    layer.track( {{0,0},{24,24}} );
 
     REQUIRE(  8 == layer.cells_across_sector() );
     REQUIRE(  3 == layer.sectors_across_view() );
@@ -84,9 +82,7 @@ TEST_CASE( "DynamicGridLayer Can Track Bounds"){
 
 TEST_CASE( "DynamicGridLayer Can Set Visible Bounds"){
     DynamicGridLayer layer;
-
-    const BoundBox<LocalLocation> visible = {{0,0},{24,24}};
-    layer.view( visible );
+    layer.track( {{0,0},{24,24}} );
 
     REQUIRE(  8 == layer.cells_across_sector() );
     REQUIRE(  3 == layer.sectors_across_view() );

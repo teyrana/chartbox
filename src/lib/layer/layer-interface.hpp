@@ -111,10 +111,13 @@ public:
         return layer().precision(); }
 
     /// \brief Draws a simple debug representation of this grid to stderr
-    std::string print_contents_by_cell( uint32_t indent = 0) const {
-        return layer().print_contents_by_cell(indent); }
+    std::string to_cell_content_string( uint32_t indent ) const {
+        return layer().to_cell_content_string(indent); }
 
-    std::string print_contents_by_location( uint32_t indent ) const;
+    std::string to_location_content_string( uint32_t indent ) const;
+
+    std::string to_property_string( uint32_t indent ) const {
+        return layer().to_property_string(); }
 
     std::string type() const { 
         return layer().type_name_; }

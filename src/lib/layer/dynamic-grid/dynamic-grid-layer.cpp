@@ -107,10 +107,9 @@ double DynamicGridLayer::meters_across_cell( double across ){
 }
 
 
-std::string DynamicGridLayer::print_contents_by_cell( uint32_t indent ) const {
+std::string DynamicGridLayer::to_cell_content_string( uint32_t indent ) const {
     std::ostringstream buf;
     const std::string prefix = fmt::format("{:<{}}", "", indent );
-
     buf << prefix << "======== ======= ======= Print Contents By Cell: ======= ======= =======\n";
     for (size_t cell_row_index = cells_across_view_ - 1; cell_row_index < cells_across_view_; --cell_row_index) {
         for (size_t cell_column_index = 0; cell_column_index < cells_across_view_; ++cell_column_index ) {
@@ -136,33 +135,35 @@ std::string DynamicGridLayer::print_contents_by_cell( uint32_t indent ) const {
     return buf.str();
 }
 
-std::string DynamicGridLayer::print_contents_by_sector() const {
+std::string DynamicGridLayer::to_sector_content_string( uint32_t indent) const {
     std::ostringstream buf;
-    buf << "======== ======= ======= Print Contents By Sector: ======= ======= =======\n";
+    const std::string prefix = fmt::format("{:<{}}", "", indent );
+    buf << prefix << "======== ======= ======= Print Contents By Sector: ======= ======= =======\n" << prefix;
     uint32_t sector_index = 0;
     for( auto& sector : sectors_ ){
         buf << fmt::format("{:2}:", sector_index );
         for( auto& current_cell_value : sector ){
             buf << fmt::format(" {:2X}", current_cell_value );
         }
-        buf << '\n';
+        buf << '\n' << prefix;
         ++sector_index;
     }
     buf << "======== ======= ======= =======  =======  ======= ======= ======= =======\n";
     return buf.str();
 }
 
-std::string DynamicGridLayer::print_properties() const {
+std::string DynamicGridLayer::to_property_string( uint32_t indent) const {
     std::ostringstream buf;
-    buf << "======== ======= Properties: ======= =======\n";
-    buf << fmt::format( "    ::bounds-min:             {:8.1f}, {:8.1f}\n", view_bounds_.min.easting, view_bounds_.min.easting  );
-    buf << fmt::format( "    ::bounds-max:             {:8.1f}, {:8.1f}\n", view_bounds_.max.easting, view_bounds_.max.easting  );
-    buf << fmt::format( "    ::cells-across-sector:    {:6}\n", cells_across_sector_ );
-    buf << fmt::format( "    ::sectors-across-view:    {:6}\n", sectors_across_view_ );
-    buf << fmt::format( "    ::cells-across-view:      {:6}\n", cells_across_view_ );
-    buf << fmt::format( "    ::meters-across-cell:     {:6}\n", meters_across_cell_ );
-    buf << fmt::format( "    ::meters-across-sector:   {:6}\n", meters_across_sector_ );
-    buf << fmt::format( "    ::meters-across-view:     {:6}\n", meters_across_view_ );
+    const std::string prefix = fmt::format("{:<{}}", "", indent );
+    buf << prefix << "======== ======= Properties: ======= =======\n";
+    buf << fmt::format( "{}    ::bounds-min:             {:8.1f}, {:8.1f}\n", prefix, view_bounds_.min.easting, view_bounds_.min.easting  );
+    buf << fmt::format( "{}    ::bounds-max:             {:8.1f}, {:8.1f}\n", prefix, view_bounds_.max.easting, view_bounds_.max.easting  );
+    buf << fmt::format( "{}    ::cells-across-sector:    {:6}\n", prefix, cells_across_sector_ );
+    buf << fmt::format( "{}    ::sectors-across-view:    {:6}\n", prefix, sectors_across_view_ );
+    buf << fmt::format( "{}    ::cells-across-view:      {:6}\n", prefix, cells_across_view_ );
+    buf << fmt::format( "{}    ::meters-across-cell:     {:6}\n", prefix, meters_across_cell_ );
+    buf << fmt::format( "{}    ::meters-across-sector:   {:6}\n", prefix, meters_across_sector_ );
+    buf << fmt::format( "{}    ::meters-across-view:     {:6}\n", prefix, meters_across_view_ );
     return buf.str();
 }
 

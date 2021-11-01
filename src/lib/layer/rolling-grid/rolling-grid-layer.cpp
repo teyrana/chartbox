@@ -132,7 +132,7 @@ uint8_t RollingGridLayer<cells_across_sector_>::get(const LocalLocation& layer_l
 }
 
 template<uint32_t cells_across_sector_>
-std::string RollingGridLayer<cells_across_sector_>::print_contents_by_cell( uint32_t indent ) const {
+std::string RollingGridLayer<cells_across_sector_>::to_cell_content_string( uint32_t indent ) const {
     std::ostringstream buf;
     const std::string prefix = fmt::format("{:<{}}", "", indent );
 
@@ -164,7 +164,7 @@ std::string RollingGridLayer<cells_across_sector_>::print_contents_by_cell( uint
 }
 
 template<uint32_t cells_across_sector_>
-std::string RollingGridLayer<cells_across_sector_>::print_properties( uint32_t indent ) const {
+std::string RollingGridLayer<cells_across_sector_>::to_property_string( uint32_t indent ) const {
     std::ostringstream buf;
 
     const std::string prefix = fmt::format("{:<{}}", "", indent );
