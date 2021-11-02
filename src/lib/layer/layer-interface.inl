@@ -34,6 +34,8 @@ bool LayerInterface<layer_t>::fill(const BoundBox<LocalLocation>& box, const uin
 
 template< typename layer_t>
 bool LayerInterface<layer_t>::fill( const Path<LocalLocation>& path, const BoundBox<LocalLocation>& bounds, uint8_t value ){
+    constexpr bool fill_segments = false;
+
     if( 2 > path.size() ){
         return false;
     }
@@ -57,13 +59,15 @@ bool LayerInterface<layer_t>::fill( const Path<LocalLocation>& path, const Bound
 
             layer().store( fill_start_point, fill_vertex_value );
 
-            const LocalLocation fill_segment = (fill_end_point - fill_start_point);
-            const size_t divs = static_cast<size_t>(std::ceil(fill_segment.easting/fill_spacing));
-            const LocalLocation fill_increment = { fill_spacing, fill_segment.northing/fill_segment.easting*fill_spacing };
-            LocalLocation fill_point = fill_start_point; // copy
-            for( size_t i=1; i < divs; ++i ){
-                fill_point += fill_increment;
-                layer().store( fill_point, fill_segment_value );
+            if( fill_segments ){
+                const LocalLocation fill_segment = (fill_end_point - fill_start_point);
+                const size_t divs = static_cast<size_t>(std::abs(std::ceil(fill_segment.easting/fill_spacing)));
+                const LocalLocation fill_increment = { fill_spacing, fill_segment.northing/fill_segment.easting*fill_spacing };
+                LocalLocation fill_point = fill_start_point; // copy
+                for( size_t i=1; i < divs; ++i ){
+                    fill_point += fill_increment;
+                    layer().store( fill_point, fill_segment_value );
+                }
             }
         }
     }
@@ -144,10 +148,11 @@ std::string LayerInterface<layer_t>::to_location_content_string( uint32_t indent
     std::string prefix = fmt::format("{:{}}", "", indent );
 
     buf << prefix << "======== ======= ======= Print Contents By Location ======= ======= =======\n";
-    buf << prefix << "     View:      [ [ " << visible.min[0] << ", " << visible.min[1] << " ] < [ "
-                                            << visible.max[0] << ", " << visible.max[1] << " ] ]\n";
+    // buf << prefix << "     View:      [ [ " << visible.min[0] << ", " << visible.min[1] << " ] < [ "
+    //                                         << visible.max[0] << ", " << visible.max[1] << " ] ]\n";
 
     // print location-aware contents
+    buf << prefix;
     for( double northing = (visible.max.northing - (precision/2)); northing > visible.min.northing; northing -= precision ) {
         for( double easting = (visible.min.easting + (precision/2)); easting < visible.max.easting; easting += precision ) {
             const LocalLocation at_point( easting, northing );
