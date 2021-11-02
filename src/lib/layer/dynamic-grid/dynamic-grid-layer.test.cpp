@@ -68,7 +68,7 @@ TEST_CASE( "DynamicGridLayer Default Initialization"){
 
 TEST_CASE( "DynamicGridLayer Can Track Bounds"){
     DynamicGridLayer layer;
-    layer.track( {{0,0},{24,24}} );
+    CHECK( layer.track( {{0,0},{24,24}} ));
 
     REQUIRE(  8 == layer.cells_across_sector() );
     REQUIRE(  3 == layer.sectors_across_view() );
@@ -78,11 +78,14 @@ TEST_CASE( "DynamicGridLayer Can Track Bounds"){
     REQUIRE(  1.0 == Approx(layer.meters_across_cell()) );
     REQUIRE(  8.0 == Approx(layer.meters_across_sector()) );
     REQUIRE( 24.0 == Approx(layer.meters_across_view()) );
+
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 24.0, 24.0) == layer.visible().max );
 }
 
 TEST_CASE( "DynamicGridLayer Can Set Visible Bounds"){
     DynamicGridLayer layer;
-    layer.track( {{0,0},{24,24}} );
+    CHECK( layer.view( {{0,0},{24,24}} ));
 
     REQUIRE(  8 == layer.cells_across_sector() );
     REQUIRE(  3 == layer.sectors_across_view() );
@@ -92,6 +95,28 @@ TEST_CASE( "DynamicGridLayer Can Set Visible Bounds"){
     REQUIRE(  1.0 == Approx(layer.meters_across_cell()) );
     REQUIRE(  8.0 == Approx(layer.meters_across_sector()) );
     REQUIRE( 24.0 == Approx(layer.meters_across_view()) );
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 24.0, 24.0) == layer.visible().max );
+}
+
+TEST_CASE( "DynamicGridLayer Can Re-Allocate Sectors and Bounds"){
+    DynamicGridLayer layer;
+    layer.meters_across_cell( 1.0 );
+    CHECK( layer.track( {{0,0},{32,32}} ));
+
+    REQUIRE( 32.0 == layer.visible().height() );
+    REQUIRE( 32.0 == layer.visible().width() );
+
+    REQUIRE(  8 == layer.cells_across_sector() );
+    REQUIRE(  4 == layer.sectors_across_view() );
+    REQUIRE( 16 == layer.sectors_per_view() );
+    REQUIRE( 32 == layer.cells_across_view() );
+
+    REQUIRE(  1.0 == Approx(layer.meters_across_cell()) );
+    REQUIRE(  8.0 == Approx(layer.meters_across_sector()) );
+    REQUIRE( 32.0 == Approx(layer.meters_across_view()) );
+    REQUIRE( LocalLocation(  0.0,  0.0) == layer.visible().min );
+    REQUIRE( LocalLocation( 32.0, 32.0) == layer.visible().max );
 }
 
 TEST_CASE( "DynamicGridLayer Check Default Bounds"){
@@ -124,7 +149,7 @@ TEST_CASE( "DynamicGridLayer Check Default Bounds"){
 
 TEST_CASE( "DynamicGridLayer Move Origin"){
     DynamicGridLayer layer;
-    layer.origin({12,12});
+    CHECK( layer.origin({12,12}) );
 
     REQUIRE( LocalLocation( 12.0, 12.0) == layer.visible().min );
     REQUIRE( LocalLocation( 24.0, 24.0) == layer.visible().max );

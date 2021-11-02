@@ -95,7 +95,7 @@ std::string SimpleGridLayer<cell_t,dimension_,precision_mm>::to_property_string(
     buf << fmt::format( "{}====== ====== ====== Layer Properties: ====== ====== ======\n", prefix );
     buf << fmt::format( "{}    :: bounds::visible::min:    {:6.0f},{:6.0f}\n", prefix, view_bounds_.min.easting, view_bounds_.min.northing );
     buf << fmt::format( "{}    :: bounds::visible::max:    {:6.0f},{:6.0f}\n", prefix, view_bounds_.max.easting, view_bounds_.max.northing );
-    buf << fmt::format( "{}    :: cells-across-layer:      {:6.0f}\n", prefix, cells_across_layer_ );
+    buf << fmt::format( "{}    :: cells-across-layer:      {:6d}\n", prefix, cells_across_layer_ );
     buf << fmt::format( "{}    :: meters-across-cell:      {:6.0f}\n", prefix, meters_across_cell_ );
     buf << fmt::format( "{}    :: meters-across-window:    {:6.0f}\n", prefix, meters_across_layer_ );
 

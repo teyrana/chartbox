@@ -158,12 +158,12 @@ std::string DynamicGridLayer::to_property_string( uint32_t indent) const {
     buf << prefix << "======== ======= Properties: ======= =======\n";
     buf << fmt::format( "{}    ::bounds-min:             {:8.1f}, {:8.1f}\n", prefix, view_bounds_.min.easting, view_bounds_.min.easting  );
     buf << fmt::format( "{}    ::bounds-max:             {:8.1f}, {:8.1f}\n", prefix, view_bounds_.max.easting, view_bounds_.max.easting  );
-    buf << fmt::format( "{}    ::cells-across-sector:    {:6}\n", prefix, cells_across_sector_ );
-    buf << fmt::format( "{}    ::sectors-across-view:    {:6}\n", prefix, sectors_across_view_ );
-    buf << fmt::format( "{}    ::cells-across-view:      {:6}\n", prefix, cells_across_view_ );
-    buf << fmt::format( "{}    ::meters-across-cell:     {:6}\n", prefix, meters_across_cell_ );
-    buf << fmt::format( "{}    ::meters-across-sector:   {:6}\n", prefix, meters_across_sector_ );
-    buf << fmt::format( "{}    ::meters-across-view:     {:6}\n", prefix, meters_across_view_ );
+    buf << fmt::format( "{}    ::cells-across-sector:    {:6d}\n", prefix, cells_across_sector_ );
+    buf << fmt::format( "{}    ::sectors-across-view:    {:6d}\n", prefix, sectors_across_view_ );
+    buf << fmt::format( "{}    ::cells-across-view:      {:6d}\n", prefix, cells_across_view_ );
+    buf << fmt::format( "{}    ::meters-across-cell:     {:6.0f}\n", prefix, meters_across_cell_ );
+    buf << fmt::format( "{}    ::meters-across-sector:   {:6.0f}\n", prefix, meters_across_sector_ );
+    buf << fmt::format( "{}    ::meters-across-view:     {:6.0f}\n", prefix, meters_across_view_ );
     return buf.str();
 }
 
@@ -220,18 +220,26 @@ bool DynamicGridLayer::track( const geometry::BoundBox<geometry::LocalLocation>&
     const double divs = std::ceil( request_width / meters_across_cell_ );
     const double use_width = meters_across_cell_ * divs;
 
-    view_bounds_.min = origin;
-    view_bounds_.max = origin + LocalLocation(use_width);
+    // attempt to adapt the new bounds into a "reasonable" sector-count
+    const size_t target_dimension = static_cast<size_t>(use_width);
+    for( size_t candidate_sector_count = 3; candidate_sector_count <= 9; ++candidate_sector_count ){
+        if( 0 == (target_dimension % candidate_sector_count)){
+            
+            cells_across_view_ = use_width / meters_across_cell_;
+            sectors_across_view_ = sectors_across_view( candidate_sector_count );
+            cells_across_sector_ = cells_across_sector( cells_across_view_ / sectors_across_view_ );
 
-    cells_across_view_ = use_width / meters_across_cell_;
-    // sectors_across_view_ // no change needed
-    cells_across_sector_ = cells_across_sector( cells_across_view_ / sectors_across_view_ );
+            view_bounds_.min = origin;
+            view_bounds_.max = origin + LocalLocation(use_width);
+            meters_across_view_ = use_width;
+            meters_across_cell_ = meters_across_cell_;
+            meters_across_sector_ = meters_across_cell_ * cells_across_sector_;
 
-    meters_across_view_ = use_width;
-    meters_across_cell_ = meters_across_cell_;
-    meters_across_sector_ = meters_across_cell_ * cells_across_sector_;
+            return true;
+        }
+    }
 
-    return true;
+    return false;
 }
 
 bool DynamicGridLayer::view(const BoundBox<LocalLocation>& box) {

@@ -41,6 +41,7 @@ public:
     uint32_t cells_across_sector( uint32_t new_cells_across );
 
     inline uint32_t cells_across_view() const { return cells_across_view_; }
+    uint32_t cells_in_view() const { return cells_across_view_*cells_across_view_; }
 
     // Center in the middle of the tracked bounds:
     // ( Assume tracked-bounds are already set )
