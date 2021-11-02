@@ -45,6 +45,11 @@ struct LocalLocation {
         return LocalLocation(NAN, NAN);
     }
 
+    LocalLocation normalize() const {
+        const double divisor = norm2();
+        return { easting / divisor, northing / divisor };
+    }
+
     double norm1() const {
         return std::abs(easting) + std::fabs(northing );
     }
